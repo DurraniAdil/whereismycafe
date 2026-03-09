@@ -1,0 +1,260 @@
+================================================================================
+                         WHERE IS MY CAFE — Documentation
+================================================================================
+
+
+1. PROJECT OVERVIEW
+--------------------------------------------------------------------------------
+
+"Where Is My Cafe?" is a modern, mobile-first web application that helps users
+discover cafés in Aurangabad, India. It provides rich information about each
+café — including vibes, amenities, pricing, noise levels, lighting, music type,
+photos, and direct links to Google Maps and Instagram — so that users can find
+the perfect spot for studying, working, chilling, dates, or hanging out with
+friends.
+
+
+2. TECH STACK
+--------------------------------------------------------------------------------
+
+  Frontend Framework :  React 19 (with TypeScript)
+  Build Tool         :  Vite 6
+  Routing            :  React Router DOM v7
+  Styling            :  Tailwind CSS v4 (via @tailwindcss/vite plugin)
+  Animations         :  Motion (Framer Motion successor)
+  Icons              :  Lucide React
+  Utilities          :  clsx + tailwind-merge (for conditional class merging)
+  Font               :  Plus Jakarta Sans (loaded from Google Fonts)
+
+
+3. PROJECT STRUCTURE
+--------------------------------------------------------------------------------
+
+  WHERE IS MY CAFE/
+  ├── index.html                  # App entry point (HTML shell)
+  ├── package.json                # Dependencies & scripts
+  ├── tsconfig.json               # TypeScript configuration
+  ├── vite.config.ts              # Vite build configuration
+  ├── public/                     # Static assets
+  └── src/
+      ├── main.tsx                # React root — mounts <App /> to the DOM
+      ├── App.tsx                 # Root component — Router & layout
+      ├── index.css               # Global styles & Tailwind imports
+      ├── types/
+      │   └── cafe.ts             # TypeScript interfaces (Cafe, Amenities, etc.)
+      ├── data/
+      │   └── cafes.json          # Static café data (the data source)
+      ├── lib/
+      │   ├── getCafes.ts         # Data-access helper functions
+      │   └── utils.ts            # Utility: cn() for merging Tailwind classes
+      ├── pages/
+      │   ├── Home.tsx            # Landing page with sections & vibe filter
+      │   ├── Search.tsx          # Search & advanced filter page
+      │   └── CafeDetail.tsx      # Individual café detail page
+      └── components/
+          ├── Navbar.tsx          # Fixed bottom navigation bar (mobile)
+          ├── Footer.tsx          # Page footer
+          ├── CafeCard.tsx        # Café preview card used in listings
+          ├── FilterBar.tsx       # Horizontal vibe-filter chip bar
+          ├── VibeChip.tsx        # Pill-shaped vibe tag component
+          ├── AmenityBadge.tsx    # Badge showing an amenity (available or not)
+          └── PhotoGallery.tsx    # Horizontally scrollable photo gallery
+
+
+4. PAGES
+--------------------------------------------------------------------------------
+
+  4.1  Home (/)
+  ─────────────
+  The landing page for the app. It displays:
+    - A sticky header with the app title and a vibe filter bar.
+    - "What's Hot" section showing trending cafés.
+    - "Newly Added" section showing recently added cafés.
+    - "All Cafés" section listing every café.
+  Users can filter all sections by vibe (Study, Chill, Date, Party, Work).
+  Cards animate in with a smooth fade-and-slide using Motion.
+
+  4.2  Search (/search)
+  ─────────────────────
+  A dedicated search page with:
+    - A text search input (filters by café name or area).
+    - An expandable filter drawer with:
+        • Vibe chip multi-select (OR logic — matches ANY selected vibe).
+        • A price slider to set a maximum "price for two".
+    - Live-filtered results that update in real time.
+    - A "Clear all" button to reset all filters.
+
+  4.3  Cafe Detail (/cafes/:id)
+  ─────────────────────────────
+  A full detail page for a single café, showing:
+    - A hero image with gradient overlay, café name, and location.
+    - Badges for Trending / New status.
+    - Quick info card: vibes, description, opening hours, popular item,
+      price for two, and cheapest item.
+    - "Vibe Check" section: noise level, lighting, and music type
+      displayed as icon cards.
+    - Amenities section: WiFi, AC, outdoor seating, power outlets,
+      board games, and parking — each shown as a badge (green if
+      available, gray if not).
+    - Photo gallery: horizontal scrollable gallery of all café photos.
+    - Fixed action bar at the bottom (mobile) with "Open Maps" and
+      "Instagram" buttons.
+
+
+5. COMPONENTS
+--------------------------------------------------------------------------------
+
+  5.1  Navbar
+       Fixed bottom navigation bar visible only on mobile. Links to Home,
+       Search, Vibes, and About pages. Active link is highlighted in orange.
+
+  5.2  Footer
+       Simple footer displayed at the bottom of the page across all routes.
+
+  5.3  CafeCard
+       A preview card component that displays a café's hero photo, name,
+       location, price for two, trending/new badges, and up to 3 vibe chips.
+       Links to the café's detail page. Has hover animations (scale, shadow,
+       color change).
+
+  5.4  FilterBar
+       A horizontal row of vibe-filter chips. Supports selecting one vibe at
+       a time (or "ALL"). Used on the Home page header.
+
+  5.5  VibeChip
+       A pill-shaped tag/chip for displaying a vibe label (Study, Chill,
+       Date, Party, Work). Supports active/inactive states and click
+       interaction. Used on CafeCards, FilterBar, Search, and CafeDetail.
+
+  5.6  AmenityBadge
+       Renders an individual amenity (WiFi, AC, Outdoor Seating, etc.) as a
+       labeled badge. Shows green/available or gray/unavailable styling.
+
+  5.7  PhotoGallery
+       A horizontally scrollable row of café photos with rounded corners.
+       Used on the CafeDetail page.
+
+
+6. DATA MODEL
+--------------------------------------------------------------------------------
+
+  Each café is represented by the following TypeScript interface:
+
+  Cafe {
+    id             : string          — Unique identifier (e.g. "cafe-001")
+    name           : string          — Display name
+    area           : string          — Location / neighborhood
+    googleMapsUrl  : string          — Direct link to Google Maps
+    phone          : string?         — Contact phone number (optional)
+    instagram      : string?         — Instagram handle (optional)
+    openingHours   : string          — Human-readable hours string
+    closedOn       : string?         — Day the café is closed (optional)
+    priceForTwo    : number          — Approximate cost for two people (INR)
+    cheapestItem   : string?         — Cheapest menu item with price
+    popularItem    : string?         — Most popular item with price
+    vibes          : Vibe[]          — Array of vibe tags
+    noiseLevel     : NoiseLevel      — "Quiet" | "Moderate" | "Loud"
+    lighting       : Lighting        — "Bright" | "Warm" | "Dim"
+    music          : MusicType       — "None" | "Lo-fi" | "Bollywood" | "Western" | "Live"
+    amenities      : Amenities       — Object with boolean flags
+    description    : string          — Free-text description
+    photos         : string[]        — Array of photo URLs
+    isNew          : boolean         — Whether the café was recently added
+    isTrending     : boolean         — Whether the café is currently trending
+    addedOn        : string          — Date added (YYYY-MM-DD)
+    verified       : boolean         — Whether the listing is verified
+  }
+
+  Amenities {
+    wifi           : boolean
+    ac             : boolean
+    outdoorSeating : boolean
+    powerOutlets   : boolean
+    boardGames     : boolean
+    parking        : boolean
+  }
+
+  Vibe       = "Study" | "Chill" | "Date" | "Party" | "Work"
+  NoiseLevel = "Quiet" | "Moderate" | "Loud"
+  Lighting   = "Bright" | "Warm" | "Dim"
+  MusicType  = "None" | "Lo-fi" | "Bollywood" | "Western" | "Live"
+
+
+7. DATA ACCESS LAYER (lib/getCafes.ts)
+--------------------------------------------------------------------------------
+
+  The café data is stored as a static JSON file (src/data/cafes.json) and
+  accessed through helper functions:
+
+    getAllCafes()          — Returns all cafés.
+    getCafeById(id)       — Returns a single café by its ID.
+    getTrendingCafes()    — Returns cafés where isTrending is true.
+    getNewCafes()         — Returns cafés where isNew is true.
+    filterByVibe(vibe)    — Returns cafés matching a specific vibe.
+
+
+8. ROUTING
+--------------------------------------------------------------------------------
+
+  Route              Page           Description
+  ──────────────     ────────────   ─────────────────────────────────
+  /                  Home           Main landing page
+  /search            Search         Search & filter page
+  /cafes/:id         CafeDetail     Individual café detail page
+  *                  Home           Fallback — any unknown route goes to Home
+
+  The app uses BrowserRouter from React Router DOM. A ScrollToTop utility
+  component ensures the page scrolls to the top on every route change.
+
+
+9. SETUP & RUNNING LOCALLY
+--------------------------------------------------------------------------------
+
+  Prerequisites: Node.js (v18 or later recommended)
+
+  Steps:
+    1. Clone or download the project.
+    2. Open a terminal in the project root directory.
+    3. Install dependencies:
+         npm install
+    4. Start the development server:
+         npm run dev
+    5. Open the app in your browser at:
+         http://localhost:3000
+
+  Available Scripts:
+    npm run dev      — Start the Vite dev server on port 3000
+    npm run build    — Build for production (outputs to /dist)
+    npm run preview  — Preview the production build locally
+    npm run clean    — Delete the /dist folder
+    npm run lint     — Run TypeScript type-checking (no emit)
+
+
+10. DESIGN PHILOSOPHY
+--------------------------------------------------------------------------------
+
+  - Mobile-First: The UI is designed primarily for mobile with a fixed
+    bottom navigation bar, touch-friendly cards, and responsive grid
+    layouts that scale up for tablet and desktop.
+
+  - Vibe-Centric Discovery: Instead of just listing cafés alphabetically,
+    the app organizes discovery around "vibes" — letting users quickly
+    filter for their mood (studying, dating, chilling, etc.).
+
+  - Visual & Animated: Smooth entry animations (fade + slide), hover
+    effects (card lift, image zoom, color transitions), and animated
+    filter drawers make the experience feel polished and modern.
+
+  - Static Data, No Backend: Currently the café data is stored in a local
+    JSON file. This makes the app easy to deploy as  a static site (e.g.,
+    on Vercel, Netlify, or GitHub Pages). A backend/database can be
+    added later if needed.
+
+  - Orange as Brand Color: The primary accent color is orange (#f97316),
+    used for active states, CTAs, trending badges, and the overall
+    brand identity.
+
+
+================================================================================
+                              END OF DOCUMENTATION
+================================================================================

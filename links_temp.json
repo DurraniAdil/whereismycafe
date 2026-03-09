@@ -1,0 +1,436 @@
+[
+  {
+    "#": 1,
+    "Cafe Name": "Cafe Holiday",
+    "Zone": "Central / Old City",
+    "Address": "Near Kranti Chowk, Paithan Gate Rd",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 2,
+    "Cafe Name": "Beans & Bistro",
+    "Zone": "Central / Old City",
+    "Address": "Darga Rd, near Kalda Corner, above VLCC",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 3,
+    "Cafe Name": "THE GOLDEN HOUR CAFE",
+    "Zone": "Central / Old City",
+    "Address": "Eknath Rang Mandir Rd",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 4,
+    "Cafe Name": "Cafe with environment",
+    "Zone": "Central / Old City",
+    "Address": "Near Amba-Apsara Cinema Rd, opp. Devgiri Bank",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 5,
+    "Cafe Name": "Cafe c3",
+    "Zone": "Central / Old City",
+    "Address": "Samarthnagar Road, Nirala Bazar",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 6,
+    "Cafe Name": "Chai Maker's Cafe",
+    "Zone": "Central / Old City",
+    "Address": "Nirala Bazar Rd",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 7,
+    "Cafe Name": "Cafe HD Chaha",
+    "Zone": "Central / Old City",
+    "Address": "Aurangpura-Samarthnagar Rd, near Devgiri Bank",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 8,
+    "Cafe Name": "Kelvin 77 Nirala Bazar",
+    "Zone": "Central / Old City",
+    "Address": "Samarthnagar Rd, near MP Law College",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 9,
+    "Cafe Name": "Crunch N' Quench",
+    "Zone": "Central / Old City",
+    "Address": "Aadinath Tower, Kranti Chowk, Railway Station Rd",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 10,
+    "Cafe Name": "Cafe House Of The Dragon",
+    "Zone": "Central / Old City",
+    "Address": "Khokadpura Rd, behind Supreme Classes",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 11,
+    "Cafe Name": "Spice Square - Pure Veg Restaurant",
+    "Zone": "Central / Old City",
+    "Address": "Samarthnagar Rd",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 12,
+    "Cafe Name": "Lado's Cafe",
+    "Zone": "Central / Old City",
+    "Address": "Eknath Rang Mandir Rd, opp. IDBI Bank",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 13,
+    "Cafe Name": "Coffeeholic Cafe",
+    "Zone": "Central / Old City",
+    "Address": "Chistiya Chowk, MGM Rd",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 14,
+    "Cafe Name": "Eat Fit Cafe",
+    "Zone": "Central / Old City",
+    "Address": "Kranti Chowk",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 15,
+    "Cafe Name": "Omnific Caff",
+    "Zone": "Railway / Kailash Market",
+    "Address": "Kailash Market, near J Tower",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 16,
+    "Cafe Name": "7 Wonder Cafe",
+    "Zone": "Railway / Kailash Market",
+    "Address": "Bhanudas Sabhahgrah Railway Station Rd",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 17,
+    "Cafe Name": "Cafe social",
+    "Zone": "Railway / Kailash Market",
+    "Address": "Gopal T Point Osmanpura, Bhanudas Sabhahgrah Railway Station Rd",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 18,
+    "Cafe Name": "Cafe Symphony (Cake & Pizzeria)",
+    "Zone": "Railway / Kailash Market",
+    "Address": "Railway Station Rd, beside Kailash Veg Restaurant",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 19,
+    "Cafe Name": "Cafe Avengers bite",
+    "Zone": "Railway / Kailash Market",
+    "Address": "Kailash Market, Ahilybhai Holkar Chowk",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 20,
+    "Cafe Name": "Rainbow cafe",
+    "Zone": "Railway / Kailash Market",
+    "Address": "Bansilal Market, Railway Station Rd",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 21,
+    "Cafe Name": "Café D'lite",
+    "Zone": "Railway / Kailash Market",
+    "Address": "Railway Station Rd",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 22,
+    "Cafe Name": "Cafe BLOOM",
+    "Zone": "Railway / Kailash Market",
+    "Address": "Jay Tower, Kailash Market",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 23,
+    "Cafe Name": "Spice'N'Sugar Cafe",
+    "Zone": "Railway / Kailash Market",
+    "Address": "Kailash Market, Bhanudas Sabhahgrah Railway Station Rd",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 24,
+    "Cafe Name": "Cafe Durga",
+    "Zone": "Railway / Kailash Market",
+    "Address": "Bhanudas Sabhahgrah Railway Station Rd",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 25,
+    "Cafe Name": "Blackstone Cafe & lounge",
+    "Zone": "University / College Belt",
+    "Address": "Behind SSC Board, opp. Govt. Engineering College",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 26,
+    "Cafe Name": "Cafe emoji",
+    "Zone": "University / College Belt",
+    "Address": "Beside Deogiri College",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 27,
+    "Cafe Name": "Dessert Villa Cafe",
+    "Zone": "University / College Belt",
+    "Address": "Near SB College Rd",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 28,
+    "Cafe Name": "Bits N Bites",
+    "Zone": "University / College Belt",
+    "Address": "In Front Of GVT Engineering College",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 29,
+    "Cafe Name": "Cafe me ani tu",
+    "Zone": "University / College Belt",
+    "Address": "Near Milind College, University Rd, BAMU",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 30,
+    "Cafe Name": "Cafe 90's",
+    "Zone": "University / College Belt",
+    "Address": "In front of S.B. Science Gate",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 31,
+    "Cafe Name": "Black Roast Cafe",
+    "Zone": "Jalna Road Corridor",
+    "Address": "Akashvani Signal, Jalna Rd",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 32,
+    "Cafe Name": "Café Coffee Day (Ira Executive)",
+    "Zone": "Jalna Road Corridor",
+    "Address": "Beside Hotel Ira Executive, Jalna Rd",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 33,
+    "Cafe Name": "Hotel Arpan Bar And Restaurant",
+    "Zone": "Jalna Road Corridor",
+    "Address": "Mondha Naka, Jalna Rd",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 34,
+    "Cafe Name": "Hyde Out Resto Cafe",
+    "Zone": "Jalna Road Corridor",
+    "Address": "Chetan Trade Center, Jalna Rd",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 35,
+    "Cafe Name": "Vijay Bhoj and Krushna Mewad Bhojnalay",
+    "Zone": "Jalna Road Corridor",
+    "Address": "Jalna Rd",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 36,
+    "Cafe Name": "BBC (Boring Banker Cafe)",
+    "Zone": "Jalna Road Corridor",
+    "Address": "Infront of Sinchan Bhavan, Jalna Rd",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 37,
+    "Cafe Name": "Krushna Mewad Bhojanalaya",
+    "Zone": "Jalna Road Corridor",
+    "Address": "Sindhi Colony, Mondha Naka, Jalna Road",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 38,
+    "Cafe Name": "Urban bites",
+    "Zone": "CIDCO / New Aurangabad",
+    "Address": "Kailash Arcade, Cannaught Place",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 39,
+    "Cafe Name": "Coffea Sambhajinagar",
+    "Zone": "CIDCO / New Aurangabad",
+    "Address": "Cannaught Place, beside Royal Enfield Showroom",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 40,
+    "Cafe Name": "Café Woodie's",
+    "Zone": "CIDCO / New Aurangabad",
+    "Address": "Near Tapadiya Merit School",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 41,
+    "Cafe Name": "Chéri Cafe & Eatery",
+    "Zone": "CIDCO / New Aurangabad",
+    "Address": "CK Tower, Dashmesh Nagar Rd, near Tapadiya Innovations School",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 42,
+    "Cafe Name": "Greme cafe",
+    "Zone": "CIDCO / New Aurangabad",
+    "Address": "Amurt Sai Ekdant Society",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 43,
+    "Cafe Name": "Golden Saffron Cafe",
+    "Zone": "CIDCO / New Aurangabad",
+    "Address": "Silver Parl, near Ridhi Sidhi Hall",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 44,
+    "Cafe Name": "Cafe ak47 295",
+    "Zone": "CIDCO / New Aurangabad",
+    "Address": "Amrut Sai Ekdant Society",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 45,
+    "Cafe Name": "SKY CAFE",
+    "Zone": "CIDCO / New Aurangabad",
+    "Address": "Pride Century, opp. Mahavitran Office",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 46,
+    "Cafe Name": "Cafe Salt And Pepper",
+    "Zone": "CIDCO / New Aurangabad",
+    "Address": "Near Tapadia Knowledge Park, opp. Erides",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 47,
+    "Cafe Name": "Señorita Café & Restro",
+    "Zone": "CIDCO / New Aurangabad",
+    "Address": "Plot No-59, Dashmesh Nagar Rd",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 48,
+    "Cafe Name": "Cafe Delicious Dream",
+    "Zone": "CIDCO / New Aurangabad",
+    "Address": "Khinvasara Mayfair",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 49,
+    "Cafe Name": "Café Coffee Day (Garkheda)",
+    "Zone": "CIDCO / New Aurangabad",
+    "Address": "Dube Towers, Garkheda Rd",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 50,
+    "Cafe Name": "Cafe humtum",
+    "Zone": "CIDCO / New Aurangabad",
+    "Address": "Khinvasara Park West",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 51,
+    "Cafe Name": "A•ONE CAFE",
+    "Zone": "CIDCO / New Aurangabad",
+    "Address": "Beed Bypass Rd, Aman Complex",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 52,
+    "Cafe Name": "Cafe 147",
+    "Zone": "CIDCO / New Aurangabad",
+    "Address": "Cidco Town, near Jalna Road, behind Air India Office",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 53,
+    "Cafe Name": "Bread n Butter",
+    "Zone": "CIDCO / New Aurangabad",
+    "Address": "Tapadia Circle",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 54,
+    "Cafe Name": "CAFE TWILIGHT",
+    "Zone": "CIDCO / New Aurangabad",
+    "Address": "CIDCO N3, Opp. Power House Cidco",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 55,
+    "Cafe Name": "Cafe D3 - Beyond Temptation",
+    "Zone": "CIDCO / New Aurangabad",
+    "Address": "Khinvasara Park",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 56,
+    "Cafe Name": "DRINCUP",
+    "Zone": "CIDCO / New Aurangabad",
+    "Address": "N1 Rd, CIDCO",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 57,
+    "Cafe Name": "Cafe Delight",
+    "Zone": "CIDCO / New Aurangabad",
+    "Address": "Trimurti Chowk, Main Road",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 58,
+    "Cafe Name": "Cafe jail",
+    "Zone": "Konark / Solaris Belt",
+    "Address": "Konark Estate, Osmanpura Rd",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 59,
+    "Cafe Name": "Royal Cafe",
+    "Zone": "Konark / Solaris Belt",
+    "Address": "Konark Builders Complex",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 60,
+    "Cafe Name": "Golden Quarter",
+    "Zone": "Konark / Solaris Belt",
+    "Address": "Satya Pushpa Solaris",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 61,
+    "Cafe Name": "House of Delicacies",
+    "Zone": "Konark / Solaris Belt",
+    "Address": "Satyapushpa Solaris",
+    "Google Maps Link": "Open in Maps ↗"
+  },
+  {
+    "#": 62,
+    "Cafe Name": "La comida",
+    "Zone": "Konark / Solaris Belt",
+    "Address": "Satya Pushpa Solaris",
+    "Google Maps Link": "Open in Maps ↗"
+  }
+]

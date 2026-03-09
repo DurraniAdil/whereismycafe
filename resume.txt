@@ -1,0 +1,8 @@
+Where Is My Cafe? (Startup & Discovery Platform)
+Live Project | Tech Lead / Sole Developer
+
+• Startup-Level Project: Designed and engineered a hyper-local cafe discovery and curation platform built to bridge the gap between consumers and cafes in Aurangabad. Successfully pitched the MVP conceptualization to local cafe owners, securing the initial onboarding of real-world partner cafes onto the platform.
+• Tech Stack & Architecture: Developed using React 19, TypeScript, and Vite, forming a blazing-fast, static SPA. Styled with modern Tailwind CSS v4 and utilized Framer Motion to power premium, interactive micro-animations and smooth drawer transitions natively on both desktop and mobile web.
+• Advanced Mapping & Geolocation: Integrated Leaflet alongside CARTO's custom basemaps to construct an interactive, mobile-optimized map view. Implemented custom Haversine distance tracking and algorithmic marker clustering (react-leaflet-cluster) to cleanly represent 65+ custom active markers across 6 distinct city zones.
+• Cross-Platform Features & PWA Capabilities: Utilized the Web Share API with robust mobile fallbacks to allow seamless cross-app sharing of cafe cards. Engineered comprehensive UI responsiveness handling edge cases like safe-area-inset padding for iOS to mimic a native app experience.
+• Performance & Data Processing: Built python and Node.js geocoding pipelines utilizing OpenStreetMap (Nominatim) to dynamically translate string addresses into accurate latitude/longitude geometries for the internal NoSQL JSON database.

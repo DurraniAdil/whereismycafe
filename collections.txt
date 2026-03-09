@@ -1,0 +1,148 @@
+## Feature Prompt: Collections Page
+
+***
+
+### Overview
+
+Replace the `/saved` page with `/collections`. This is the user's personal space — it shows **hearted cafés** and **visited cafés** (with visit date), both persisted in `localStorage`. No auth, no backend.
+
+***
+
+### Hooks to build
+
+#### `hooks/useCollections.ts`
+
+Single hook managing both lists:
+
+```
+State shape in localStorage key "wimc_collections":
+{
+  hearted: string[],                          // cafe IDs
+  visited: { id: string; date: string }[]     // cafe ID + ISO date string
+}
+```
+
+Expose:
+- `heartedIds: string[]`
+- `visitedEntries: { id: string; date: string }[]`
+- `toggleHeart(id: string): void`
+- `isHearted(id: string): boolean`
+- `markVisited(id: string): void` — adds entry with `new Date().toISOString()`, but only if not already visited today
+- `removeVisited(id: string): void`
+- `isVisited(id: string): boolean`
+- `getVisitDate(id: string): string | null` — returns formatted date e.g. "22 Feb 2026"
+- `clearAll(): void` — clears both lists
+
+***
+
+### CafeDetail changes
+
+Add a **Visited** button next to the heart in the sticky CTA at the bottom:
+
+```
+[ ♥ Save ]  [ ✓ Visited ]  [ Take me there ]
+```
+
+- **Save** — heart icon, fills `#0b4e9d` when hearted
+- **Visited** — checkmark icon, fills green `#2D6A4F` when marked. Shows date below if already visited: `"Visited 22 Feb"`
+- Both use `useCollections` hook
+- Also add a share button which directly allows user to share the google location of the cafe via whatsapp or any other app 
+- These are small pill buttons, not full-width — sit side by side left of the maps CTA
+
+***
+
+### Collections page `/collections`
+
+#### Layout
+
+Two tabs at the top, pill style:
+```
+[ ♥ Saved (n) ]  [ ✓ Visited (n) ]
+```
+
+Active tab: `bg-[#0b4e9d] text-white`
+Inactive: `bg-white border border-[#EAEEE8] text-[#A8B0A0]`
+
+Tab switching is client-side, no routing.
+
+***
+
+#### Hearted Tab
+
+- Grid of `CafeCard` components (same as Search page grid)
+- Each card has the filled heart overlay button to unsave
+- Empty state: `BookmarkX` icon + "Tap ♥ on any café to save it." + "Browse cafés →" button
+
+***
+
+#### Visited Tab
+
+- List layout (not grid) — each item is a horizontal card:
+
+```
+[Photo 60x60 rounded-xl] [Cafe Name bold]        [date chip]
+                          [Area · ₹price]         [✕ remove]
+                          [1-2 vibe chips]
+```
+
+- Date chip: small pill `bg-[#EAF0FB] text-[#0b4e9d]` showing "22 Feb 2026"
+- Remove button: `✕` top right, removes from visited list with exit animation
+- Sort: most recently visited first
+- Empty state: coffee cup icon + "No visits logged yet." + "Find a café →" button
+
+***
+
+### Page hero
+
+```
+COLLECTIONS
+Your cafés.
+[n saved]  [n visited]  ← two small stat pills side by side
+```
+
+Same hero style as Contact / Zones pages — Playfair italic heading, `#A8B0A0` label.
+
+***
+
+### Animations
+
+- Tab switch: `AnimatePresence` with `mode="wait"`, fade + slight Y shift
+- Card exit when unsaved/removed: `layout` + `scale: 0.88, opacity: 0`
+- Entry: staggered `opacity: 0 → 1, y: 16 → 0` with `delay: i * 0.05`
+
+***
+
+### Router + Menu wiring
+
+```tsx
+// Route
+<Route path="/collections" element={<Collections />} />
+
+// Mobile menu sheet
+{ icon: BookMarked, label: 'Collections', href: '/collections' }
+
+// Desktop dropdown
+{ icon: BookMarked, label: 'Collections', href: '/collections' }
+```
+
+***
+
+### File structure
+
+```
+src/
+├── hooks/
+│   └── useCollections.ts      ← replaces useSavedCafes
+├── pages/
+│   └── Collections.tsx        ← new page
+```
+
+Delete `hooks/useSavedCafes.ts` and `pages/Saved.tsx` after migrating.
+
+***
+
+### Notes
+
+- `markVisited` should check if the café is already in the visited list before adding — no duplicates, but also no "visited twice" for now
+- Date format: use `new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(isoString))` for clean "22 Feb 2026" output
+- `useCollections` should be a **singleton pattern** — same instance across CafeCard, CafeDetail, and Collections page (React context or just relying on storage event sync)

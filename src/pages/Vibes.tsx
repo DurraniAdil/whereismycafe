@@ -1,0 +1,59 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { getAllCafes } from '../lib/getCafes';
+import { motion } from 'motion/react';
+import { CafeOfTheDay } from '../components/CafeOfTheDay';
+import { MoodPicker } from '../components/MoodPicker';
+import { Roulette } from '../components/Roulette';
+
+// ─────────────────────────────────────────────────────────────
+// VIBE PAGE
+// ─────────────────────────────────────────────────────────────
+
+export const Vibes: React.FC = () => {
+    const cafes = getAllCafes();
+
+    return (
+        <div className="min-h-screen bg-[#F8F6F1] pb-8">
+
+            {/* Desktop back button */}
+            <Link to="/" className="fixed top-6 right-6 z-50">
+                <img src={`${import.meta.env.BASE_URL}media/circle.png`} alt="Home" className="w-12 h-12 rounded-full object-cover shadow-lg border-2 border-white hover:scale-105 transition-transform" />
+            </Link>
+
+            {/* Header */}
+            <div className="px-5 pt-10 pb-8">
+                <motion.div
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                >
+                    <h1 className="text-4xl font-bold text-[#1E2020] tracking-tight leading-tight">
+                        Find your<br />
+                        <span className="font-serif italic text-[#7A8478]">next café.</span>
+                    </h1>
+                </motion.div>
+            </div>
+
+            {/* Sections */}
+            <div className="px-5 space-y-10">
+
+                {/* 1. Café of the Day */}
+                <CafeOfTheDay cafes={cafes} />
+
+                {/* Thin divider */}
+                <div className="h-px bg-[#D8DDD0]/60" />
+
+                {/* 2. Mood Picker */}
+                <MoodPicker cafes={cafes} />
+
+                {/* Thin divider */}
+                <div className="h-px bg-[#D8DDD0]/60" />
+
+                {/* 3. Roulette */}
+                <Roulette cafes={cafes} />
+
+            </div>
+        </div>
+    );
+};
