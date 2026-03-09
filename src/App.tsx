@@ -13,6 +13,7 @@ import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { useEffect, useState } from 'react';
 import { SplashScreen } from './components/SplashScreen';
+import { Analytics } from '@vercel/analytics/react';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -51,6 +52,7 @@ export default function App() {
         <ConditionalFooter />
         <Navbar />
       </div>
+      <Analytics />
     </Router>
   );
 }
