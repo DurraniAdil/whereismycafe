@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Heart, ArrowRight, BookmarkX, MapPin, X, Coffee } from 'lucide-react';
@@ -6,6 +6,7 @@ import { getAllCafes } from '../lib/getCafes';
 import { CafeCard } from '../components/CafeCard';
 import { useCollections } from '../hooks/useCollections';
 import { useLogoClick } from '../hooks/useLogoClick';
+import { Cafe } from '../types/cafe';
 
 // ── Fade-up wrapper ─────────────────────────────────────────
 const FadeUp: React.FC<{ children: React.ReactNode; delay?: number }> = ({
@@ -31,7 +32,11 @@ export const Collections: React.FC = () => {
     type Tab = 'saved' | 'visited';
     const [activeTab, setActiveTab] = useState<Tab>('saved');
 
-    const allCafes = getAllCafes();
+    const [allCafes, setAllCafes] = useState<Cafe[]>([]);
+
+    useEffect(() => {
+        getAllCafes().then(setAllCafes);
+    }, []);
     const savedCafes = allCafes.filter(c => heartedIds.includes(c.id));
 
     // Maintain sorted order for visited cafes

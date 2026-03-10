@@ -1,17 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getAllCafes } from '../lib/getCafes';
 import { motion } from 'motion/react';
 import { CafeOfTheDay } from '../components/CafeOfTheDay';
 import { MoodPicker } from '../components/MoodPicker';
 import { Roulette } from '../components/Roulette';
+import { Cafe } from '../types/cafe';
 
 // ─────────────────────────────────────────────────────────────
 // VIBE PAGE
 // ─────────────────────────────────────────────────────────────
 
 export const Vibes: React.FC = () => {
-    const cafes = getAllCafes();
+    const [cafes, setCafes] = useState<Cafe[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        getAllCafes()
+            .then(setCafes)
+            .finally(() => setLoading(false));
+    }, []);
+
+    if (loading) return null;
 
     return (
         <div className="min-h-screen bg-[#F8F6F1] pb-8">

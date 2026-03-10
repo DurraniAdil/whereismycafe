@@ -1,8 +1,8 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { getAllCafes, isOpenNow } from '../lib/getCafes';
 import { CafeCard } from '../components/CafeCard';
-import { Vibe, NoiseLevel } from '../types/cafe';
+import { Cafe, Vibe, NoiseLevel } from '../types/cafe';
 import { useLogoClick } from '../hooks/useLogoClick';
 import {
   Search as SearchIcon, SlidersHorizontal, X,
@@ -238,7 +238,14 @@ export const Search: React.FC = () => {
   const [page, setPage] = useState(1);
   const resultsRef = useRef<HTMLDivElement>(null);
 
-  const allCafes = getAllCafes();
+  const [allCafes, setAllCafes] = useState<Cafe[]>([]);
+  const [loadingCafes, setLoadingCafes] = useState(true);
+
+  useEffect(() => {
+    getAllCafes()
+      .then(setAllCafes)
+      .finally(() => setLoadingCafes(false));
+  }, []);
 
   const toggleAmenity = (key: string) => {
     setSelectedAmenities(prev =>

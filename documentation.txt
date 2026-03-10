@@ -7,11 +7,13 @@
 --------------------------------------------------------------------------------
 
 "Where Is My Cafe?" is a modern, mobile-first web application that helps users
-discover cafés in Aurangabad, India. It provides rich information about each
-café — including vibes, amenities, pricing, noise levels, lighting, music type,
-photos, and direct links to Google Maps and Instagram — so that users can find
-the perfect spot for studying, working, chilling, dates, or hanging out with
-friends.
+discover cafés in Aurangabad (Sambhajinagar), India. It provides rich
+information about each café — including vibes, amenities, pricing, noise levels,
+lighting, music type, photos, ratings, real-time open/closed status, and direct
+links to Google Maps and Instagram — so that users can find the perfect spot for
+studying, working, chilling, dates, me-time, or hanging out with friends.
+
+The app is deployed on Vercel at:  https://whereismycafe.vercel.app
 
 
 2. TECH STACK
@@ -23,8 +25,10 @@ friends.
   Styling            :  Tailwind CSS v4 (via @tailwindcss/vite plugin)
   Animations         :  Motion (Framer Motion successor)
   Icons              :  Lucide React
+  Maps               :  Leaflet + React-Leaflet + react-leaflet-cluster
   Utilities          :  clsx + tailwind-merge (for conditional class merging)
   Font               :  Plus Jakarta Sans (loaded from Google Fonts)
+  Deployment         :  Vercel (with SPA rewrite rules in vercel.json)
 
 
 3. PROJECT STRUCTURE
@@ -35,10 +39,11 @@ friends.
   ├── package.json                # Dependencies & scripts
   ├── tsconfig.json               # TypeScript configuration
   ├── vite.config.ts              # Vite build configuration
-  ├── public/                     # Static assets
+  ├── vercel.json                 # Vercel SPA rewrite config
+  ├── public/                     # Static assets (images, media)
   └── src/
       ├── main.tsx                # React root — mounts <App /> to the DOM
-      ├── App.tsx                 # Root component — Router & layout
+      ├── App.tsx                 # Root component — Router, layout & splash
       ├── index.css               # Global styles & Tailwind imports
       ├── types/
       │   └── cafe.ts             # TypeScript interfaces (Cafe, Amenities, etc.)
@@ -47,18 +52,35 @@ friends.
       ├── lib/
       │   ├── getCafes.ts         # Data-access helper functions
       │   └── utils.ts            # Utility: cn() for merging Tailwind classes
+      ├── hooks/
+      │   ├── useCollections.ts   # Hook for café collections / saved lists
+      │   ├── useLogoClick.ts     # Hook for logo tap easter-egg navigation
+      │   └── useShare.ts         # Hook for sharing café links (text-based)
       ├── pages/
       │   ├── Home.tsx            # Landing page with sections & vibe filter
       │   ├── Search.tsx          # Search & advanced filter page
-      │   └── CafeDetail.tsx      # Individual café detail page
+      │   ├── CafeDetail.tsx      # Individual café detail page
+      │   ├── About.tsx           # About the project page
+      │   ├── Vibes.tsx           # Vibe-based discovery page
+      │   ├── MapView.tsx         # Interactive Leaflet map of all cafés
+      │   ├── Contact.tsx         # Contact / about-the-creator page
+      │   ├── Studio.tsx          # WIMC Studio marketing page
+      │   ├── Collections.tsx     # User-curated collection lists
+      │   └── Secret.tsx          # Hidden easter-egg page (/wimc-secret)
       └── components/
           ├── Navbar.tsx          # Fixed bottom navigation bar (mobile)
+          ├── DesktopMenu.tsx     # Top navigation menu (desktop)
           ├── Footer.tsx          # Page footer
+          ├── SplashScreen.tsx    # Animated splash screen on first load
+          ├── HomeHeader.tsx      # Hero / header section on the Home page
           ├── CafeCard.tsx        # Café preview card used in listings
+          ├── CafeOfTheDay.tsx    # Featured "Café of the Day" component
           ├── FilterBar.tsx       # Horizontal vibe-filter chip bar
           ├── VibeChip.tsx        # Pill-shaped vibe tag component
           ├── AmenityBadge.tsx    # Badge showing an amenity (available or not)
-          └── PhotoGallery.tsx    # Horizontally scrollable photo gallery
+          ├── PhotoGallery.tsx    # Horizontally scrollable photo gallery
+          ├── MoodPicker.tsx      # Interactive mood-based café recommender
+          └── Roulette.tsx        # Random café "spin-the-wheel" picker
 
 
 4. PAGES
@@ -67,12 +89,14 @@ friends.
   4.1  Home (/)
   ─────────────
   The landing page for the app. It displays:
-    - A sticky header with the app title and a vibe filter bar.
+    - An animated splash screen on first visit.
+    - A hero header section with the app branding and vibe filter bar.
+    - "Café of the Day" highlighted feature card.
     - "What's Hot" section showing trending cafés.
     - "Newly Added" section showing recently added cafés.
     - "All Cafés" section listing every café.
-  Users can filter all sections by vibe (Study, Chill, Date, Party, Work).
-  Cards animate in with a smooth fade-and-slide using Motion.
+  Users can filter all sections by vibe (Study, Chill, Date, Party, Work,
+  Me Time). Cards animate in with a smooth fade-and-slide using Motion.
 
   4.2  Search (/search)
   ─────────────────────
@@ -97,45 +121,127 @@ friends.
       board games, and parking — each shown as a badge (green if
       available, gray if not).
     - Photo gallery: horizontal scrollable gallery of all café photos.
+    - Share functionality (text-based sharing with pre-composed message).
+    - Missing-info modal with WhatsApp and WIMC Studio links.
     - Fixed action bar at the bottom (mobile) with "Open Maps" and
       "Instagram" buttons.
+
+  4.4  About (/about)
+  ────────────────────
+  A storytelling page about the project — its origin, purpose, and vision
+  for Aurangabad's café culture.
+
+  4.5  Vibes (/vibes)
+  ────────────────────
+  A page that lets users explore cafés organized entirely by vibe category,
+  providing mood-based discovery.
+
+  4.6  Map View (/map)
+  ─────────────────────
+  An interactive, full-screen Leaflet map showing all cafés as clustered
+  markers. Users can tap a marker to see a café popup with quick details
+  and a link to the full detail page.
+
+  4.7  Contact (/contact)
+  ────────────────────────
+  A personal page about the creator (Durrani Adil Khan). Includes a bio,
+  skill tags, stats, contact links (email, portfolio, LinkedIn), and
+  collaboration call-to-action cards.
+
+  4.8  Studio (/studio)
+  ──────────────────────
+  A marketing page for WIMC Studio — the creative/digital services arm of
+  the WIMC brand. Describes services like free WIMC listings, custom
+  webspace, social media presence, and logistics.
+
+  4.9  Collections (/collections)
+  ────────────────────────────────
+  User-curated collection lists of cafés, powered by the useCollections
+  hook. Allows users to save and browse grouped café lists.
+
+  4.10  Secret (/wimc-secret)
+  ────────────────────────────
+  A hidden easter-egg page accessible only via a secret path. Contains
+  exclusive content. The footer is hidden on this route.
 
 
 5. COMPONENTS
 --------------------------------------------------------------------------------
 
   5.1  Navbar
-       Fixed bottom navigation bar visible only on mobile. Links to Home,
-       Search, Vibes, and About pages. Active link is highlighted in orange.
+       Fixed bottom navigation bar visible on mobile. Links to Home, Search,
+       Map, and more. Active link is highlighted with the brand color.
 
-  5.2  Footer
-       Simple footer displayed at the bottom of the page across all routes.
+  5.2  DesktopMenu
+       A top navigation menu for desktop viewports. Provides navigation links
+       and branding consistent with the mobile Navbar.
 
-  5.3  CafeCard
+  5.3  Footer
+       Simple footer displayed at the bottom of the page across all routes
+       (hidden on CafeDetail and Secret pages).
+
+  5.4  SplashScreen
+       An animated brand splash screen shown on the very first app load.
+       Fades out and calls onComplete to unmount.
+
+  5.5  HomeHeader
+       The hero / header section on the Home page. Contains branding, tagline,
+       and the vibe filter bar.
+
+  5.6  CafeCard
        A preview card component that displays a café's hero photo, name,
        location, price for two, trending/new badges, and up to 3 vibe chips.
        Links to the café's detail page. Has hover animations (scale, shadow,
        color change).
 
-  5.4  FilterBar
+  5.7  CafeOfTheDay
+       A featured highlight card that showcases one café as the "Café of the
+       Day" on the Home page.
+
+  5.8  FilterBar
        A horizontal row of vibe-filter chips. Supports selecting one vibe at
        a time (or "ALL"). Used on the Home page header.
 
-  5.5  VibeChip
+  5.9  VibeChip
        A pill-shaped tag/chip for displaying a vibe label (Study, Chill,
-       Date, Party, Work). Supports active/inactive states and click
+       Date, Party, Work, Me Time). Supports active/inactive states and click
        interaction. Used on CafeCards, FilterBar, Search, and CafeDetail.
 
-  5.6  AmenityBadge
+  5.10 AmenityBadge
        Renders an individual amenity (WiFi, AC, Outdoor Seating, etc.) as a
        labeled badge. Shows green/available or gray/unavailable styling.
 
-  5.7  PhotoGallery
+  5.11 PhotoGallery
        A horizontally scrollable row of café photos with rounded corners.
        Used on the CafeDetail page.
 
+  5.12 MoodPicker
+       An interactive, mood-based café recommender. Users select their current
+       mood and receive matching café suggestions.
 
-6. DATA MODEL
+  5.13 Roulette
+       A gamified "spin-the-wheel" random café picker. Adds a fun, discovery-
+       oriented interaction to the app.
+
+
+6. CUSTOM HOOKS
+--------------------------------------------------------------------------------
+
+  6.1  useCollections
+       Manages café collection/saved-list logic. Used by the Collections page
+       to let users curate and browse grouped lists of cafés.
+
+  6.2  useLogoClick
+       Handles the logo tap interaction — provides an easter-egg navigation
+       trigger for the /wimc-secret route.
+
+  6.3  useShare
+       Encapsulates the café sharing functionality. Generates a text-based
+       share message ("Hey, check this cafe out!") plus the café URL, using
+       the Web Share API where available with a clipboard fallback.
+
+
+7. DATA MODEL
 --------------------------------------------------------------------------------
 
   Each café is represented by the following TypeScript interface:
@@ -144,14 +250,20 @@ friends.
     id             : string          — Unique identifier (e.g. "cafe-001")
     name           : string          — Display name
     area           : string          — Location / neighborhood
+    zone           : string?         — City zone (e.g. "Central / Old City")
+    address        : string?         — Full street address (optional)
     googleMapsUrl  : string          — Direct link to Google Maps
+    latitude       : number?         — GPS latitude (for map view)
+    longitude      : number?         — GPS longitude (for map view)
     phone          : string?         — Contact phone number (optional)
     instagram      : string?         — Instagram handle (optional)
+    website        : string?         — Café website URL (optional)
     openingHours   : string          — Human-readable hours string
     closedOn       : string?         — Day the café is closed (optional)
     priceForTwo    : number          — Approximate cost for two people (INR)
     cheapestItem   : string?         — Cheapest menu item with price
     popularItem    : string?         — Most popular item with price
+    rating         : number?         — Café rating (optional)
     vibes          : Vibe[]          — Array of vibe tags
     noiseLevel     : NoiseLevel      — "Quiet" | "Moderate" | "Loud"
     lighting       : Lighting        — "Bright" | "Warm" | "Dim"
@@ -174,13 +286,13 @@ friends.
     parking        : boolean
   }
 
-  Vibe       = "Study" | "Chill" | "Date" | "Party" | "Work"
+  Vibe       = "Study" | "Chill" | "Date" | "Party" | "Work" | "Me Time"
   NoiseLevel = "Quiet" | "Moderate" | "Loud"
   Lighting   = "Bright" | "Warm" | "Dim"
   MusicType  = "None" | "Lo-fi" | "Bollywood" | "Western" | "Live"
 
 
-7. DATA ACCESS LAYER (lib/getCafes.ts)
+8. DATA ACCESS LAYER (lib/getCafes.ts)
 --------------------------------------------------------------------------------
 
   The café data is stored as a static JSON file (src/data/cafes.json) and
@@ -191,9 +303,13 @@ friends.
     getTrendingCafes()    — Returns cafés where isTrending is true.
     getNewCafes()         — Returns cafés where isNew is true.
     filterByVibe(vibe)    — Returns cafés matching a specific vibe.
+    getUniqueAreas()      — Returns sorted, de-duplicated area names.
+    isOpenNow(cafe)       — Checks if a café is currently open based on
+                            its openingHours string and closedOn day.
+                            Handles 24-hour, AM/PM, and overnight ranges.
 
 
-8. ROUTING
+9. ROUTING
 --------------------------------------------------------------------------------
 
   Route              Page           Description
@@ -201,58 +317,224 @@ friends.
   /                  Home           Main landing page
   /search            Search         Search & filter page
   /cafes/:id         CafeDetail     Individual café detail page
+  /about             About          About the project
+  /vibes             Vibes          Vibe-based discovery
+  /map               MapView        Interactive Leaflet map
+  /contact           Contact        Creator bio & contact info
+  /studio            Studio         WIMC Studio marketing page
+  /collections       Collections    User-curated café lists
+  /wimc-secret       Secret         Hidden easter-egg page
   *                  Home           Fallback — any unknown route goes to Home
 
   The app uses BrowserRouter from React Router DOM. A ScrollToTop utility
   component ensures the page scrolls to the top on every route change.
 
 
-9. SETUP & RUNNING LOCALLY
+10. DEPLOYMENT
 --------------------------------------------------------------------------------
 
-  Prerequisites: Node.js (v18 or later recommended)
+  The app is deployed as a static SPA on Vercel.
 
-  Steps:
-    1. Clone or download the project.
-    2. Open a terminal in the project root directory.
-    3. Install dependencies:
-         npm install
-    4. Start the development server:
-         npm run dev
-    5. Open the app in your browser at:
-         http://localhost:3000
-
-  Available Scripts:
-    npm run dev      — Start the Vite dev server on port 3000
-    npm run build    — Build for production (outputs to /dist)
-    npm run preview  — Preview the production build locally
-    npm run clean    — Delete the /dist folder
-    npm run lint     — Run TypeScript type-checking (no emit)
+  - A vercel.json file with a catch-all rewrite rule ensures that all routes
+    are served by /index.html, allowing React Router to handle client-side
+    routing (prevents 404 errors on deep links / page refreshes).
+  - Build command: npm run build (outputs to /dist)
+  - Live URL: https://whereismycafe.vercel.app
 
 
-10. DESIGN PHILOSOPHY
+11. DESIGN PHILOSOPHY
 --------------------------------------------------------------------------------
 
   - Mobile-First: The UI is designed primarily for mobile with a fixed
     bottom navigation bar, touch-friendly cards, and responsive grid
-    layouts that scale up for tablet and desktop.
+    layouts that scale up for tablet and desktop (with a DesktopMenu).
 
   - Vibe-Centric Discovery: Instead of just listing cafés alphabetically,
     the app organizes discovery around "vibes" — letting users quickly
-    filter for their mood (studying, dating, chilling, etc.).
+    filter for their mood (studying, dating, chilling, me-time, etc.).
 
   - Visual & Animated: Smooth entry animations (fade + slide), hover
-    effects (card lift, image zoom, color transitions), and animated
-    filter drawers make the experience feel polished and modern.
+    effects (card lift, image zoom, color transitions), animated filter
+    drawers, splash screen, and a café roulette spinner make the
+    experience feel polished and modern.
+
+  - Gamified Discovery: Features like the Roulette spinner, MoodPicker,
+    and Café of the Day add playfulness and encourage exploration beyond
+    simple list scrolling.
 
   - Static Data, No Backend: Currently the café data is stored in a local
-    JSON file. This makes the app easy to deploy as  a static site (e.g.,
-    on Vercel, Netlify, or GitHub Pages). A backend/database can be
-    added later if needed.
+    JSON file. This makes the app easy to deploy as a static site on
+    Vercel. A backend/database can be added later if needed — see the
+    suggestions below.
 
-  - Orange as Brand Color: The primary accent color is orange (#f97316),
-    used for active states, CTAs, trending badges, and the overall
-    brand identity.
+  - Brand Colors: The primary brand color is blue (#0b4e9d), used across
+    the app for CTAs, links, accents, and the creator page. Orange
+    (#f97316) is used for trending badges and secondary highlights.
+
+
+================================================================================
+         SUGGESTIONS FOR BACKEND INTEGRATION
+================================================================================
+
+The project currently runs entirely on static JSON data bundled at build time.
+Below are practical, incremental suggestions for adding a backend — ordered
+from lowest-effort to most involved — that would unlock the features this
+project is naturally heading toward.
+
+
+A. REPLACE STATIC JSON WITH A LIGHTWEIGHT API
+────────────────────────────────────────────────
+
+  Why:  Every time you add or edit a café you have to rebuild & redeploy.
+        A simple API removes that friction.
+
+  How:
+    1. Stand up an Express (already in package.json) or Hono server that
+       reads from a SQLite database (better-sqlite3 is already installed).
+    2. Expose REST endpoints:
+         GET    /api/cafes              — list all cafés (with query params
+                                          for filtering by vibe, area, price)
+         GET    /api/cafes/:id          — single café
+         POST   /api/cafes             — add a new café (admin-only)
+         PATCH  /api/cafes/:id         — update café fields
+         DELETE /api/cafes/:id         — remove a café
+    3. On the frontend, replace the static imports in getCafes.ts with
+       fetch() calls to the API and wrap them in React Query / SWR for
+       caching + loading states.
+
+  Stack suggestion:  Express + better-sqlite3 (already installed)
+                     OR  Hono on Vercel Edge Functions (zero-config deploy)
+
+
+B. ADMIN DASHBOARD FOR CAFÉ MANAGEMENT
+────────────────────────────────────────
+
+  Why:  You already have a data-collection form (metrics.txt). A simple
+        admin UI would let you add/edit/verify cafés without touching code.
+
+  How:
+    1. Create a /admin route (protected behind a password or JWT).
+    2. Build a form that mirrors the metrics.txt fields — café name, area,
+       zone, opening hours, vibes, amenities, photos, etc.
+    3. On submit, POST to the API from section A.
+    4. Add an image-upload flow (see section D for storage).
+
+
+C. USER-GENERATED CONTENT & REVIEWS
+─────────────────────────────────────
+
+  Why:  Community reviews, ratings, and photo submissions would make the
+        platform self-sustaining and far more valuable.
+
+  How:
+    1. Add a "reviews" table linked to each café (user name, rating 1-5,
+       comment, timestamp).
+    2. Expose POST /api/cafes/:id/reviews and
+       GET  /api/cafes/:id/reviews endpoints.
+    3. On the CafeDetail page, show a reviews section with an average
+       rating and individual review cards.
+    4. Optionally add simple spam protection (rate limiting, honeypot
+       fields) since you don't need full user accounts yet.
+
+
+D. IMAGE / PHOTO STORAGE
+──────────────────────────
+
+  Why:  Café photos are currently hot-linked or stored in /public. A
+        proper storage backend would be more reliable and scalable.
+
+  How:
+    1. Use a free-tier object-storage provider:
+         • Cloudinary  (generous free tier, built-in image transforms)
+         • Supabase Storage  (pairs well if you adopt Supabase for DB)
+         • Firebase Storage
+    2. On upload, resize and compress images server-side and store the
+       optimized URL in the database.
+
+
+E. REAL-TIME OPEN/CLOSED STATUS & LIVE DATA
+─────────────────────────────────────────────
+
+  Why:  isOpenNow() already calculates open status from static hours, but
+        cafés sometimes close early or have holiday hours.
+
+  How:
+    1. Let café owners update their status via WhatsApp bot or a simple
+       web form → writes to the database.
+    2. Add a "last updated" timestamp so users know how fresh the info is.
+    3. Consider Google Places API integration to auto-sync hours/ratings.
+
+
+F. AUTHENTICATION (WHEN NEEDED)
+────────────────────────────────
+
+  Why:  Needed once you have admin actions, saved collections synced
+        across devices, or user reviews.
+
+  How (easiest paths):
+    1. Firebase Auth  — Google/email sign-in with minimal code.
+    2. Supabase Auth  — built-in with Supabase if you use it for DB.
+    3. NextAuth.js / Auth.js  — if you migrate to Next.js later.
+    4. For admin-only access now, simple password middleware on Express
+       (e.g. basic auth or a single JWT secret) is enough.
+
+
+G. COLLECTIONS SYNC ACROSS DEVICES
+────────────────────────────────────
+
+  Why:  useCollections currently stores data in local state or
+        localStorage. Syncing requires a backend.
+
+  How:
+    1. Once auth exists, pair each user with a "saved_cafes" table.
+    2. On load, merge local data with server data (local-first strategy).
+    3. Supabase Realtime or Firebase Firestore make this near-trivial.
+
+
+H. PUSH NOTIFICATIONS & ALERTS
+────────────────────────────────
+
+  Why:  Notify users when a new café is added or when a café near them
+        has a promotion.
+
+  How:
+    1. Implement Web Push (via Service Worker + VAPID keys).
+    2. On the backend, store push subscriptions and trigger notifications
+       when a new café is added or when a café status changes.
+
+
+I. ANALYTICS & INSIGHTS
+─────────────────────────
+
+  Why:  Understanding which cafés, vibes, and areas are most popular
+        helps prioritize content and potential partnerships.
+
+  How:
+    1. Log page-view events (café detail views, search queries, vibe
+       filter usage) to the backend or a service like Plausible/Umami
+       (privacy-friendly alternatives to Google Analytics).
+    2. Build a simple analytics dashboard in the admin panel.
+
+
+J. RECOMMENDED MIGRATION PATH (TL;DR)
+────────────────────────────────────────
+
+  Phase 1 — Quick Wins (1–2 days)
+    • Express API + SQLite   → replace static JSON
+    • Admin route            → add/edit cafés through a form
+    • Deploy API on Vercel Serverless Functions or Railway
+
+  Phase 2 — Community Features (1 week)
+    • User reviews (no auth required initially)
+    • Image uploads via Cloudinary
+    • Analytics with Plausible
+
+  Phase 3 — Full Platform (2–4 weeks)
+    • Firebase/Supabase Auth → user accounts
+    • Synced collections across devices
+    • Push notifications for new cafés
+    • Google Places API for auto-syncing hours/ratings
+    • Café owner dashboard for managing their listing
 
 
 ================================================================================

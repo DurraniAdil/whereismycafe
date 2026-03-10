@@ -1,37 +1,36 @@
-import cafesData from '../data/cafes.json';
-import { Cafe, Vibe, NoiseLevel } from '../types/cafe';
+import { Cafe, Vibe } from '../types/cafe';
 
-const cafes = cafesData as Cafe[];
+// ── API base URL ────────────────────────────────────────────
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
-export const getAllCafes = (): Cafe[] => cafes;
+export async function getAllCafes(): Promise<Cafe[]> {
+  const res = await fetch(`${API_BASE}/api/cafes`);
+  if (!res.ok) throw new Error('Failed to fetch cafes');
+  return res.json();
+}
 
-export const getCafeById = (id: string): Cafe | undefined =>
-  cafes.find((c) => c.id === id);
+export async function getCafeById(id: string): Promise<Cafe | null> {
+  const res = await fetch(`${API_BASE}/api/cafes/${id}`);
+  if (!res.ok) return null;
+  return res.json();
+}
 
-export const getTrendingCafes = (): Cafe[] =>
-  cafes.filter((c) => c.isTrending);
+// ── Client-side helpers (work on already-fetched data) ──────
 
-export const getNewCafes = (): Cafe[] =>
-  cafes.filter((c) => c.isNew);
-
-export const filterByVibe = (vibe: Vibe): Cafe[] =>
+export const filterByVibe = (cafes: Cafe[], vibe: Vibe): Cafe[] =>
   cafes.filter((c) => c.vibes.includes(vibe));
 
-/** Returns sorted, de-duplicated area names from all cafés */
-export const getUniqueAreas = (): string[] => {
+export const getUniqueAreas = (cafes: Cafe[]): string[] => {
   const areas = new Set(cafes.map((c) => c.area));
   return Array.from(areas).sort((a, b) => a.localeCompare(b));
 };
 
 /**
  * Checks if a café is currently open based on its openingHours string.
- * Handles formats like "9:00 AM – 11:30 PM", "5:00 PM – 11:00 PM",
- * "Open 24 Hours", and closedOn day.
  */
 export const isOpenNow = (cafe: Cafe): boolean => {
   const now = new Date();
 
-  // Check if closed today
   if (cafe.closedOn && cafe.closedOn !== 'None') {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const today = days[now.getDay()];
@@ -39,13 +38,10 @@ export const isOpenNow = (cafe: Cafe): boolean => {
   }
 
   const hours = cafe.openingHours;
-
-  // Handle 24 hours
   if (hours.toLowerCase().includes('24 hour')) return true;
 
-  // Parse "9:00 AM – 11:30 PM" format
   const match = hours.match(/(\d{1,2}):(\d{2})\s*(AM|PM)\s*[–-]\s*(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-  if (!match) return true; // If we can't parse, assume open
+  if (!match) return true;
 
   const [, openH, openM, openP, closeH, closeM, closeP] = match;
 
@@ -60,7 +56,6 @@ export const isOpenNow = (cafe: Cafe): boolean => {
   const closeTime = toMinutes(closeH, closeM, closeP);
   const currentTime = now.getHours() * 60 + now.getMinutes();
 
-  // Handle overnight (e.g., 5:00 PM – 2:00 AM)
   if (closeTime <= openTime) {
     return currentTime >= openTime || currentTime <= closeTime;
   }

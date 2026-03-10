@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { getAllCafes } from '../lib/getCafes';
+import { Cafe } from '../types/cafe';
 
 // ── Types ────────────────────────────────────────────────────
 interface MatrixDrop {
@@ -44,7 +45,11 @@ function randomMatrixString(len: number) {
 // ── Component ────────────────────────────────────────────────
 export const Secret: React.FC = () => {
     const navigate = useNavigate();
-    const allCafes = getAllCafes();
+    const [allCafes, setAllCafes] = useState<Cafe[]>([]);
+
+    useEffect(() => {
+        getAllCafes().then(setAllCafes);
+    }, []);
 
     const [terminalLines, setTerminalLines] = useState<string[]>([]);
     const [showContent, setShowContent] = useState(false);

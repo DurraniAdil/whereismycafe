@@ -1,11 +1,11 @@
-import React, { useState, useMemo, useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useEffect, useMemo, useRef, forwardRef, useImperativeHandle } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Circle, useMapEvents, ZoomControl, useMap } from 'react-leaflet';
 import { motion, AnimatePresence } from 'motion/react';
 import L from 'leaflet';
 import { getAllCafes } from '../lib/getCafes';
 import { defaultIcon, activeIcon, blurredIcon } from '../lib/mapIcons';
-import { Cafe } from '../types/cafe';
+import type { Cafe } from '../types/cafe';
 import { X, MapPin, Star, Navigation, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const CITY_CENTER: [number, number] = [19.8762, 75.3433];
@@ -199,7 +199,11 @@ const CafePreviewCard: React.FC<{
 // ── Main ─────────────────────────────────────────────────────
 export const MapView: React.FC = () => {
     const navigate = useNavigate();
-    const allCafes = getAllCafes();
+    const [allCafes, setAllCafes] = useState<Cafe[]>([]);
+
+    useEffect(() => {
+        getAllCafes().then(setAllCafes);
+    }, []);
     const mapRef = useRef<L.Map | null>(null);
 
     const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);

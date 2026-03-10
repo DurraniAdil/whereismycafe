@@ -1,0 +1,92 @@
+Where Is My Cafe - Data Collection Form
+
+1. Cafe Name *
+[Short answer text]
+
+2. Area *
+[Short answer text]
+
+3. Zone
+[Multiple choice]
+( ) Central / Old City
+( ) CIDCO / New Aurangabad
+( ) University / College Belt
+( ) Konark / Solaris Belt
+( ) Railway / Kailash Market
+( ) Jalna Road Corridor
+( ) Other
+( ) Unlisted Area (Please specify): [Short answer text]
+
+4. Address
+[Paragraph text]
+
+5. Google Maps URL *
+[Short answer text (URL)]
+
+6. Phone Number
+[Short answer text]
+
+7. Instagram Handle / URL
+[Short answer text]
+
+8. Website
+[Short answer text]
+
+9. Opening Hours (e.g., 10:00 AM - 11:00 PM) *
+[Short answer text]
+
+10. Closed On (e.g., Mondays)
+[Short answer text]
+
+11. Price For Two (Amount in ₹) *
+[Number]
+
+12. Cheapest Item
+[Short answer text]
+
+13. Popular Item
+[Short answer text]
+
+14. Vibes (Select all that apply) *
+[Checkboxes]
+[ ] Study
+[ ] Chill
+[ ] Date
+[ ] Party
+[ ] Work
+[ ] Me Time
+
+15. Noise Level *
+[Multiple choice]
+( ) Quiet
+( ) Moderate
+( ) Loud
+
+16. Lighting *
+[Multiple choice]
+( ) Bright
+( ) Warm
+( ) Dim
+
+17. Music Type *
+[Multiple choice]
+( ) None
+( ) Lo-fi
+( ) Bollywood
+( ) Western
+( ) Live
+
+18. Amenities (Select all that apply) *
+[Checkboxes]
+[ ] WiFi
+[ ] AC
+[ ] Outdoor Seating
+[ ] Power Outlets
+[ ] Board Games
+[ ] Parking
+
+19. Description *
+[Paragraph text]
+
+20. Photos (Links/Upload) *
+[Paragraph text]

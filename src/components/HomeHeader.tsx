@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Link, useLocation } from 'react-router-dom';
 import { Search, Sparkles, MapPin, Menu as MenuIcon, Info, BookMarked } from 'lucide-react';
 import { getAllCafes } from '../lib/getCafes';
-import { Vibe } from '../types/cafe';
+import { Cafe, Vibe } from '../types/cafe';
 import { useLogoClick } from '../hooks/useLogoClick';
 
 type NavItem = {
@@ -57,7 +57,12 @@ interface HomeHeaderProps {
 
 export const HomeHeader: React.FC<HomeHeaderProps> = ({ onVibeSelect }) => {
     const greeting = getGreeting();
-    const allCafes = getAllCafes();
+    const [allCafes, setAllCafes] = useState<Cafe[]>([]);
+
+    useEffect(() => {
+        getAllCafes().then(setAllCafes);
+    }, []);
+
     const trendingCount = allCafes.filter(c => c.isTrending).length;
     const handleLogoClick = useLogoClick();
 

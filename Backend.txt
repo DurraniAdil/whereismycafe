@@ -1,0 +1,145 @@
+
+================================================================================
+  WIMC BACKEND — PROGRESS CHECKLIST
+  Last updated: 10 March 2026
+================================================================================
+
+
+────────────────────────────────────────────────────────────────────────────────
+  ✅  COMPLETED
+────────────────────────────────────────────────────────────────────────────────
+
+1. PROJECT SETUP
+   [x] Created wimc-api/ folder alongside the frontend
+   [x] Initialised package.json with Express, cors, tsx, TypeScript
+   [x] Created tsconfig.json (ES2022, ESNext modules, strict mode)
+   [x] Copied cafes.json into wimc-api/data/cafes.json
+
+2. EXPRESS SERVER  (src/server.ts)
+   [x] Express app on port 4000
+   [x] CORS configured for localhost:3000 + whereismycafe.vercel.app
+   [x] express.json() middleware for future POST/PUT routes
+   [x] Health-check endpoint: GET /api/health
+
+3. CAFE ROUTES  (src/routes/cafes.ts)
+   [x] GET /api/cafes          — returns all 65 cafés
+   [x] GET /api/cafes/:id      — returns a single café by ID (404 if missing)
+   [x] Query-param filtering on GET /api/cafes:
+       [x] ?vibe=Study         — filter by vibe tag
+       [x] ?area=CIDCO         — substring match on area
+       [x] ?maxPrice=300       — price ceiling
+       [x] ?trending=true      — trending flag
+       [x] ?isNew=true         — new flag
+
+4. FRONTEND INTEGRATION
+   [x] Rewrote getCafes.ts — getAllCafes() & getCafeById() are now async
+       fetching from the API via VITE_API_URL env var
+   [x] Updated all 8 consuming components to useEffect + useState:
+       [x] Home.tsx
+       [x] CafeDetail.tsx
+       [x] Search.tsx
+       [x] Vibes.tsx
+       [x] MapView.tsx
+       [x] Collections.tsx
+       [x] Secret.tsx
+       [x] HomeHeader.tsx
+   [x] TypeScript compiles cleanly (npx tsc --noEmit → 0 errors)
+
+5. DEV WORKFLOW
+   [x] npm run dev in wimc-api/   → starts API on port 4000
+   [x] npm run dev in root        → starts frontend on port 3000
+   [x] Both servers run concurrently, frontend fetches from API
+
+
+────────────────────────────────────────────────────────────────────────────────
+  📋  TO DO — NEXT STEPS
+────────────────────────────────────────────────────────────────────────────────
+
+6. DATABASE INTEGRATION
+   [ ] Choose a database (MongoDB Atlas / Supabase / PostgreSQL)
+   [ ] Create a Cafe schema/model matching the existing Cafe type
+   [ ] Seed the database with cafes.json data
+   [ ] Replace the in-memory JSON read with database queries
+   [ ] Add pagination support (skip/limit or cursor-based)
+
+7. ADMIN / WRITE ENDPOINTS
+   [ ] POST   /api/cafes          — add a new café
+   [ ] PUT    /api/cafes/:id      — update an existing café
+   [ ] DELETE /api/cafes/:id      — remove a café
+   [ ] Add input validation (Zod or Joi)
+   [ ] Add authentication/authorisation (API key, JWT, or session)
+
+8. IMAGE UPLOADS
+   [ ] Choose a storage provider (Cloudinary / AWS S3 / Supabase Storage)
+   [ ] POST /api/upload           — upload café photos
+   [ ] Return hosted URL to store in the café document
+   [ ] Add file-size and type validation
+
+9. SEARCH & DISCOVERY ENDPOINTS
+   [ ] GET /api/cafes/trending    — dedicated trending endpoint
+   [ ] GET /api/cafes/new         — latest additions
+   [ ] GET /api/cafes/random      — random café (for Roulette feature)
+   [ ] Full-text search on name + area + description
+   [ ] Geo-proximity search (near me) using lat/lng + radius
+
+10. USER FEATURES (future)
+    [ ] POST /api/reviews          — user reviews & ratings
+    [ ] GET  /api/cafes/:id/reviews
+    [ ] POST /api/collections      — server-side saved/visited lists
+    [ ] User accounts & auth (Google OAuth / email-password)
+
+11. ERROR HANDLING & LOGGING
+    [ ] Centralised error-handling middleware
+    [ ] Request logging (Morgan or Pino)
+    [ ] Rate limiting (express-rate-limit)
+    [ ] Input sanitisation
+
+12. DEPLOYMENT
+    [ ] Choose hosting (Railway / Render / Vercel Serverless / Fly.io)
+    [ ] Set up environment variables (DATABASE_URL, PORT, CORS origins)
+    [ ] Add a production build script (tsc → node dist/server.js)
+    [ ] Configure CI/CD (GitHub Actions) for auto-deploy on push
+    [ ] Update VITE_API_URL in the frontend's Vercel env vars
+    [ ] Set up a custom domain or subdomain (api.whereismycafe.com)
+
+13. TESTING
+    [ ] Unit tests for route handlers (Vitest or Jest)
+    [ ] Integration tests for API endpoints (supertest)
+    [ ] Add a test script to wimc-api/package.json
+
+
+────────────────────────────────────────────────────────────────────────────────
+  FILE STRUCTURE (current)
+────────────────────────────────────────────────────────────────────────────────
+
+  wimc-api/
+  ├── data/
+  │   └── cafes.json            ← static data source (to be replaced by DB)
+  ├── src/
+  │   ├── server.ts             ← Express entry point, CORS, middleware
+  │   └── routes/
+  │       └── cafes.ts          ← GET /api/cafes, GET /api/cafes/:id
+  ├── package.json
+  └── tsconfig.json
+
+
+────────────────────────────────────────────────────────────────────────────────
+  HOW TO RUN
+────────────────────────────────────────────────────────────────────────────────
+
+  Terminal 1 (API):
+    cd wimc-api
+    npm install        ← first time only
+    npm run dev        ← starts on http://localhost:4000
+
+  Terminal 2 (Frontend):
+    cd ..
+    npm run dev        ← starts on http://localhost:3000
+
+  Test endpoints:
+    http://localhost:4000/api/health
+    http://localhost:4000/api/cafes
+    http://localhost:4000/api/cafes/cafe-001
+    http://localhost:4000/api/cafes?vibe=Study&maxPrice=300
+
+================================================================================

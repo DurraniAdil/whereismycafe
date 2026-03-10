@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getCafeById } from '../lib/getCafes';
 import {
@@ -12,6 +12,8 @@ import { VibeChip } from '../components/VibeChip';
 import { useCollections } from '../hooks/useCollections.ts';
 import { useShare } from '../hooks/useShare';
 import { motion, AnimatePresence } from 'motion/react';
+import { Cafe } from '../types/cafe';
+
 
 // ── Amenity config ──────────────────────────────────────────
 const AMENITY_CONFIG: Record<string, { label: string; icon: React.FC<any> }> = {
@@ -230,7 +232,8 @@ const Gallery: React.FC<{
 // ── Page ────────────────────────────────────────────────────
 export const CafeDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const cafe = getCafeById(id ?? '');
+  const [cafe, setCafe] = useState<Cafe | null>(null);
+  const [loading, setLoading] = useState(true);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [missingType, setMissingType] = useState<'phone' | 'instagram' | 'website' | null>(null);
 
@@ -239,6 +242,17 @@ export const CafeDetail: React.FC = () => {
   const hearted = id ? isHearted(id) : false;
   const visited = id ? isVisited(id) : false;
   const visitDate = id ? getVisitDate(id) : null;
+
+  useEffect(() => {
+    if (id) {
+      getCafeById(id)
+        .then(setCafe)
+        .finally(() => setLoading(false));
+    }
+  }, [id]);
+
+  // ── Loading ──────────────────────────────────────────
+  if (loading) return null;
 
   // ── Not found ──────────────────────────────────────────
   if (!cafe) return (

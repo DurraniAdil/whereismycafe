@@ -1,20 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAllCafes } from '../lib/getCafes';
 import { CafeCard } from '../components/CafeCard';
 import { HomeHeader } from '../components/HomeHeader';
 import { motion } from 'motion/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Cafe } from '../types/cafe';
 
 const PER_PAGE = 9;
 
 export const Home: React.FC = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
-  const allCafes = getAllCafes();
+  const [allCafes, setAllCafes] = useState<Cafe[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getAllCafes()
+      .then(setAllCafes)
+      .finally(() => setLoading(false));
+  }, []);
 
   const totalPages = Math.ceil(allCafes.length / PER_PAGE);
   const paginatedCafes = allCafes.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+
+  if (loading) return null;
 
   const scrollToAll = () => {
     document.getElementById('all-cafes')?.scrollIntoView({ behavior: 'smooth' });
