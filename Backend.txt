@@ -94,15 +94,32 @@
     [ ] Rate limiting (express-rate-limit)
     [ ] Input sanitisation
 
-12. DEPLOYMENT
-    [ ] Choose hosting (Railway / Render / Vercel Serverless / Fly.io)
-    [ ] Set up environment variables (DATABASE_URL, PORT, CORS origins)
-    [ ] Add a production build script (tsc → node dist/server.js)
-    [ ] Configure CI/CD (GitHub Actions) for auto-deploy on push
-    [ ] Update VITE_API_URL in the frontend's Vercel env vars
-    [ ] Set up a custom domain or subdomain (api.whereismycafe.com)
+12. DEPLOYMENT & HOSTING (WIMC API)
+    [ ] Step 1: Pre-launch checklist
+        - Ensure PORT is dynamic: `process.env.PORT || 4000`
+        - Push final code to GitHub `main` branch
+    [ ] Step 2: Choose a backend host
+        - Render.com (Recommended for ease - connects to GitHub, auto-deploys)
+        - Railway.app (Great developer experience, generous free tier)
+        - Fly.io (Good for multi-region performance)
+    [ ] Step 3: Configure Host Settings
+        - Build Command: `npm install && npm run build`
+        - Start Command: `npm run start` (or `node dist/server.js`)
+        - Environment Variables:
+          - `NODE_ENV` = production
+          - `CORS_ORIGIN` = https://whereismycafe.vercel.app
+    [ ] Step 4: Update Frontend (Vercel)
+        - Go to Vercel dashboard for `whereismycafe`
+        - Add Environment Variable: `VITE_API_URL` = <your-new-live-api-url>
+        - Redeploy frontend so it uses the live API instead of localhost
 
-13. TESTING
+13. CUSTOM DOMAIN (Optional but recommended)
+    [ ] Secure `whereismycafe.com` / `.in` via Namecheap/Cloudflare
+    [ ] Route `www` or `@` to the Vercel frontend
+    [ ] Route `api.` subdomain to the Render/Railway backend
+    [ ] Update Vercel & Backend CORS to match the new domain
+
+14. TESTING & MONITORING
     [ ] Unit tests for route handlers (Vitest or Jest)
     [ ] Integration tests for API endpoints (supertest)
     [ ] Add a test script to wimc-api/package.json
