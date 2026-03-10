@@ -1,7 +1,7 @@
 
 ================================================================================
   WIMC BACKEND — PROGRESS CHECKLIST
-  Last updated: 10 March 2026
+  Last updated: 11 March 2026
 ================================================================================
 
 
@@ -29,7 +29,7 @@
        [x] ?area=CIDCO         — substring match on area
        [x] ?maxPrice=300       — price ceiling
        [x] ?trending=true      — trending flag
-       [x] ?isNew=true         — new flag
+       [x] ?isNewCafe=true         — new flag
 
 4. FRONTEND INTEGRATION
    [x] Rewrote getCafes.ts — getAllCafes() & getCafeById() are now async
@@ -50,19 +50,20 @@
    [x] npm run dev in root        → starts frontend on port 3000
    [x] Both servers run concurrently, frontend fetches from API
 
+6. DATABASE INTEGRATION (MongoDB Atlas)
+   [x] Configured mongoose and connected via process.env.MONGODB_URI
+   [x] Created src/models/Cafe.ts matching the Cafe type
+   [x] Seeded the database with cafes.json data using src/seed.ts
+   [x] Replaced in-memory JSON reads with mongoose queries (.find(), .findOne())
 
 ────────────────────────────────────────────────────────────────────────────────
   📋  TO DO — NEXT STEPS
 ────────────────────────────────────────────────────────────────────────────────
 
-6. DATABASE INTEGRATION
-   [ ] Choose a database (MongoDB Atlas / Supabase / PostgreSQL)
-   [ ] Create a Cafe schema/model matching the existing Cafe type
-   [ ] Seed the database with cafes.json data
-   [ ] Replace the in-memory JSON read with database queries
+7. ADVANCED DATABASE QUERIES
    [ ] Add pagination support (skip/limit or cursor-based)
 
-7. ADMIN / WRITE ENDPOINTS
+8. ADMIN / WRITE ENDPOINTS
    [ ] POST   /api/cafes          — add a new café
    [ ] PUT    /api/cafes/:id      — update an existing café
    [ ] DELETE /api/cafes/:id      — remove a café
@@ -130,12 +131,14 @@
 ────────────────────────────────────────────────────────────────────────────────
 
   wimc-api/
-  ├── data/
-  │   └── cafes.json            ← static data source (to be replaced by DB)
   ├── src/
-  │   ├── server.ts             ← Express entry point, CORS, middleware
+  │   ├── server.ts             ← Express entry point, CORS, middleware, db connect
+  │   ├── db.ts                 ← Mongoose connection utility
+  │   ├── seed.ts               ← Script to seed MongoDB with initial data
+  │   ├── models/
+  │   │   └── Cafe.ts           ← Mongoose schema & model for Cafés
   │   └── routes/
-  │       └── cafes.ts          ← GET /api/cafes, GET /api/cafes/:id
+  │       └── cafes.ts          ← GET /api/cafes, GET /api/cafes/:id (Mongoose views)
   ├── package.json
   └── tsconfig.json
 
