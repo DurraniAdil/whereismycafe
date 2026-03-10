@@ -56,6 +56,12 @@
    [x] Seeded the database with cafes.json data using src/seed.ts
    [x] Replaced in-memory JSON reads with mongoose queries (.find(), .findOne())
 
+7. DEPLOYMENT & HOSTING (WIMC API)
+   [x] Pre-launch checklist completed
+   [x] Deployed API backend to Railway.app
+   [x] Configured Host Settings
+   [x] Updated Frontend Environment on Vercel to point to live API
+
 ────────────────────────────────────────────────────────────────────────────────
   📋  TO DO — NEXT STEPS
 ────────────────────────────────────────────────────────────────────────────────
@@ -96,23 +102,7 @@
     [ ] Input sanitisation
 
 12. DEPLOYMENT & HOSTING (WIMC API)
-    [ ] Step 1: Pre-launch checklist
-        - Ensure PORT is dynamic: `process.env.PORT || 4000`
-        - Push final code to GitHub `main` branch
-    [ ] Step 2: Choose a backend host
-        - Render.com (Recommended for ease - connects to GitHub, auto-deploys)
-        - Railway.app (Great developer experience, generous free tier)
-        - Fly.io (Good for multi-region performance)
-    [ ] Step 3: Configure Host Settings
-        - Build Command: `npm install && npm run build`
-        - Start Command: `npm run start` (or `node dist/server.js`)
-        - Environment Variables:
-          - `NODE_ENV` = production
-          - `CORS_ORIGIN` = https://whereismycafe.vercel.app
-    [ ] Step 4: Update Frontend (Vercel)
-        - Go to Vercel dashboard for `whereismycafe`
-        - Add Environment Variable: `VITE_API_URL` = <your-new-live-api-url>
-        - Redeploy frontend so it uses the live API instead of localhost
+    [x] Migrated to completed section (Section 7)
 
 13. CUSTOM DOMAIN (Optional but recommended)
     [ ] Secure `whereismycafe.com` / `.in` via Namecheap/Cloudflare
