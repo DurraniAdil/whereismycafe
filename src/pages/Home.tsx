@@ -14,10 +14,12 @@ export const Home: React.FC = () => {
   const [page, setPage] = useState(1);
   const [allCafes, setAllCafes] = useState<Cafe[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     getAllCafes()
       .then(setAllCafes)
+      .catch((err) => setError(err.message || 'Failed to fetch cafes'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -25,6 +27,11 @@ export const Home: React.FC = () => {
   const paginatedCafes = allCafes.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   if (loading) return null;
+  if (error) return (
+    <div className="min-h-screen flex items-center justify-center bg-[#F8F6F1] text-red-500 font-medium">
+      {error}
+    </div>
+  );
 
   const scrollToAll = () => {
     document.getElementById('all-cafes')?.scrollIntoView({ behavior: 'smooth' });

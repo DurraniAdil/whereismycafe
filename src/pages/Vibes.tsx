@@ -14,13 +14,16 @@ import { Cafe } from '../types/cafe';
 export const Vibes: React.FC = () => {
     const [cafes, setCafes] = useState<Cafe[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         getAllCafes()
             .then(setCafes)
+            .catch((err) => setError(err.message || 'Failed to load'))
             .finally(() => setLoading(false));
     }, []);
 
+    if (error) return <div className="p-8 text-center text-red-500 font-medium">{error}</div>;
     if (loading) return null;
 
     return (

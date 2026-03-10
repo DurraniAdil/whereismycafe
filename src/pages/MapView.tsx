@@ -200,10 +200,14 @@ const CafePreviewCard: React.FC<{
 export const MapView: React.FC = () => {
     const navigate = useNavigate();
     const [allCafes, setAllCafes] = useState<Cafe[]>([]);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        getAllCafes().then(setAllCafes);
+        getAllCafes()
+          .then(setAllCafes)
+          .catch(err => setError(err.message || 'Failed to load map data'));
     }, []);
+
     const mapRef = useRef<L.Map | null>(null);
 
     const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);

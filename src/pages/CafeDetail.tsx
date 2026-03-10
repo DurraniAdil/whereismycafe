@@ -234,6 +234,7 @@ export const CafeDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [cafe, setCafe] = useState<Cafe | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [missingType, setMissingType] = useState<'phone' | 'instagram' | 'website' | null>(null);
 
@@ -247,11 +248,13 @@ export const CafeDetail: React.FC = () => {
     if (id) {
       getCafeById(id)
         .then(setCafe)
+        .catch(err => setError(err.message || 'Failed to load cafe'))
         .finally(() => setLoading(false));
     }
   }, [id]);
 
-  // ── Loading ──────────────────────────────────────────
+  // ── Loading & Errors ──────────────────────────────────────────
+  if (error) return <div className="p-8 text-center text-red-500 font-medium">Error: {error}</div>;
   if (loading) return null;
 
   // ── Not found ──────────────────────────────────────────

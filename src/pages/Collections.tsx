@@ -33,9 +33,12 @@ export const Collections: React.FC = () => {
     const [activeTab, setActiveTab] = useState<Tab>('saved');
 
     const [allCafes, setAllCafes] = useState<Cafe[]>([]);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        getAllCafes().then(setAllCafes);
+        getAllCafes()
+          .then(setAllCafes)
+          .catch(err => setError(err.message || 'Failed to load collections'));
     }, []);
     const savedCafes = allCafes.filter(c => heartedIds.includes(c.id));
 

@@ -46,9 +46,12 @@ function randomMatrixString(len: number) {
 export const Secret: React.FC = () => {
     const navigate = useNavigate();
     const [allCafes, setAllCafes] = useState<Cafe[]>([]);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        getAllCafes().then(setAllCafes);
+        getAllCafes()
+          .then(setAllCafes)
+          .catch(err => setError(err.message || 'Failed to connect to classified data'));
     }, []);
 
     const [terminalLines, setTerminalLines] = useState<string[]>([]);

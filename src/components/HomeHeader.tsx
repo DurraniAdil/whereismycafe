@@ -60,7 +60,9 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({ onVibeSelect }) => {
     const [allCafes, setAllCafes] = useState<Cafe[]>([]);
 
     useEffect(() => {
-        getAllCafes().then(setAllCafes);
+        getAllCafes()
+          .then(setAllCafes)
+          .catch(err => console.error("HomeHeader failed to fetch cafes:", err));
     }, []);
 
     const trendingCount = allCafes.filter(c => c.isTrending).length;

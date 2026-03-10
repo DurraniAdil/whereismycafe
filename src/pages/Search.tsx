@@ -240,10 +240,12 @@ export const Search: React.FC = () => {
 
   const [allCafes, setAllCafes] = useState<Cafe[]>([]);
   const [loadingCafes, setLoadingCafes] = useState(true);
+  const [errorCafes, setErrorCafes] = useState<string | null>(null);
 
   useEffect(() => {
     getAllCafes()
       .then(setAllCafes)
+      .catch(err => setErrorCafes(err.message || 'Failed to load cafes'))
       .finally(() => setLoadingCafes(false));
   }, []);
 
