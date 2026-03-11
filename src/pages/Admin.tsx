@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Cafe, Vibe, NoiseLevel, Lighting, MusicType } from '../types/cafe';
+import React, { useState, useEffect } from 'react';
+import { Cafe, Vibe, NoiseLevel, Lighting, MusicType, Amenities } from '../types/cafe';
 
 const API_BASE = 'https://wimc-api-production.up.railway.app'; // Target production API
 
