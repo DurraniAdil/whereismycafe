@@ -41,16 +41,18 @@ export function Admin() {
         setToken(null);
     };
 
-    // Fetch all cafes for the dashboard
     const fetchCafes = async () => {
         try {
             const res = await fetch(`${API_BASE}/api/cafes`); // Flat array query without pagination
             if (res.ok) {
                 const data = await res.json();
                 setCafes(data);
+            } else {
+                setCafes([]);
             }
         } catch (err) {
             console.error(err);
+            setCafes([]);
         }
     };
 
