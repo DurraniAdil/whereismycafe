@@ -123,8 +123,13 @@ export function Admin() {
             {/* Header */}
             <header className="bg-[#111] border-b border-white/10 sticky top-0 z-10 px-4 sm:px-6 lg:px-8 py-4 mb-8">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
-                    <h1 className="text-xl font-bold tracking-tight">
-                        WIMC Admin <span className="ml-2 text-xl">☕</span>
+                    <h1 className="text-xl font-bold tracking-tight flex items-center">
+                        WIMC Admin
+                        <img
+                            src={`${import.meta.env.BASE_URL}media/circle.png`}
+                            alt="WIMC Logo"
+                            className="ml-3 w-8 h-8 rounded-full border border-white/20 shadow-sm"
+                        />
                     </h1>
                     <button
                         onClick={handleLogout}
