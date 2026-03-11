@@ -1,7 +1,7 @@
 import { Cafe, Vibe } from '../types/cafe';
 
 // ── API base URL ────────────────────────────────────────────
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const API_BASE = 'https://wimc-api-production.up.railway.app';
 
 export async function getAllCafes(): Promise<Cafe[]> {
   const res = await fetch(`${API_BASE}/api/cafes`);
