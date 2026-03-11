@@ -62,12 +62,12 @@
    [x] Configured Host Settings
    [x] Updated Frontend Environment on Vercel to point to live API
 
+8. ADVANCED DATABASE QUERIES
+   [x] Added pagination support (skip/limit) parameters to GET /api/cafes
+
 ────────────────────────────────────────────────────────────────────────────────
   📋  TO DO — NEXT STEPS
 ────────────────────────────────────────────────────────────────────────────────
-
-8. ADVANCED DATABASE QUERIES
-   [ ] Add pagination support (skip/limit or cursor-based)
 
 9. ADMIN / WRITE ENDPOINTS
    [ ] POST   /api/cafes          — add a new café
