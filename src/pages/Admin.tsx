@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Cafe, Vibe, NoiseLevel, Lighting, MusicType, Amenities } from '../types/cafe';
 
-const API_BASE = 'https://wimc-api-production.up.railway.app'; // Target production API
+const API_BASE = import.meta.env.DEV ? 'http://localhost:4000' : 'https://wimc-api-production.up.railway.app'; // Target production API
 
 export function Admin() {
     const [token, setToken] = useState<string | null>(localStorage.getItem('wimc_admin_token'));
@@ -231,6 +231,48 @@ function CafeForm({ token, initialData, onSuccess }: { token: string; initialDat
     });
 
     const [loading, setLoading] = useState(false);
+    const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
+    const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploadingPhoto(true);
+        const data = new FormData();
+        data.append('photo', file);
+
+        try {
+            const res = await fetch(`${API_BASE}/api/upload`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` },
+                body: data
+            });
+
+            if (res.ok) {
+                const json = await res.json();
+                setFormData(prev => ({
+                    ...prev,
+                    photos: [...(prev.photos || []), json.url]
+                }));
+            } else {
+                const err = await res.json();
+                alert(`Upload failed: ${err.error}`);
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Upload error');
+        } finally {
+            setUploadingPhoto(false);
+            e.target.value = '';
+        }
+    };
+
+    const removePhoto = (indexToRemove: number) => {
+        setFormData(prev => ({
+            ...prev,
+            photos: prev.photos?.filter((_, index) => index !== indexToRemove)
+        }));
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -356,8 +398,33 @@ function CafeForm({ token, initialData, onSuccess }: { token: string; initialDat
                         <input name="vibes" value={formData.vibes?.join(', ')} onChange={(e) => handleArrayChange('vibes', e.target.value)} placeholder="Chill, Study, Date" className={inputClass} />
                     </div>
                     <div>
-                        <label className={labelClass}>Photos (Comma separated URLs)</label>
-                        <textarea name="photos" value={formData.photos?.join(',\n')} onChange={(e) => handleArrayChange('photos', e.target.value)} rows={3} placeholder="https://..." className={inputClass} />
+                        <label className={labelClass}>Photos</label>
+                        <div className="flex flex-col gap-3">
+                            <input
+                                type="file"
+                                accept="image/jpeg, image/png, image/webp"
+                                onChange={handlePhotoUpload}
+                                disabled={uploadingPhoto}
+                                className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#0b4e9d] file:text-white hover:file:bg-blue-600 transition-colors cursor-pointer"
+                            />
+                            {uploadingPhoto && <span className="text-sm text-blue-400 animate-pulse">Uploading photo...</span>}
+                            {formData.photos && formData.photos.length > 0 && (
+                                <div className="flex gap-2 flex-wrap mt-2">
+                                    {formData.photos.map((photo, index) => (
+                                        <div key={index} className="relative group">
+                                            <img src={photo} alt="Cafe preview" className="w-20 h-20 object-cover rounded-lg border border-white/20" />
+                                            <button 
+                                                type="button" 
+                                                onClick={() => removePhoto(index)} 
+                                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-all hover:scale-110 shadow-lg"
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
                     <div className="grid grid-cols-3 gap-4 pt-2">
                         <div>
