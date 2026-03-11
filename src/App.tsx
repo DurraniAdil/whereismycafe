@@ -45,7 +45,7 @@ export default function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/studio" element={<Studio />} />
             <Route path="/collections" element={<Collections />} />
-            <Route path="/wimc-admin" element={<Admin />} />
+            <Route path="/wimc-super-secret-admin-access-page" element={<Admin />} />
             {/* Fallback routes */}
             <Route path="*" element={<Home />} />
           </Routes>
