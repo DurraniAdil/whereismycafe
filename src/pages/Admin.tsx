@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Cafe, Vibe, NoiseLevel, Lighting, MusicType } from '../types/cafe';
 
-const API_BASE = 'http://localhost:4000'; // Target local API for testing the new JWT implementation
+const API_BASE = 'https://wimc-api-production.up.railway.app'; // Target production API
 
 export function Admin() {
     const [token, setToken] = useState<string | null>(localStorage.getItem('wimc_admin_token'));
