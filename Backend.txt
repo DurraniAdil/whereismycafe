@@ -66,51 +66,48 @@
   📋  TO DO — NEXT STEPS
 ────────────────────────────────────────────────────────────────────────────────
 
-7. ADVANCED DATABASE QUERIES
+8. ADVANCED DATABASE QUERIES
    [ ] Add pagination support (skip/limit or cursor-based)
 
-8. ADMIN / WRITE ENDPOINTS
+9. ADMIN / WRITE ENDPOINTS
    [ ] POST   /api/cafes          — add a new café
    [ ] PUT    /api/cafes/:id      — update an existing café
    [ ] DELETE /api/cafes/:id      — remove a café
    [ ] Add input validation (Zod or Joi)
    [ ] Add authentication/authorisation (API key, JWT, or session)
 
-8. IMAGE UPLOADS
+10. IMAGE UPLOADS
    [ ] Choose a storage provider (Cloudinary / AWS S3 / Supabase Storage)
    [ ] POST /api/upload           — upload café photos
    [ ] Return hosted URL to store in the café document
    [ ] Add file-size and type validation
 
-9. SEARCH & DISCOVERY ENDPOINTS
+11. SEARCH & DISCOVERY ENDPOINTS
    [ ] GET /api/cafes/trending    — dedicated trending endpoint
    [ ] GET /api/cafes/new         — latest additions
    [ ] GET /api/cafes/random      — random café (for Roulette feature)
    [ ] Full-text search on name + area + description
    [ ] Geo-proximity search (near me) using lat/lng + radius
 
-10. USER FEATURES (future)
+12. USER FEATURES (future)
     [ ] POST /api/reviews          — user reviews & ratings
     [ ] GET  /api/cafes/:id/reviews
     [ ] POST /api/collections      — server-side saved/visited lists
     [ ] User accounts & auth (Google OAuth / email-password)
 
-11. ERROR HANDLING & LOGGING
+13. ERROR HANDLING & LOGGING
     [ ] Centralised error-handling middleware
     [ ] Request logging (Morgan or Pino)
     [ ] Rate limiting (express-rate-limit)
     [ ] Input sanitisation
 
-12. DEPLOYMENT & HOSTING (WIMC API)
-    [x] Migrated to completed section (Section 7)
-
-13. CUSTOM DOMAIN (Optional but recommended)
+14. CUSTOM DOMAIN (Optional but recommended)
     [ ] Secure `whereismycafe.com` / `.in` via Namecheap/Cloudflare
     [ ] Route `www` or `@` to the Vercel frontend
     [ ] Route `api.` subdomain to the Render/Railway backend
     [ ] Update Vercel & Backend CORS to match the new domain
 
-14. TESTING & MONITORING
+15. TESTING & MONITORING
     [ ] Unit tests for route handlers (Vitest or Jest)
     [ ] Integration tests for API endpoints (supertest)
     [ ] Add a test script to wimc-api/package.json
