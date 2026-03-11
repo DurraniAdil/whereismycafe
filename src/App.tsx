@@ -9,6 +9,7 @@ import { MapView } from './pages/MapView';
 import { Contact } from './pages/Contact';
 import { Studio } from './pages/Studio';
 import { Collections } from './pages/Collections';
+import { Admin } from './pages/Admin';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { useEffect, useState } from 'react';
@@ -44,6 +45,7 @@ export default function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/studio" element={<Studio />} />
             <Route path="/collections" element={<Collections />} />
+            <Route path="/wimc-admin" element={<Admin />} />
             {/* Fallback routes */}
             <Route path="*" element={<Home />} />
           </Routes>

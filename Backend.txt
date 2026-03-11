@@ -70,11 +70,11 @@
 ────────────────────────────────────────────────────────────────────────────────
 
 9. ADMIN / WRITE ENDPOINTS
-   [ ] POST   /api/cafes          — add a new café
-   [ ] PUT    /api/cafes/:id      — update an existing café
-   [ ] DELETE /api/cafes/:id      — remove a café
+   [x] POST   /api/cafes          — add a new café
+   [x] PUT    /api/cafes/:id      — update an existing café
+   [x] DELETE /api/cafes/:id      — remove a café
    [ ] Add input validation (Zod or Joi)
-   [ ] Add authentication/authorisation (API key, JWT, or session)
+   [x] Add authentication/authorisation (API key, JWT, or session)
 
 10. IMAGE UPLOADS
    [ ] Choose a storage provider (Cloudinary / AWS S3 / Supabase Storage)
