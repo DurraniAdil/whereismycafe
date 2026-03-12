@@ -338,11 +338,14 @@ export const Search: React.FC = () => {
   useEffect(() => {
     if (showMobileFilters) {
       document.body.style.overflow = 'hidden';
+      document.body.classList.add('filter-open');
     } else {
       document.body.style.overflow = 'unset';
+      document.body.classList.remove('filter-open');
     }
     return () => {
       document.body.style.overflow = 'unset';
+      document.body.classList.remove('filter-open');
     };
   }, [showMobileFilters]);
 

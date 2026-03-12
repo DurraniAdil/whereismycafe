@@ -25,3 +25,8 @@ body {
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
 }
+
+/* Hide mobile bottom nav when filter drawer is open */
+body.filter-open nav.fixed.bottom-0 {
+  display: none;
+}
