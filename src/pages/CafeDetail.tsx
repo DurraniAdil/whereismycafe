@@ -359,15 +359,23 @@ export const CafeDetail: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: 'easeOut' }}>
 
-            {cafe.rating > 0 && (
-              <div className="flex items-center gap-1.5 mb-3">
+            {cafe.displayRating > 0 && (
+              <div className="flex flex-col items-start gap-1.5 mb-3">
                 <div className="flex items-center gap-1 bg-white/10 backdrop-blur-sm
                                 border border-white/15 rounded-full px-2.5 py-1">
                   <Star className="w-3 h-3 fill-[#F5A623] text-[#F5A623]" />
                   <span className="text-white text-xs font-bold">
-                    {cafe.rating.toFixed(1)}
+                    {cafe.displayRating.toFixed(1)}
                   </span>
+                  {cafe.displayReviewCount > 0 && (
+                    <span className="text-white/60 text-[10px] font-medium ml-1">
+                      ({cafe.displayReviewCount})
+                    </span>
+                  )}
                 </div>
+                <span className="text-white/40 text-[9px] font-bold uppercase tracking-widest pl-1">
+                  Blended Google + Community Rating
+                </span>
               </div>
             )}
 
@@ -677,7 +685,14 @@ export const CafeDetail: React.FC = () => {
             )}
 
             {/* ── REVIEWS ─────────────────────────────────── */}
-            <ReviewSection cafeId={cafe.id} />
+            <ReviewSection 
+              cafe={cafe} 
+              onRefresh={() => {
+                if (id) {
+                  getCafeById(id).then(setCafe);
+                }
+              }} 
+            />
 
             {/* ── GALLERY (Mobile) ─────────────────────────────────── */}
             {cafe.photos.length > 1 && (

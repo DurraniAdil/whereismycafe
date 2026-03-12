@@ -41,6 +41,12 @@ export interface Cafe {
   isTrending: boolean;
   addedOn: string;
   verified: boolean;
+  googleRating: number;
+  googleReviewCount: number;
+  userRatingTotal: number;
+  userReviewCount: number;
+  displayRating: number;
+  displayReviewCount: number;
 }
 export interface Review {
   _id: string;

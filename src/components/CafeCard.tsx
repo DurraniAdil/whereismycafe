@@ -98,14 +98,19 @@ export const CafeCard: React.FC<CafeCardProps> = ({ cafe }) => {
           {/* ── Bottom: rating + price ───────────────── */}
           <div className="absolute bottom-3 left-3 right-3
                           flex items-end justify-between">
-            {cafe.rating > 0 && (
+            {cafe.displayRating > 0 && (
               <div className="inline-flex items-center gap-1.5
                               bg-white/95 backdrop-blur-sm
                               rounded-full px-2.5 py-1.5 shadow-sm">
                 <Star className="w-3 h-3 fill-[#F5A623] text-[#F5A623]" />
                 <span className="text-[12px] font-bold text-[#1E2020]">
-                  {cafe.rating.toFixed(1)}
+                  {cafe.displayRating.toFixed(1)}
                 </span>
+                {cafe.displayReviewCount > 0 && (
+                  <span className="text-[10px] text-[#7A8478] font-medium ml-0.5">
+                    ({cafe.displayReviewCount})
+                  </span>
+                )}
               </div>
             )}
 

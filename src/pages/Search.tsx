@@ -413,7 +413,7 @@ export const Search: React.FC = () => {
         cafe.name.toLowerCase().includes(query.toLowerCase()) ||
         cafe.area.toLowerCase().includes(query.toLowerCase());
       const matchesVibe = !vibeFromHome || cafe.vibes.includes(vibeFromHome);
-      const matchesRating = !minRating || (cafe.rating && cafe.rating >= minRating);
+      const matchesRating = !minRating || (cafe.displayRating && cafe.displayRating >= minRating);
       const matchesOpen = !openNow || isOpenNow(cafe);
       let matchesZone = true;
       if (selectedZone === '__explore__') {
