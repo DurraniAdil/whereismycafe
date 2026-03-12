@@ -11,6 +11,19 @@ import {
   Clock, MapPin, Volume2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Eye, EyeOff, Navigation } from 'lucide-react';
+
+const haversine = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
 
 const PER_PAGE = 9;
 
@@ -48,6 +61,10 @@ interface FilterPanelProps {
   selectedAmenities: string[]; toggleAmenity: (k: string) => void;
   selectedNoise: NoiseLevel | ''; setSelectedNoise: (v: NoiseLevel | '') => void;
   maxPrice: number; setMaxPrice: (v: number) => void;
+  showNearbyMode: boolean; setShowNearbyMode: (v: boolean) => void;
+  nearbyRadius: number; setNearbyRadius: (v: number) => void;
+  userPos: [number, number] | null; toggleNearbyMode: () => void;
+  locating: boolean;
   setPage: (v: number) => void;
   hasActiveFilters: boolean; clearAll: () => void;
 }
@@ -56,6 +73,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   minRating, setMinRating, openNow, setOpenNow,
   selectedZone, setSelectedZone, selectedAmenities, toggleAmenity,
   selectedNoise, setSelectedNoise, maxPrice, setMaxPrice,
+  showNearbyMode, setShowNearbyMode, nearbyRadius, setNearbyRadius,
+  userPos, toggleNearbyMode, locating,
   setPage, hasActiveFilters, clearAll,
 }) => (
   <div className="space-y-6">
@@ -94,6 +113,66 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       </div>
     </div>
 
+    {/* ── Near Me ───────────────────────────────── */}
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <MapPin className="w-3.5 h-3.5 text-[#A8B0A0]" />
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#A8B0A0]">
+            Near Me
+          </p>
+        </div>
+        <button
+          onClick={toggleNearbyMode}
+          className={`relative w-12 h-7 rounded-full transition-colors duration-200
+                      ${showNearbyMode ? 'bg-[#0b4e9d]' : 'bg-[#D8DDD0]'}`}>
+          <span className={`absolute top-[3px] left-[3px] w-[22px] h-[22px]
+                            rounded-full bg-white shadow-md transition-transform duration-200 flex items-center justify-center
+                            ${showNearbyMode ? 'translate-x-[20px]' : 'translate-x-0'}`}>
+            {locating ? (
+              <Navigation className="w-2.5 h-2.5 text-[#0b4e9d] animate-pulse" />
+            ) : showNearbyMode ? (
+              <Eye className="w-2.5 h-2.5 text-[#0b4e9d]" />
+            ) : (
+              <EyeOff className="w-2.5 h-2.5 text-[#7A8478]" />
+            )}
+          </span>
+        </button>
+      </div>
+
+      <AnimatePresence>
+        {showNearbyMode && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="flex flex-col gap-2 pt-1 pb-2">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-[10px] font-bold text-[#1E2020] uppercase tracking-wider">
+                  Radius: {nearbyRadius}km
+                </span>
+
+              </div>
+              <input
+                type="range"
+                min="1"
+                max="10"
+                step="1"
+                value={nearbyRadius}
+                onChange={(e) => { setNearbyRadius(parseInt(e.target.value)); setPage(1); }}
+                className="w-full accent-[#0b4e9d] h-1.5 rounded-full cursor-pointer"
+              />
+              <div className="flex justify-between text-[9px] text-[#A8B0A0] font-medium">
+                <span>1km</span><span>10km</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+
     <div className="h-px bg-[#EAEEE8]" />
 
     {/* ── Open Now ───────────────────────────────── */}
@@ -128,7 +207,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         {[
           { value: '', label: 'All Zones' },
           ...ZONES.map(z => ({ value: z.label, label: z.label })),
-          { value: '__explore__', label: '🔍 Explore (unlisted)' },
+          { value: '__explore__', label: 'Explore (unlisted)' },
         ].map(({ value, label }) => (
           <button key={value}
             onClick={() => { setSelectedZone(value); setPage(1); }}
@@ -238,6 +317,12 @@ export const Search: React.FC = () => {
   const [page, setPage] = useState(1);
   const resultsRef = useRef<HTMLDivElement>(null);
 
+  const [userPos, setUserPos] = useState<[number, number] | null>(null);
+  const [showNearbyMode, setShowNearbyMode] = useState(false);
+  const [nearbyRadius, setNearbyRadius] = useState(1); // default 1km
+  const [locating, setLocating] = useState(false);
+  const [locError, setLocError] = useState<string | null>(null);
+
   const [allCafes, setAllCafes] = useState<Cafe[]>([]);
   const [loadingCafes, setLoadingCafes] = useState(true);
   const [errorCafes, setErrorCafes] = useState<string | null>(null);
@@ -259,18 +344,51 @@ export const Search: React.FC = () => {
   const hasActiveFilters =
     minRating > 0 || openNow || selectedZone !== '' ||
     selectedAmenities.length > 0 || selectedNoise !== '' ||
-    maxPrice < 2000 || query.length > 0;
+    maxPrice < 2000 || query.length > 0 || showNearbyMode;
 
   const clearAll = () => {
     setMinRating(0); setOpenNow(false); setSelectedZone('');
     setSelectedAmenities([]); setSelectedNoise('');
     setMaxPrice(2000); setQuery(''); setPage(1);
+    setShowNearbyMode(false); setNearbyRadius(1);
+  };
+
+  const flyToUser = () => {
+    if (!navigator.geolocation) {
+      setLocError('Geolocation not supported');
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserPos([pos.coords.latitude, pos.coords.longitude]);
+        setLocating(false);
+      },
+      () => {
+        setLocating(false);
+        setShowNearbyMode(false);
+        setLocError('Location access denied');
+      },
+      { timeout: 8000 }
+    );
+  };
+
+  const toggleNearbyMode = () => {
+    if (!showNearbyMode) {
+      if (!userPos) flyToUser();
+      setShowNearbyMode(true);
+    } else {
+      setShowNearbyMode(false);
+    }
+    setPage(1);
   };
 
   const filterProps = {
     minRating, setMinRating, openNow, setOpenNow,
     selectedZone, setSelectedZone, selectedAmenities, toggleAmenity,
     selectedNoise, setSelectedNoise, maxPrice, setMaxPrice,
+    showNearbyMode, setShowNearbyMode, nearbyRadius, setNearbyRadius,
+    userPos, toggleNearbyMode, locating,
     setPage, hasActiveFilters, clearAll,
   };
 
@@ -293,11 +411,18 @@ export const Search: React.FC = () => {
         selectedAmenities.every(key => (cafe.amenities as any)[key] === true);
       const matchesNoise = !selectedNoise || cafe.noiseLevel === selectedNoise;
       const matchesPrice = cafe.priceForTwo <= maxPrice;
+
+      let matchesNearby = true;
+      if (showNearbyMode && userPos && cafe.latitude && cafe.longitude) {
+        const dist = haversine(userPos[0], userPos[1], cafe.latitude, cafe.longitude);
+        matchesNearby = dist <= nearbyRadius;
+      }
+
       return matchesQuery && matchesVibe && matchesRating && matchesOpen &&
-        matchesZone && matchesAmenities && matchesNoise && matchesPrice;
+        matchesZone && matchesAmenities && matchesNoise && matchesPrice && matchesNearby;
     });
   }, [query, vibeFromHome, minRating, openNow, selectedZone,
-    selectedAmenities, selectedNoise, maxPrice, allCafes]);
+    selectedAmenities, selectedNoise, maxPrice, allCafes, showNearbyMode, userPos, nearbyRadius]);
 
   const totalPages = Math.ceil(filteredCafes.length / PER_PAGE);
   const paginatedCafes = filteredCafes.slice((page - 1) * PER_PAGE, page * PER_PAGE);
@@ -476,6 +601,15 @@ export const Search: React.FC = () => {
                                    text-[11px] font-bold px-3 py-1.5 rounded-full">
                     ₹{maxPrice} max
                     <button onClick={() => setMaxPrice(2000)}>
+                      <X className="w-3 h-3 ml-0.5" />
+                    </button>
+                  </span>
+                )}
+                {showNearbyMode && (
+                  <span className="flex items-center gap-1 bg-[#0b4e9d] text-white
+                                   text-[11px] font-bold px-3 py-1.5 rounded-full">
+                    📍 {nearbyRadius}km
+                    <button onClick={() => setShowNearbyMode(false)}>
                       <X className="w-3 h-3 ml-0.5" />
                     </button>
                   </span>
