@@ -37,8 +37,18 @@ export interface Cafe {
   amenities: Amenities;
   description: string;
   photos: string[];
-  isNew: boolean;
+  isNewCafe: boolean;
   isTrending: boolean;
   addedOn: string;
   verified: boolean;
+}
+export interface Review {
+  _id: string;
+  cafeId: string;
+  cafeName?: string;
+  anonymousId: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  isVisible: boolean;
 }

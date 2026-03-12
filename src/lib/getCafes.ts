@@ -15,6 +15,43 @@ export async function getCafeById(id: string): Promise<Cafe | null> {
   return res.json();
 }
 
+// ── Review API ───────────────────────────────────────────────
+
+export async function getReviewsByCafeId(cafeId: string): Promise<any[]> {
+  const res = await fetch(`${API_BASE}/api/cafes/${cafeId}/reviews`);
+  if (!res.ok) throw new Error('Failed to fetch reviews');
+  return res.json();
+}
+
+export async function postReview(cafeId: string, rating: number, comment: string): Promise<any> {
+  const res = await fetch(`${API_BASE}/api/cafes/${cafeId}/reviews`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ rating, comment }),
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Failed to post review');
+  }
+  return res.json();
+}
+
+export async function getAllReviewsAdmin(token: string): Promise<any[]> {
+  const res = await fetch(`${API_BASE}/api/admin/reviews`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error('Failed to fetch admin reviews');
+  return res.json();
+}
+
+export async function deleteReviewAdmin(token: string, reviewId: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/admin/reviews/${reviewId}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error('Failed to hide review');
+}
+
 // ── Client-side helpers (work on already-fetched data) ──────
 
 export const filterByVibe = (cafes: Cafe[], vibe: Vibe): Cafe[] =>

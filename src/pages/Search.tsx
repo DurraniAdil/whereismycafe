@@ -623,7 +623,7 @@ export const Search: React.FC = () => {
                 {showNearbyMode && (
                   <span className="flex items-center gap-1 bg-[#0b4e9d] text-white
                                    text-[11px] font-bold px-3 py-1.5 rounded-full">
-                    📍 {nearbyRadius}km
+                    {nearbyRadius}km
                     <button onClick={() => setShowNearbyMode(false)}>
                       <X className="w-3 h-3 ml-0.5" />
                     </button>

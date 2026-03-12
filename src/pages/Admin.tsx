@@ -6,12 +6,13 @@ const API_BASE = import.meta.env.DEV ? 'http://localhost:4000' : 'https://wimc-a
 export function Admin() {
     const [token, setToken] = useState<string | null>(localStorage.getItem('wimc_admin_token'));
     const [password, setPassword] = useState('');
-    const [activeTab, setActiveTab] = useState<'all' | 'add' | 'edit'>('all');
+    const [loading, setLoading] = useState(false);
+    const [editingCafe, setEditingCafe] = useState<Cafe | null>(null);
+    const [reviews, setReviews] = useState<any[]>([]);
+    const [activeTab, setActiveTab] = useState<'all' | 'add' | 'edit' | 'reviews'>('all');
     const [cafes, setCafes] = useState<Cafe[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [editingCafe, setEditingCafe] = useState<Cafe | null>(null);
 
     // Login Handler
     const handleLogin = async (e: React.FormEvent) => {
@@ -57,8 +58,25 @@ export function Admin() {
         }
     };
 
+    const fetchReviews = async () => {
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/reviews`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setReviews(data);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     useEffect(() => {
-        if (token) fetchCafes();
+        if (token) {
+            fetchCafes();
+            fetchReviews();
+        }
     }, [token]);
 
     const handleDelete = async (id: string) => {
@@ -70,6 +88,20 @@ export function Admin() {
             });
             if (res.ok) fetchCafes();
             else alert('Error deleting cafe');
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleHideReview = async (reviewId: string) => {
+        if (!window.confirm('Hide this review from the public?')) return;
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/reviews/${reviewId}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.ok) fetchReviews();
+            else alert('Error hiding review');
         } catch (err) {
             console.error(err);
         }
@@ -155,6 +187,12 @@ export function Admin() {
                     >
                         + Add Café
                     </button>
+                    <button
+                        className={`pb-3 px-1 text-sm font-medium transition-colors ${activeTab === 'reviews' ? 'border-b-2 border-[#0b4e9d] text-[#0b4e9d]' : 'text-gray-400 hover:text-white'}`}
+                        onClick={() => setActiveTab('reviews')}
+                    >
+                        Reviews
+                    </button>
                     {activeTab === 'edit' && editingCafe && (
                         <button className="pb-3 px-1 text-sm font-medium border-b-2 border-[#f97316] text-[#f97316] cursor-default">
                             Editing: {editingCafe.name}
@@ -201,6 +239,53 @@ export function Admin() {
                                             <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
                                                 No cafés found matching "{searchQuery}"
                                             </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
+                {/* Reviews Tab */}
+                {activeTab === 'reviews' && (
+                    <div className="space-y-4">
+                        <div className="overflow-x-auto bg-[#1a1a1a] rounded-xl border border-white/10 shadow-xl">
+                            <table className="min-w-full divide-y divide-white/10">
+                                <thead className="bg-[#111]">
+                                    <tr>
+                                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Café</th>
+                                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Reviewer</th>
+                                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Rating</th>
+                                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Comment</th>
+                                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+                                        <th className="px-6 py-4 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-white/5">
+                                    {reviews.map((review) => (
+                                        <tr key={review._id} className={`hover:bg-white/5 transition-colors group ${!review.isVisible ? 'opacity-50 grayscale' : ''}`}>
+                                            <td className="px-6 py-4 whitespace-nowrap font-medium text-white">{review.cafeName || review.cafeId}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-gray-400">{review.anonymousId}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-amber-400">{'★'.repeat(review.rating)}{'☆'.repeat(5-review.rating)}</td>
+                                            <td className="px-6 py-4 text-gray-300 max-w-xs truncate">{review.comment}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                {review.isVisible ? (
+                                                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-green-500/10 text-green-500 border border-green-500/20">Public</span>
+                                                ) : (
+                                                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-gray-500/10 text-gray-400 border border-gray-500/20">Hidden</span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                {review.isVisible && (
+                                                    <button onClick={() => handleHideReview(review._id)} className="text-red-500 hover:text-red-400 transition-all">Hide</button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {reviews.length === 0 && (
+                                        <tr>
+                                            <td colSpan={6} className="px-6 py-8 text-center text-gray-500">No reviews found</td>
                                         </tr>
                                     )}
                                 </tbody>

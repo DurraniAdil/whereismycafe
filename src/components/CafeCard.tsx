@@ -73,7 +73,7 @@ export const CafeCard: React.FC<CafeCardProps> = ({ cafe }) => {
                 Hot
               </span>
             )}
-            {cafe.isNew && (
+            {cafe.isNewCafe && (
               <span className="inline-flex items-center gap-1
                                bg-white text-[#0b4e9d]
                                border border-[#0b4e9d]/20

@@ -271,7 +271,7 @@ The app is deployed on Vercel at:  https://whereismycafe.vercel.app
     amenities      : Amenities       — Object with boolean flags
     description    : string          — Free-text description
     photos         : string[]        — Array of photo URLs
-    isNew          : boolean         — Whether the café was recently added
+    isNewCafe: boolean         — Whether the café was recently added
     isTrending     : boolean         — Whether the café is currently trending
     addedOn        : string          — Date added (YYYY-MM-DD)
     verified       : boolean         — Whether the listing is verified

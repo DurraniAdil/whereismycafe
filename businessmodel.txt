@@ -1,0 +1,84 @@
+# Where Is My Café? (WIMC) — Detailed Business Model & Strategy
+
+## 1. Executive Summary: The Experience Gap
+The modern consumer, particularly the Gen Z and Millennial demographic in tier-2 cities like Aurangabad (Sambhajinagar), has evolved beyond simple location-based searching. Google Maps solves for "Where," but fails to solve for "How it feels." 
+
+WIMC (Where Is My Café?) is a hyper-local café discovery platform that bridges the gap between raw data and true experience. We don't just list addresses; we map ambience, noise levels, lighting, and "work-ability." We are the aesthetic filtered lens through which the city's youth find their next destination.
+
+---
+
+## 2. Market Segmentation & Needs
+
+### A. The Users (The Discoverers)
+*   **Students/Freelancers:** Looking for high-speed Wi-Fi, power outlets, and "No-Disturbance" vibes.
+*   **Couples/Daters:** seeking "Dim Lighting," "Warm Vibe," and "Lo-fi" background music.
+*   **Socialites:** Looking for "Trending" spots and aesthetic photo-ops.
+*   **Needs:** Real-time data, verified photos, and a friction-less path to the café (Maps integration).
+
+### B. Café Owners (The Partners)
+*   **New Café Owners:** Need immediate footfall without spending lakhs on generic billboards.
+*   **Established Cafés:** Need to defend their market share and showcase new menu items or renovations.
+*   **Needs:** Targeted visibility, performance metrics (how many people saw us?), and premium branding.
+
+### C. Local Businesses (The Advertisers)
+*   Brands wanting to reach the 18–35 demographic in a high-intent environment (food & lifestyle).
+
+---
+
+## 3. Revenue Architecture
+
+### Stream 1: Tiered SaaS Listings (Subscription)
+Transforming the current free data into a sustainable revenue model:
+*   **Basic Tier (Free):** Essential info: Name, Location, Hours, 3 basic photos.
+*   **Silver Tier (₹499/mo):** "Verified ✅" badge, up to 10 HD photos, inclusion in 2 Vibe categories (e.g., Chill & Study).
+*   **Gold Tier (₹1,499/mo):** Top-of-page search priority, "Featured" banner on home screen, inclusion in unlimited Vibes, Monthly Analytics Report.
+
+### Stream 2: WIMC Studio (High-Margin Creative Agency)
+Leveraging the platform's aesthetic authority to cross-sell services:
+*   **Content Creation:** Professional Reels/Shorts for Instagram (₹3,000/package).
+*   **Digital Transformation:** Building a "WIMC-Powered" mini-site for the café—providing a professional web presence without the cost of a full agency.
+*   **In-App Branding:** Menu digitalizing and aesthetic consulting.
+
+### Stream 3: Native Advertising & Sponsored Placements
+*   **"Café of the Week":** High-visibility slot on the main dashboard (₹2,500/week).
+*   **Category Domination:** Exclusive placement at the top of a specific vibe (e.g., "The Best Date Spot in Town" sponsored by [Café Name]).
+
+### Stream 4: Referral & Affiliate Deals
+*   **WIMC Perks:** Driving footfall through exclusive digital coupons. Cafés pay a small fee per "Redeemed Deal" or a flat monthly fee to host a discount on the platform.
+
+### Stream 5: Data as a Service (DaaS)
+*   **Merchant Dashboard (₹299/mo):** Providing owners with a login to see:
+    *   Heatmaps of when people are looking at their café.
+    *   Competitor benchmarking (e.g., "You are the 3rd most searched Date Spot this month").
+    *   Conversion rates from "View" to "Get Directions."
+
+---
+
+## 4. Competitive Advantage: The "Live Product" Moat
+WIMC is not a "pitch deck." It is a living, breathing ecosystem:
+*   **The Tech Stack:** Scalable Mongoose/Express backend with a high-performance Vite frontend.
+*   **The Data:** 65+ curated, manually verified café database entries.
+*   **The Hosting:** Ready-to-scale infrastructure on Railway/Vercel with Cloudinary image management.
+*   **The Brand:** A domain (`whereismycafe.com`) that is highly SEO-optimizable and memorable.
+
+---
+
+## 5. Expansion Strategy: The Playbook Model
+The goal is to perfect the "Aurangabad Playbook":
+1.  **Stage 1 (Hyper-Local Consolidation):** Own the conversation in Aurangabad.
+2.  **Stage 2 (Standardization):** Build the automated onboarding for Café Owners.
+3.  **Stage 3 (Regional Replication):** Launch in Pune/Nagpur using the same code base and data structures—simply swapping the location-based queries.
+4.  **Stage 4 (City Licensing):** Enabling "City Leads" to manage WIMC locally for a revenue share.
+
+---
+
+## 6. Projections & Milestones
+
+*   **Month 1–2 (The Community Phase):** Focus on MAU (Monthly Active Users). Achieve 1,000+ organic clicks on café listings.
+*   **Month 3 (The Monetization Bridge):** Onboard first 5 "Founding Partners" (Cafés) for free premium listing trials.
+*   **Month 4–5 (The Revenue Shift):** Convert 50% of trials to paid. Close 3 WIMC Studio shoots. Target Revenue: ₹10,000/mo.
+*   **Month 6 (National Ambition):** Scale to the next city (Pune). Target Revenue: ₹25,000/mo.
+
+---
+
+**WIMC: Where every sip begins with a click.**

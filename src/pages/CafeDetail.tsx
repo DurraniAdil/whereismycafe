@@ -13,6 +13,7 @@ import { useCollections } from '../hooks/useCollections.ts';
 import { useShare } from '../hooks/useShare';
 import { motion, AnimatePresence } from 'motion/react';
 import { Cafe } from '../types/cafe';
+import { ReviewSection } from '../components/ReviewSection';
 
 
 // ── Amenity config ──────────────────────────────────────────
@@ -341,7 +342,7 @@ export const CafeDetail: React.FC = () => {
               <TrendingUp className="w-2.5 h-2.5" /> Trending
             </span>
           )}
-          {cafe.isNew && (
+          {cafe.isNewCafe && (
             <span className="inline-flex items-center gap-1.5
                              bg-[#2D6A4F]/90 backdrop-blur-sm
                              text-white text-[10px] font-black
@@ -674,6 +675,9 @@ export const CafeDetail: React.FC = () => {
                 </div>
               </motion.section>
             )}
+
+            {/* ── REVIEWS ─────────────────────────────────── */}
+            <ReviewSection cafeId={cafe.id} />
 
             {/* ── GALLERY (Mobile) ─────────────────────────────────── */}
             {cafe.photos.length > 1 && (
