@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAllCafes } from '../lib/getCafes';
+import { getAllCafes, getCachedCafes } from '../lib/getCafes';
 import { CafeCard } from '../components/CafeCard';
 import { HomeHeader } from '../components/HomeHeader';
 import { PageLoadingSkeleton } from '../components/PageLoadingSkeleton';
@@ -14,8 +14,8 @@ const PER_PAGE = 9;
 export const Home: React.FC = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
-  const [allCafes, setAllCafes] = useState<Cafe[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [allCafes, setAllCafes] = useState<Cafe[]>(getCachedCafes() || []);
+  const [loading, setLoading] = useState(!getCachedCafes());
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {

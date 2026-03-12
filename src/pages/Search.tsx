@@ -1,19 +1,14 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { getAllCafes, isOpenNow } from '../lib/getCafes';
+import { getAllCafes, isOpenNow, getCachedCafes } from '../lib/getCafes';
 import { CafeCard } from '../components/CafeCard';
 import { Cafe, Vibe, NoiseLevel } from '../types/cafe';
 import { useLogoClick } from '../hooks/useLogoClick';
-import {
-  Search as SearchIcon, SlidersHorizontal, X,
-  ChevronLeft, ChevronRight,
-  Wifi, Wind, Trees, ParkingCircle, Star,
-  Clock, MapPin, Volume2
-} from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Eye, EyeOff, Navigation } from 'lucide-react';
+import { Eye, EyeOff, Navigation, Search as SearchIcon, SlidersHorizontal, X, ChevronLeft, ChevronRight, Wifi, Wind, Trees, ParkingCircle, Star, Clock, MapPin, Volume2 } from 'lucide-react';
 import { PageLoadingSkeleton } from '../components/PageLoadingSkeleton';
 import { useDelayedLoading } from '../hooks/useDelayedLoading';
+import { ZONES, ALL_ZONED_CAFES } from '../lib/zones';
 
 const haversine = (lat1: number, lon1: number, lat2: number, lon2: number) => {
   const R = 6371;
@@ -48,8 +43,6 @@ const NOISE_OPTIONS: { value: NoiseLevel }[] = [
   { value: 'Moderate' },
   { value: 'Loud' },
 ];
-
-import { ZONES, ALL_ZONED_CAFES } from '../lib/zones';
 
 // ── Shared active / idle pill classes ──────────────────────
 const ACTIVE_PILL = 'bg-[#0b4e9d] text-white shadow-[0_3px_10px_rgba(11,78,157,0.28)]';
@@ -303,7 +296,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 );
 
 // ── Main Page ───────────────────────────────────────────────
-export const Search: React.FC = () => {
+export const SearchPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const vibeFromHome = searchParams.get('vibe') as Vibe | null;
   const handleLogoClick = useLogoClick();
@@ -325,21 +318,35 @@ export const Search: React.FC = () => {
   const [locating, setLocating] = useState(false);
   const [locError, setLocError] = useState<string | null>(null);
 
-  const [allCafes, setAllCafes] = useState<Cafe[]>([]);
-  const [loadingCafes, setLoadingCafes] = useState(true);
+  const [allCafes, setAllCafes] = useState<Cafe[]>(getCachedCafes() || []);
+  const [loadingCafes, setLoadingCafes] = useState(!getCachedCafes());
   const [errorCafes, setErrorCafes] = useState<string | null>(null);
 
   useEffect(() => {
     getAllCafes()
-      .then(setAllCafes)
-      .catch(err => setErrorCafes(err.message || 'Failed to load cafes'))
+      .then((data) => {
+        setAllCafes(data);
+        setErrorCafes(null);
+      })
+      .catch(err => {
+        console.error('Search fetch error:', err);
+        setErrorCafes(err?.message || 'Failed to load cafes');
+      })
       .finally(() => setLoadingCafes(false));
   }, []);
 
   const showSkeleton = useDelayedLoading(loadingCafes);
 
-  if (showSkeleton) return <PageLoadingSkeleton type="search" />;
-  if (loadingCafes && allCafes.length === 0) return null;
+  if (errorCafes) return (
+    <div className="min-h-screen flex items-center justify-center bg-[#F8F6F1] text-red-500 font-medium">
+      {errorCafes}
+    </div>
+  );
+
+  // If we are loading and have no data, prioritize skeleton if ready
+  if (loadingCafes && allCafes.length === 0) {
+    return showSkeleton ? <PageLoadingSkeleton type="search" /> : <div className="min-h-screen bg-[#F8F6F1]" />;
+  }
 
   // Body scroll lock for mobile filters
   useEffect(() => {

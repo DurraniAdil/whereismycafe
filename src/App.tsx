@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Home } from './pages/Home';
 import { CafeDetail } from './pages/CafeDetail';
-import { Search } from './pages/Search';
+import { SearchPage as Search } from './pages/Search';
 import { About } from './pages/About';
 import { Vibes } from './pages/Vibes';
 import { Secret } from './pages/Secret';

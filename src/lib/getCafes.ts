@@ -7,6 +7,14 @@ const API_BASE = 'https://wimc-api-production.up.railway.app';
 let cafesCache: Cafe[] | null = null;
 const individualCafeCache: Record<string, Cafe> = {};
 
+export function getCachedCafes(): Cafe[] | null {
+  return cafesCache;
+}
+
+export function getCachedCafeById(id: string): Cafe | null {
+  return individualCafeCache[id] || null;
+}
+
 export async function getAllCafes(): Promise<Cafe[]> {
   // Return cache if available
   if (cafesCache) return cafesCache;

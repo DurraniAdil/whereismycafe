@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getAllCafes } from '../lib/getCafes';
+import { getAllCafes, getCachedCafes } from '../lib/getCafes';
 import { motion } from 'motion/react';
 import { CafeOfTheDay } from '../components/CafeOfTheDay';
 import { MoodPicker } from '../components/MoodPicker';
@@ -14,8 +14,8 @@ import { useDelayedLoading } from '../hooks/useDelayedLoading';
 // ─────────────────────────────────────────────────────────────
 
 export const Vibes: React.FC = () => {
-    const [cafes, setCafes] = useState<Cafe[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [cafes, setCafes] = useState<Cafe[]>(getCachedCafes() || []);
+    const [loading, setLoading] = useState(!getCachedCafes());
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {

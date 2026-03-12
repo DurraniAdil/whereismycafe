@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getCafeById } from '../lib/getCafes';
+import { getCafeById, getCachedCafeById } from '../lib/getCafes';
 import {
   ArrowLeft, MapPin, Instagram, TrendingUp, Sparkles,
   Plus, ChevronLeft, ChevronRight, X, Phone, Globe,
@@ -235,8 +235,8 @@ const Gallery: React.FC<{
 // ── Page ────────────────────────────────────────────────────
 export const CafeDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [cafe, setCafe] = useState<Cafe | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [cafe, setCafe] = useState<Cafe | null>(id ? getCachedCafeById(id) : null);
+  const [loading, setLoading] = useState(id ? !getCachedCafeById(id) : true);
   const [error, setError] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [missingType, setMissingType] = useState<'phone' | 'instagram' | 'website' | null>(null);
