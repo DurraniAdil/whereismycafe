@@ -30,6 +30,11 @@ export const Home: React.FC = () => {
 
   const showSkeleton = useDelayedLoading(loading);
 
+
+  const scrollToAll = () => {
+    document.getElementById('all-cafes')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   if (showSkeleton) return <PageLoadingSkeleton type="home" />;
   if (loading && allCafes.length === 0) return null; // Wait for initial fetch if no cache
   if (error) return (
@@ -37,10 +42,6 @@ export const Home: React.FC = () => {
       {error}
     </div>
   );
-
-  const scrollToAll = () => {
-    document.getElementById('all-cafes')?.scrollIntoView({ behavior: 'smooth' });
-  };
 
   return (
     <div className="min-h-screen bg-[#F8F6F1] pb-8">

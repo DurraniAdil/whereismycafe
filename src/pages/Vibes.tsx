@@ -27,6 +27,7 @@ export const Vibes: React.FC = () => {
 
     const showSkeleton = useDelayedLoading(loading);
 
+
     if (error) return <div className="p-8 text-center text-red-500 font-medium">{error}</div>;
     if (showSkeleton) return <PageLoadingSkeleton type="vibes" />;
     if (loading && cafes.length === 0) return null;

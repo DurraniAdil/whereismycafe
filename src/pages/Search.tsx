@@ -337,16 +337,6 @@ export const SearchPage: React.FC = () => {
 
   const showSkeleton = useDelayedLoading(loadingCafes);
 
-  if (errorCafes) return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F8F6F1] text-red-500 font-medium">
-      {errorCafes}
-    </div>
-  );
-
-  // If we are loading and have no data, prioritize skeleton if ready
-  if (loadingCafes && allCafes.length === 0) {
-    return showSkeleton ? <PageLoadingSkeleton type="search" /> : <div className="min-h-screen bg-[#F8F6F1]" />;
-  }
 
   // Body scroll lock for mobile filters
   useEffect(() => {
@@ -464,6 +454,17 @@ export const SearchPage: React.FC = () => {
     selectedNoise !== '', maxPrice < 2000,
     ...selectedAmenities.map(() => true),
   ].filter(Boolean).length;
+
+  if (errorCafes) return (
+    <div className="min-h-screen flex items-center justify-center bg-[#F8F6F1] text-red-500 font-medium">
+      {errorCafes}
+    </div>
+  );
+
+  // If we are loading and have no data, prioritize skeleton if ready
+  if (loadingCafes && allCafes.length === 0) {
+    return showSkeleton ? <PageLoadingSkeleton type="search" /> : <div className="min-h-screen bg-[#F8F6F1]" />;
+  }
 
   return (
     <div className="min-h-screen bg-[#F8F6F1]">
