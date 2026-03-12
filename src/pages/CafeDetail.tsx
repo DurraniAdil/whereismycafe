@@ -11,6 +11,8 @@ import {
 import { VibeChip } from '../components/VibeChip';
 import { useCollections } from '../hooks/useCollections.ts';
 import { useShare } from '../hooks/useShare';
+import { PageLoadingSkeleton } from '../components/PageLoadingSkeleton';
+import { useDelayedLoading } from '../hooks/useDelayedLoading';
 import { motion, AnimatePresence } from 'motion/react';
 import { Cafe } from '../types/cafe';
 import { ReviewSection } from '../components/ReviewSection';
@@ -255,8 +257,11 @@ export const CafeDetail: React.FC = () => {
   }, [id]);
 
   // ── Loading & Errors ──────────────────────────────────────────
+  const showSkeleton = useDelayedLoading(loading);
+
   if (error) return <div className="p-8 text-center text-red-500 font-medium">Error: {error}</div>;
-  if (loading) return null;
+  if (showSkeleton) return <PageLoadingSkeleton type="detail" />;
+  if (loading && !cafe) return null;
 
   // ── Not found ──────────────────────────────────────────
   if (!cafe) return (
@@ -308,7 +313,7 @@ export const CafeDetail: React.FC = () => {
     <div className="min-h-screen bg-[#F8F6F1] pb-36">
 
       {/* ── HERO ──────────────────────────────────────── */}
-      <div className="relative h-[65vh] min-h-[400px] w-full overflow-hidden">
+      <div className="relative h-[65vh] lg:h-[55vh] min-h-[400px] w-full overflow-hidden">
         <img src={cafe.photos[0]} alt={cafe.name}
           className="w-full h-full object-cover scale-[1.03]" />
 
@@ -353,7 +358,7 @@ export const CafeDetail: React.FC = () => {
         </div>
 
         {/* Hero text */}
-        <div className="absolute bottom-0 left-0 right-0 px-5 pb-8">
+        <div className="absolute bottom-0 left-0 right-0 px-5 lg:px-10 pb-8 max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -380,7 +385,7 @@ export const CafeDetail: React.FC = () => {
             )}
 
             <div className="flex items-center justify-between mb-2">
-              <h1 className="text-[38px] font-black text-white leading-[1.02]
+              <h1 className="text-[38px] lg:text-[52px] font-black text-white leading-[1.02]
                              tracking-tight italic pr-4"
                 style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
                 {cafe.name}
@@ -398,19 +403,19 @@ export const CafeDetail: React.FC = () => {
       </div>
 
       {/* ── BODY ──────────────────────────────────────── */}
-      <div className="px-5 pt-7 pb-8 max-w-5xl mx-auto">
+      <div className="px-5 pt-7 pb-8 max-w-5xl lg:max-w-7xl lg:px-10 mx-auto">
 
-        <div className="flex flex-col lg:grid lg:grid-cols-2 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8 lg:gap-12">
 
-          {/* ── MOBILE FIRST LAYER (Desktop Right) ── */}
-          <div className="space-y-7 lg:order-last">
-            {/* ── VIBES + DESCRIPTION + ACTIONS ─────────────────────── */}
+          {/* ── MAIN CONTENT (Left on Desktop) ── */}
+          <div className="space-y-12">
+            {/* VIBES + DESCRIPTION + ACTIONS */}
             <motion.section
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-6">
                 <div className="flex flex-wrap gap-1.5 flex-1 pr-2">
                   {cafe.vibes.map(v => (
                     <VibeChip key={v} label={v} isActive className="cursor-default" />
@@ -456,193 +461,23 @@ export const CafeDetail: React.FC = () => {
                 </div>
               </div>
 
-              <p className="text-[15px] text-[#6A7268] leading-[1.8] font-medium lg:text-lg">
+              <p className="text-[17px] lg:text-[19px] text-[#6A7268] leading-[1.8] font-medium">
                 {cafe.description}
               </p>
             </motion.section>
 
-            {/* ── POPULAR ITEM (Desktop only here, mobile handled explicitly or kept with gallery) ── */}
-            {cafe.popularItem && (
-              <motion.section
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 }}
-                className="hidden lg:block"
-              >
-                <div className="bg-white rounded-2xl border border-[#EAEEE8]
-                                px-5 py-5 shadow-sm">
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-[#FEF4E8] border border-[#F5D9A8]
-                                    flex items-center justify-center flex-shrink-0">
-                      <Utensils className="w-4 h-4 text-[#B87A2A]" />
-                    </div>
-                    <div>
-                      <span className="text-[10px] font-black uppercase tracking-[0.14em]
-                                      text-[#A8B0A0] block mb-1">
-                        Order this
-                      </span>
-                      <p className="text-[15px] font-bold text-[#1E2020] leading-snug lg:text-base"
-                        style={{
-                          fontFamily: "'Playfair Display', Georgia, serif",
-                          fontStyle: 'italic'
-                        }}>
-                        {cafe.popularItem}
-                      </p>
-                      {cafe.cheapestItem && (
-                        <p className="text-xs text-[#A8B0A0] font-medium mt-0.5">
-                          Starts at {cafe.cheapestItem}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </motion.section>
-            )}
-
-            {/* ── GALLERY (Desktop) ─────────────────────────────────── */}
-            {cafe.photos.length > 1 && (
-              <motion.section
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="hidden lg:block"
-              >
-                <Gallery
-                  photos={cafe.photos}
-                  cafeName={cafe.name}
-                  onImageClick={i => setLightboxIndex(i)}
-                />
-              </motion.section>
-            )}
-          </div>
-
-
-          {/* ── MOBILE SECOND LAYER (Desktop Left) ── */}
-          <div className="space-y-7 lg:order-first">
-            {/* ── QUICK INFO STRIP ────────────────────────── */}
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="flex flex-col gap-2"
-            >
-              {/* Price & Hours row */}
-              <div className="grid grid-cols-2 gap-2">
-                {/* Price */}
-                <div className="bg-white rounded-2xl border border-[#EAEEE8]
-                                px-4 py-3.5 flex flex-col justify-center gap-2 shadow-sm">
-                  <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[#A8B0A0]">
-                    For two
-                  </span>
-                  <div className="flex items-center gap-0.5">
-                    <IndianRupee className="w-4 h-4 text-[#0b4e9d]" />
-                    <span className="text-[32px] font-black text-[#1E2020] leading-none tracking-tight"
-                      style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                      {cafe.priceForTwo}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Hours */}
-                <div className="bg-white rounded-2xl border border-[#EAEEE8]
-                                px-4 py-3.5 flex flex-col justify-between shadow-sm">
-                  <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[#A8B0A0]">
-                    Hours
-                  </span>
-                  <div className="flex items-center gap-1.5 mt-1">
-                    <Clock className="w-3.5 h-3.5 text-[#0b4e9d] flex-shrink-0" />
-                    <span className="text-sm font-bold text-[#1E2020] leading-tight break-words">
-                      {cafe.openingHours}
-                    </span>
-                  </div>
-                  {cafe.closedOn && (
-                    <span className="text-[10px] text-[#A8B0A0] font-medium mt-1">
-                      Closed {cafe.closedOn}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Contact icons row */}
-              <div className="flex flex-row lg:flex-wrap gap-2 justify-center mt-1 sm:mt-0">
-                {contactItems.map(({ type, icon: Icon, value, href }) =>
-                  value?.trim() && href ? (
-                    <a key={type} href={href}
-                      target={type !== 'phone' ? '_blank' : undefined}
-                      rel="noreferrer"
-                      className="w-full h-10 rounded-xl bg-white border border-[#EAEEE8]
-                                 flex items-center justify-center shadow-sm
-                                 text-[#A8B0A0]
-                                 hover:text-[#0b4e9d] hover:border-[#0b4e9d]/25
-                                 hover:shadow-[0_2px_10px_rgba(11,78,157,0.12)]
-                                 transition-all flex-1">
-                      <Icon className="w-4 h-4" />
-                    </a>
-                  ) : (
-                    <button key={type}
-                      onClick={() => setMissingType(type)}
-                      className="w-full h-10 rounded-xl bg-[#F4F4F0] border border-[#EAEEE8]
-                                 flex items-center justify-center
-                                 text-[#C8D0C0] hover:text-[#A8B0A0]
-                                 transition-all flex-1">
-                      <Icon className="w-4 h-4" />
-                    </button>
-                  )
-                )}
-              </div>
-            </motion.div>
-
-            {/* ── POPULAR ITEM (Mobile) ────────────────────────────── */}
-            {cafe.popularItem && (
-              <motion.section
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.25 }}
-                className="lg:hidden"
-              >
-                <div className="bg-white rounded-2xl border border-[#EAEEE8]
-                                px-5 py-5 shadow-sm">
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-[#FEF4E8] border border-[#F5D9A8]
-                                    flex items-center justify-center flex-shrink-0">
-                      <Utensils className="w-4 h-4 text-[#B87A2A]" />
-                    </div>
-                    <div>
-                      <span className="text-[10px] font-black uppercase tracking-[0.14em]
-                                      text-[#A8B0A0] block mb-1">
-                        Order this
-                      </span>
-                      <p className="text-[15px] font-bold text-[#1E2020] leading-snug lg:text-base"
-                        style={{
-                          fontFamily: "'Playfair Display', Georgia, serif",
-                          fontStyle: 'italic'
-                        }}>
-                        {cafe.popularItem}
-                      </p>
-                      {cafe.cheapestItem && (
-                        <p className="text-xs text-[#A8B0A0] font-medium mt-0.5">
-                          Starts at {cafe.cheapestItem}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </motion.section>
-            )}
-
-            {/* ── VIBE CHECK ──────────────────────────────── */}
+            {/* VIBE CHECK (PC) */}
             <motion.section
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
+              transition={{ delay: 0.15 }}
+              className="hidden lg:block"
             >
-              <p className="text-[10px] font-black uppercase tracking-[0.2em]
-                            text-[#A8B0A0] mb-5">
-                Vibe Check
-              </p>
-              <div className="bg-white rounded-2xl border border-[#EAEEE8]
-                              px-5 py-5 shadow-sm space-y-5">
-                {/* Noise — brand blue */}
+              <div className="flex items-center gap-3 mb-6">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#A8B0A0]">Vibe Check</p>
+                <div className="flex-1 h-px bg-[#EAEEE8]" />
+              </div>
+              <div className="bg-white rounded-3xl border border-[#EAEEE8] px-8 py-8 shadow-sm space-y-6">
                 <VibeBar icon={Volume2} label="Noise" value={cafe.noiseLevel} accent="bg-[#0b4e9d]" />
                 <div className="h-px bg-[#F0F2EC]" />
                 <VibeBar icon={Sun} label="Lighting" value={cafe.lighting} accent="bg-amber-400" />
@@ -651,31 +486,32 @@ export const CafeDetail: React.FC = () => {
               </div>
             </motion.section>
 
-            {/* ── AMENITIES ───────────────────────────────── */}
+            {/* AMENITIES (PC) */}
             {activeAmenities.length > 0 && (
               <motion.section
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.35 }}
+                transition={{ delay: 0.2 }}
+                className="hidden lg:block"
               >
-                <p className="text-[10px] font-black uppercase tracking-[0.2em]
-                              text-[#A8B0A0] mb-4">
-                  What's here
-                </p>
-                <div className="grid grid-cols-3 gap-2 lg:gap-3 lg:grid-cols-2 xl:grid-cols-3">
+                <div className="flex items-center gap-3 mb-6">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#A8B0A0]">Amenities</p>
+                  <div className="flex-1 h-px bg-[#EAEEE8]" />
+                </div>
+                <div className="grid grid-cols-3 gap-4">
                   {activeAmenities.map(({ key, label, icon: Icon }) => (
                     <div key={key}
-                      className="bg-white rounded-2xl border border-[#EAEEE8]
-                                 px-3 py-4 flex flex-col items-center gap-2
+                      className="bg-white rounded-3xl border border-[#EAEEE8]
+                                 px-4 py-5 flex flex-col items-center gap-3
                                  shadow-sm text-center group
-                                 hover:border-[#0b4e9d]/20 transition-colors">
-                      <div className="w-9 h-9 rounded-xl bg-[#EAF0FB]
+                                 hover:border-[#0b4e9d]/20 transition-all hover:-translate-y-1">
+                      <div className="w-10 h-10 rounded-2xl bg-[#EAF0FB]
                                       flex items-center justify-center
                                       group-hover:bg-[#0b4e9d] transition-colors">
-                        <Icon className="w-4 h-4 text-[#0b4e9d]
+                        <Icon className="w-5 h-5 text-[#0b4e9d]
                                          group-hover:text-white transition-colors" />
                       </div>
-                      <span className="text-[11px] font-bold text-[#5A6A58] leading-tight">
+                      <span className="text-[12px] font-bold text-[#5A6A58] leading-tight">
                         {label}
                       </span>
                     </div>
@@ -684,28 +520,30 @@ export const CafeDetail: React.FC = () => {
               </motion.section>
             )}
 
-            {/* ── REVIEWS ─────────────────────────────────── */}
-            <ReviewSection 
-              cafe={cafe} 
-              onRefresh={() => {
-                if (id) {
-                  getCafeById(id).then(setCafe);
-                }
-              }} 
-            />
+            {/* REVIEWS (PC) */}
+            <div className="hidden lg:block">
+              <ReviewSection
+                cafe={cafe}
+                onRefresh={() => {
+                  if (id) {
+                    getCafeById(id).then(setCafe);
+                  }
+                }}
+              />
+            </div>
 
-            {/* ── GALLERY (Mobile) ─────────────────────────────────── */}
+            {/* GALLERY (PC) */}
             {cafe.photos.length > 1 && (
               <motion.section
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="lg:hidden"
+                transition={{ delay: 0.25 }}
+                className="hidden lg:block"
               >
-                <p className="text-[10px] font-black uppercase tracking-[0.2em]
-                              text-[#A8B0A0] mb-4 lg:hidden">
-                  Gallery
-                </p>
+                <div className="flex items-center gap-3 mb-6">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#A8B0A0]">Gallery</p>
+                  <div className="flex-1 h-px bg-[#EAEEE8]" />
+                </div>
                 <Gallery
                   photos={cafe.photos}
                   cafeName={cafe.name}
@@ -713,9 +551,187 @@ export const CafeDetail: React.FC = () => {
                 />
               </motion.section>
             )}
-
           </div>
 
+          {/* ── SIDEBAR (Right on Desktop) ── */}
+          <aside className="space-y-8">
+            <div className="lg:sticky lg:top-6 lg:self-start space-y-7">
+              {/* QUICK INFO (Hours, Price, Contact) */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                className="flex flex-col gap-4"
+              >
+                {/* Price & Hours row */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                  {/* Price */}
+                  <div className="bg-white rounded-[2.5rem] border border-[#EAEEE8]
+                                  px-6 py-6 flex flex-col justify-center gap-3 shadow-sm">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#A8B0A0]">
+                      Average spend for two
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <IndianRupee className="w-5 h-5 text-[#0b4e9d]" />
+                      <span className="text-[42px] font-black text-[#1E2020] leading-none tracking-tight"
+                        style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                        {cafe.priceForTwo}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Hours */}
+                  <div className="bg-white rounded-[2.5rem] border border-[#EAEEE8]
+                                  px-6 py-6 flex flex-col justify-between shadow-sm">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#A8B0A0]">
+                      Opening Hours
+                    </span>
+                    <div className="flex items-center gap-2.5 mt-2">
+                       <div className="w-8 h-8 rounded-full bg-[#EAF0FB] flex items-center justify-center flex-shrink-0">
+                         <Clock className="w-4 h-4 text-[#0b4e9d]" />
+                       </div>
+                      <span className="text-base font-bold text-[#1E2020] leading-tight break-words">
+                        {cafe.openingHours}
+                      </span>
+                    </div>
+                    {cafe.closedOn && (
+                      <span className="text-[11px] text-[#A8B0A0] font-bold uppercase tracking-wider mt-3 pl-11">
+                        Closed: {cafe.closedOn}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Contact icons row */}
+                <div className="flex flex-row gap-3">
+                  {contactItems.map(({ type, icon: Icon, value, href }) =>
+                    value?.trim() && href ? (
+                      <a key={type} href={href}
+                        target={type !== 'phone' ? '_blank' : undefined}
+                        rel="noreferrer"
+                        className="w-full h-14 rounded-2xl bg-white border border-[#EAEEE8]
+                                   flex items-center justify-center shadow-sm
+                                   text-[#A8B0A0]
+                                   hover:text-[#0b4e9d] hover:border-[#0b4e9d]/25
+                                   hover:shadow-[0_4px_12px_rgba(11,78,157,0.12)]
+                                   transition-all flex-1">
+                        <Icon className="w-5 h-5" />
+                      </a>
+                    ) : (
+                      <button key={type}
+                        onClick={() => setMissingType(type)}
+                        className="w-full h-14 rounded-2xl bg-[#F4F4F0] border border-[#EAEEE8]
+                                   flex items-center justify-center
+                                   text-[#C8D0C0] hover:text-[#A8B0A0]
+                                   transition-all flex-1">
+                        <Icon className="w-5 h-5" />
+                      </button>
+                    )
+                  )}
+                </div>
+              </motion.div>
+
+              {/* ORDER THIS */}
+              {cafe.popularItem && (
+                <motion.section
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.25 }}
+                >
+                  <div className="bg-[#FEF4E8] rounded-[2.5rem] border border-[#F5D9A8]/50
+                                  px-6 py-6 shadow-sm overflow-hidden relative">
+                    <Utensils className="absolute -right-4 -bottom-4 w-24 h-24 text-[#B87A2A]/5 rotate-12" />
+                    <div className="flex items-start gap-4 relative z-10">
+                      <div className="w-12 h-12 rounded-2xl bg-white border border-[#F5D9A8]
+                                      flex items-center justify-center flex-shrink-0 shadow-sm">
+                        <Utensils className="w-5 h-5 text-[#B87A2A]" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-black uppercase tracking-[0.14em]
+                                        text-[#B87A2A] block mb-1">
+                          Popular item
+                        </span>
+                        <p className="text-[18px] font-bold text-[#1E2020] leading-snug"
+                          style={{
+                            fontFamily: "'Playfair Display', Georgia, serif",
+                            fontStyle: 'italic'
+                          }}>
+                          {cafe.popularItem}
+                        </p>
+                        {cafe.cheapestItem && (
+                          <p className="text-xs text-[#B87A2A]/70 font-bold mt-1 uppercase tracking-wider">
+                            Starts at {cafe.cheapestItem}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </motion.section>
+              )}
+
+              {/* MOBILE ONLY FALLBACKS (HIDDEN ON DESKTOP) */}
+              <div className="lg:hidden space-y-12 pt-4">
+                {/* Vibe Check (Mobile) */}
+                <motion.section
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#A8B0A0] mb-5">Vibe Check</p>
+                  <div className="bg-white rounded-2xl border border-[#EAEEE8] px-5 py-5 shadow-sm space-y-5">
+                    <VibeBar icon={Volume2} label="Noise" value={cafe.noiseLevel} accent="bg-[#0b4e9d]" />
+                    <div className="h-px bg-[#F0F2EC]" />
+                    <VibeBar icon={Sun} label="Lighting" value={cafe.lighting} accent="bg-amber-400" />
+                    <div className="h-px bg-[#F0F2EC]" />
+                    <VibeBar icon={Music} label="Music" value={cafe.music} accent="bg-violet-400" />
+                  </div>
+                </motion.section>
+
+                {/* Amenities (Mobile) */}
+                {activeAmenities.length > 0 && (
+                  <motion.section
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.35 }}
+                  >
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#A8B0A0] mb-4">What's here</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {activeAmenities.map(({ key, label, icon: Icon }) => (
+                        <div key={key} className="bg-white rounded-2xl border border-[#EAEEE8] px-3 py-4 flex flex-col items-center gap-2 shadow-sm text-center">
+                          <div className="w-9 h-9 rounded-xl bg-[#EAF0FB] flex items-center justify-center">
+                            <Icon className="w-4 h-4 text-[#0b4e9d]" />
+                          </div>
+                          <span className="text-[11px] font-bold text-[#5A6A58] leading-tight">{label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.section>
+                )}
+
+                {/* Reviews (Mobile) */}
+                <ReviewSection
+                  cafe={cafe}
+                  onRefresh={() => {
+                    if (id) {
+                      getCafeById(id).then(setCafe);
+                    }
+                  }}
+                />
+
+                {/* Gallery (Mobile) */}
+                {cafe.photos.length > 1 && (
+                  <motion.section
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                  >
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#A8B0A0] mb-4">Gallery</p>
+                    <Gallery photos={cafe.photos} cafeName={cafe.name} onImageClick={i => setLightboxIndex(i)} />
+                  </motion.section>
+                )}
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
 
@@ -723,15 +739,15 @@ export const CafeDetail: React.FC = () => {
       <div className="fixed bottom-14 md:bottom-0 left-0 right-0 z-30
                       bg-[#F8F6F1]/90 backdrop-blur-xl
                       border-t border-[#E4E8E0]/60 px-5 pt-4 pb-4 md:pb-6">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-5xl lg:max-w-7xl lg:px-10 mx-auto flex md:justify-end">
           <a href={cafe.googleMapsUrl} target="_blank" rel="noopener noreferrer"
-            className="w-full flex items-center justify-center gap-2.5
+            className="w-full md:w-auto md:min-w-[280px] flex items-center justify-center gap-2.5
                        bg-[#0b4e9d] text-white font-black
                        text-[11px] uppercase tracking-[0.14em]
-                       py-4 rounded-2xl
-                       shadow-[0_4px_20px_rgba(11,78,157,0.35)]
-                       hover:bg-[#0a3d7a] active:scale-[0.98]
-                       transition-all duration-200">
+                       py-4 px-10 rounded-2xl
+                       shadow-[0_8px_25px_rgba(11,78,157,0.3)]
+                       hover:bg-[#0a3d7a] hover:scale-[1.02] active:scale-[0.98]
+                       transition-all duration-300">
             <MapPin className="w-4 h-4" />
             Take me there
           </a>

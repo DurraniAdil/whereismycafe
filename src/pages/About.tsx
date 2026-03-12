@@ -6,6 +6,8 @@ import {
     Zap, Users, ArrowRight
 } from 'lucide-react';
 import { useLogoClick } from '../hooks/useLogoClick';
+import { PageLoadingSkeleton } from '../components/PageLoadingSkeleton';
+import { useDelayedLoading } from '../hooks/useDelayedLoading';
 
 // ── Fade-up wrapper ─────────────────────────────────────────
 const FadeUp: React.FC<{ children: React.ReactNode; delay?: number }> = ({
@@ -81,14 +83,12 @@ export const About: React.FC = () => {
 
             {/* Desktop home logo */}
             <Link to="/" className="hidden md:block fixed top-6 right-6 z-50">
-                <div className="flex justify-center mb-8 md:hidden">
-                    <img src={`${import.meta.env.BASE_URL}media/circle.png`} alt="logo"
-                        className="w-24 h-24 rounded-full object-cover shadow-[0_4px_24px_rgba(11,78,157,0.25)] border-4 border-white" />
-                </div>
+                <img src={`${import.meta.env.BASE_URL}media/circle.png`} alt="Home"
+                    className="w-12 h-12 rounded-full object-cover shadow-[0_4px_24px_rgba(11,78,157,0.25)] border-2 border-white hover:scale-105 transition-transform cursor-pointer" />
             </Link>
 
             {/* Mobile easter-egg logo */}
-            <img src="/media/circle.png" alt="logo"
+            <img src={`${import.meta.env.BASE_URL}media/circle.png`} alt="logo"
                 onClick={handleLogoClick}
                 className="md:hidden fixed top-6 right-6 z-50
                    w-12 h-12 rounded-full object-cover cursor-pointer

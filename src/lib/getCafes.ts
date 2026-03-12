@@ -3,16 +3,32 @@ import { Cafe, Vibe } from '../types/cafe';
 // ── API base URL ────────────────────────────────────────────
 const API_BASE = 'https://wimc-api-production.up.railway.app';
 
+// ── Cache Layer ──────────────────────────────────────────────
+let cafesCache: Cafe[] | null = null;
+const individualCafeCache: Record<string, Cafe> = {};
+
 export async function getAllCafes(): Promise<Cafe[]> {
+  // Return cache if available
+  if (cafesCache) return cafesCache;
+
   const res = await fetch(`${API_BASE}/api/cafes`);
   if (!res.ok) throw new Error('Failed to fetch cafes');
-  return res.json();
+  
+  const data = await res.json();
+  cafesCache = data; // Update cache
+  return data;
 }
 
 export async function getCafeById(id: string): Promise<Cafe | null> {
+  // Return cache if available
+  if (individualCafeCache[id]) return individualCafeCache[id];
+
   const res = await fetch(`${API_BASE}/api/cafes/${id}`);
   if (!res.ok) return null;
-  return res.json();
+  
+  const data = await res.json();
+  individualCafeCache[id] = data; // Update cache
+  return data;
 }
 
 // ── Review API ───────────────────────────────────────────────

@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { getAllCafes } from '../lib/getCafes';
 import { CafeCard } from '../components/CafeCard';
 import { HomeHeader } from '../components/HomeHeader';
+import { PageLoadingSkeleton } from '../components/PageLoadingSkeleton';
+import { useDelayedLoading } from '../hooks/useDelayedLoading';
 import { motion } from 'motion/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Cafe } from '../types/cafe';
@@ -26,7 +28,10 @@ export const Home: React.FC = () => {
   const totalPages = Math.ceil(allCafes.length / PER_PAGE);
   const paginatedCafes = allCafes.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
-  if (loading) return null;
+  const showSkeleton = useDelayedLoading(loading);
+
+  if (showSkeleton) return <PageLoadingSkeleton type="home" />;
+  if (loading && allCafes.length === 0) return null; // Wait for initial fetch if no cache
   if (error) return (
     <div className="min-h-screen flex items-center justify-center bg-[#F8F6F1] text-red-500 font-medium">
       {error}

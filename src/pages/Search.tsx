@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Eye, EyeOff, Navigation } from 'lucide-react';
+import { PageLoadingSkeleton } from '../components/PageLoadingSkeleton';
+import { useDelayedLoading } from '../hooks/useDelayedLoading';
 
 const haversine = (lat1: number, lon1: number, lat2: number, lon2: number) => {
   const R = 6371;
@@ -333,6 +335,11 @@ export const Search: React.FC = () => {
       .catch(err => setErrorCafes(err.message || 'Failed to load cafes'))
       .finally(() => setLoadingCafes(false));
   }, []);
+
+  const showSkeleton = useDelayedLoading(loadingCafes);
+
+  if (showSkeleton) return <PageLoadingSkeleton type="search" />;
+  if (loadingCafes && allCafes.length === 0) return null;
 
   // Body scroll lock for mobile filters
   useEffect(() => {

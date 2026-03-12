@@ -32,8 +32,8 @@ export default function App() {
     <Router>
       <ScrollToTop />
       {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
-      <div className="flex flex-col min-h-screen">
-        <div className="flex-grow">
+      <div className="flex flex-col min-h-screen bg-[#F8F6F1]">
+        <div className="flex-grow min-h-[85vh]">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/cafes/:id" element={<CafeDetail />} />

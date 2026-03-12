@@ -6,6 +6,8 @@ import { CafeOfTheDay } from '../components/CafeOfTheDay';
 import { MoodPicker } from '../components/MoodPicker';
 import { Roulette } from '../components/Roulette';
 import { Cafe } from '../types/cafe';
+import { PageLoadingSkeleton } from '../components/PageLoadingSkeleton';
+import { useDelayedLoading } from '../hooks/useDelayedLoading';
 
 // ─────────────────────────────────────────────────────────────
 // VIBE PAGE
@@ -23,8 +25,11 @@ export const Vibes: React.FC = () => {
             .finally(() => setLoading(false));
     }, []);
 
+    const showSkeleton = useDelayedLoading(loading);
+
     if (error) return <div className="p-8 text-center text-red-500 font-medium">{error}</div>;
-    if (loading) return null;
+    if (showSkeleton) return <PageLoadingSkeleton type="vibes" />;
+    if (loading && cafes.length === 0) return null;
 
     return (
         <div className="min-h-screen bg-[#F8F6F1] pb-8">
