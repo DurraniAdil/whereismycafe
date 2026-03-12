@@ -6,7 +6,7 @@ import L from 'leaflet';
 import { getAllCafes } from '../lib/getCafes';
 import { defaultIcon, activeIcon, blurredIcon } from '../lib/mapIcons';
 import type { Cafe } from '../types/cafe';
-import { X, MapPin, Star, Navigation, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, MapPin, Star, Navigation, ChevronLeft, ChevronRight, Eye, EyeOff } from 'lucide-react';
 
 const CITY_CENTER: [number, number] = [19.8762, 75.3433];
 const DEFAULT_ZOOM = 13;
@@ -204,8 +204,8 @@ export const MapView: React.FC = () => {
 
     useEffect(() => {
         getAllCafes()
-          .then(setAllCafes)
-          .catch(err => setError(err.message || 'Failed to load map data'));
+            .then(setAllCafes)
+            .catch(err => setError(err.message || 'Failed to load map data'));
     }, []);
 
     const mapRef = useRef<L.Map | null>(null);
@@ -216,12 +216,42 @@ export const MapView: React.FC = () => {
     const [locating, setLocating] = useState(false);
     const [locError, setLocError] = useState<string | null>(null);
     const [userPos, setUserPos] = useState<[number, number] | null>(null);
+    const [showNearbyMode, setShowNearbyMode] = useState(false);
+    const [nearbyRadius, setNearbyRadius] = useState(2); // default 2km
 
-    const filteredCafes = useMemo(() =>
-        allCafes.filter(c =>
+    const filteredCafes = useMemo(() => {
+        let cafes = allCafes.filter(c =>
             (!vibeFilter || c.vibes.includes(vibeFilter as any)) &&
             c.latitude && c.longitude
-        ), [allCafes, vibeFilter]);
+        );
+
+        if (showNearbyMode && userPos) {
+            cafes = cafes
+                .map(c => ({
+                    ...c,
+                    distance: haversine(userPos[0], userPos[1], c.latitude!, c.longitude!)
+                }))
+                .filter(c => c.distance <= nearbyRadius)
+                .sort((a, b) => a.distance - b.distance);
+        }
+
+        return cafes;
+    }, [allCafes, vibeFilter, showNearbyMode, userPos, nearbyRadius]);
+
+    const nearestThreeIds = useMemo(() => {
+        if (!userPos || !showNearbyMode) return new Set<string>();
+        return new Set(
+            allCafes
+                .filter(c => c.latitude && c.longitude)
+                .map(c => ({
+                    id: c.id,
+                    distance: haversine(userPos[0], userPos[1], c.latitude!, c.longitude!)
+                }))
+                .sort((a, b) => a.distance - b.distance)
+                .slice(0, 3)
+                .map(c => c.id)
+        );
+    }, [allCafes, userPos, showNearbyMode]);
 
     const uniqueZones = useMemo(() => {
         const zones = allCafes.map(c => c.zone).filter(Boolean) as string[];
@@ -284,6 +314,17 @@ export const MapView: React.FC = () => {
             },
             { timeout: 8000, maximumAge: 30000 }
         );
+    };
+
+    const toggleNearbyMode = () => {
+        if (!showNearbyMode) {
+            if (!userPos) {
+                flyToUser();
+            }
+            setShowNearbyMode(true);
+        } else {
+            setShowNearbyMode(false);
+        }
     };
 
     return (
@@ -410,11 +451,28 @@ export const MapView: React.FC = () => {
                                         ? selectedCafe.id === cafe.id
                                             ? activeIcon
                                             : blurredIcon
-                                        : defaultIcon
+                                        : nearestThreeIds.has(cafe.id)
+                                            ? activeIcon // Highlight nearest 3
+                                            : defaultIcon
                                 }
                                 eventHandlers={{ click: () => handleCafeSelect(cafe) }}
                             />
                         ) : null
+                    )}
+
+                    {/* Nearby radius circle */}
+                    {showNearbyMode && userPos && (
+                        <Circle
+                            center={userPos}
+                            radius={nearbyRadius * 1000}
+                            pathOptions={{
+                                color: '#0b4e9d',
+                                fillColor: '#0b4e9d',
+                                fillOpacity: 0.1,
+                                weight: 2,
+                                dashArray: '5, 10'
+                            }}
+                        />
                     )}
 
                     {/* User position — dot + accuracy ring */}
@@ -436,28 +494,76 @@ export const MapView: React.FC = () => {
                     )}
                 </MapContainer>
 
-                {/* ── Near Me button ─────────────────────────────── */}
-                <button
-                    onClick={flyToUser}
-                    disabled={locating}
-                    title="Find my location"
-                    className={`absolute bottom-28 md:bottom-6 right-4 z-[1000]
-                      w-12 h-12 rounded-2xl flex items-center justify-center
-                      transition-all active:scale-95
-                      shadow-[0_4px_16px_rgba(0,0,0,0.22)] border-2
-                      ${locating
-                            ? 'bg-white border-[#E8EBE4] text-[#C0C8B8] cursor-not-allowed'
-                            : userPos
-                                ? 'bg-[#0b4e9d] border-[#0b4e9d] text-white shadow-[0_4px_16px_rgba(11,78,157,0.4)] hover:bg-[#0a3d7a]'
-                                : 'bg-white border-[#E0E5D8] text-[#1E2020] hover:border-[#0b4e9d]/40 hover:text-[#0b4e9d]'
-                        }`}
-                >
-                    <Navigation
-                        className={`w-[18px] h-[18px] transition-transform
-                        ${locating ? 'animate-pulse' : ''}
-                        ${userPos && !locating ? '-rotate-12' : ''}`}
-                    />
-                </button>
+                {/* ── Control Buttons ─────────────────────────────── */}
+                <div className="absolute bottom-28 md:bottom-6 right-4 z-[1000] flex flex-col-reverse items-center gap-3">
+
+                    {/* Fly to User Button */}
+                    <button
+                        onClick={flyToUser}
+                        disabled={locating}
+                        title="Find my location"
+                        className={`w-12 h-12 rounded-2xl flex items-center justify-center
+                          transition-all active:scale-95
+                          shadow-[0_4px_16px_rgba(0,0,0,0.22)] border-2
+                          ${locating
+                                ? 'bg-white border-[#E8EBE4] text-[#C0C8B8] cursor-not-allowed'
+                                : userPos
+                                    ? 'bg-[#0b4e9d] border-[#0b4e9d] text-white shadow-[0_4px_16px_rgba(11,78,157,0.4)] hover:bg-[#0a3d7a]'
+                                    : 'bg-white border-[#E0E5D8] text-[#1E2020] hover:border-[#0b4e9d]/40 hover:text-[#0b4e9d]'
+                            }`}
+                    >
+                        <Navigation
+                            className={`w-[18px] h-[18px] transition-transform
+                            ${locating ? 'animate-pulse' : ''}
+                            ${userPos && !locating ? '-rotate-12' : ''}`}
+                        />
+                    </button>
+
+                    {/* Eye Mode + Vertical Slider */}
+                    <div className="flex flex-col-reverse items-center gap-3">
+                        {/* Eye Toggle Button */}
+                        <button
+                            onClick={toggleNearbyMode}
+                            title="Search nearby"
+                            className={`w-12 h-12 rounded-2xl flex items-center justify-center
+                            flex-shrink-0 transition-all active:scale-95
+                            shadow-[0_4px_16px_rgba(0,0,0,0.22)] border-2
+                            ${showNearbyMode
+                                    ? 'bg-[#1E2020] border-[#1E2020] text-white'
+                                    : 'bg-white border-[#E0E5D8] text-[#1E2020] hover:border-[#0b4e9d]/40'
+                                }`}
+                        >
+                            {showNearbyMode ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                        </button>
+
+                        {/* Vertical Radius Slider */}
+                        <AnimatePresence>
+                            {showNearbyMode && (
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                                    className="bg-white/95 backdrop-blur-md border-2 border-[#E0E5D8] rounded-2xl p-3 shadow-xl flex flex-col items-center gap-3"
+                                >
+                                    <span className="text-[10px] font-bold text-[#1E2020] uppercase tracking-wider whitespace-nowrap orientation-vertical"
+                                        style={{ writingMode: 'vertical-lr', rotate: '180deg' }}>
+                                        Radius: {nearbyRadius}km
+                                    </span>
+                                    <input
+                                        type="range"
+                                        min="1"
+                                        max="10"
+                                        step="1"
+                                        value={nearbyRadius}
+                                        onChange={(e) => setNearbyRadius(parseInt(e.target.value))}
+                                        className="h-24 w-1.5 bg-[#E8EBE4] rounded-lg cursor-pointer accent-[#0b4e9d]"
+                                        style={{ WebkitAppearance: 'slider-vertical' } as any}
+                                    />
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                </div>
 
                 {/* Error toast */}
                 <AnimatePresence>
