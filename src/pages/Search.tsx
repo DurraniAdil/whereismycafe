@@ -334,6 +334,18 @@ export const Search: React.FC = () => {
       .finally(() => setLoadingCafes(false));
   }, []);
 
+  // Body scroll lock for mobile filters
+  useEffect(() => {
+    if (showMobileFilters) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showMobileFilters]);
+
   const toggleAmenity = (key: string) => {
     setSelectedAmenities(prev =>
       prev.includes(key) ? prev.filter(a => a !== key) : [...prev, key]
@@ -728,7 +740,7 @@ export const Search: React.FC = () => {
               </div>
 
               {/* Scrollable */}
-              <div className="flex-1 overflow-y-auto px-5 py-5">
+              <div className="flex-1 overflow-y-auto px-5 py-5 pb-10">
                 <FilterPanel {...filterProps} />
               </div>
 
