@@ -1,7 +1,7 @@
 
 ================================================================================
   WIMC BACKEND — PROGRESS CHECKLIST
-  Last updated: 11 March 2026
+  Last updated: 13 March 2026
 ================================================================================
 
 
@@ -88,9 +88,11 @@
   📋  TO DO — NEXT STEPS
 ────────────────────────────────────────────────────────────────────────────────
 
-12. USER FEATURES (future)
-    [ ] POST /api/reviews          — user reviews & ratings
-    [ ] GET  /api/cafes/:id/reviews
+12. USER FEATURES & ADMIN AUTH
+    [x] POST /api/cafes/:id/reviews — user reviews & ratings
+    [x] GET  /api/cafes/:id/reviews — fetch cafe reviews
+    [x] POST /api/login             — admin password-to-JWT login
+    [x] requireAdmin middleware     — JWT protection for admin routes
     [ ] POST /api/collections      — server-side saved/visited lists
     [ ] User accounts & auth (Google OAuth / email-password)
 
@@ -111,6 +113,17 @@
     [ ] Integration tests for API endpoints (supertest)
     [ ] Add a test script to wimc-api/package.json
 
+
+────────────────────────────────────────────────────────────────────────────────
+  📋  PROGRESS LOG: LOADING & RELIABILITY
+────────────────────────────────────────────────────────────────────────────────
+
+16. FRONTEND PERFORMANCE & RELIABILITY
+    [x] Implemented in-memory caching in getCafes.ts (cafes + individual details)
+    [x] Created useDelayedLoading hook (200ms threshold to prevent skeleton flicker)
+    [x] Standardised "Synchronous Cache Initialisation" across all major pages
+    [x] Fixed "Rules of Hooks" violation on Search page (returns below hook section)
+    [x] Renamed Search component to SearchPage to avoid Lucide/HMR name clashes
 
 ────────────────────────────────────────────────────────────────────────────────
   FILE STRUCTURE (current)

@@ -1,0 +1,477 @@
+Here's the full implementation — all four behaviors in one clean system.
+
+## The logic map
+
+```
+App loads → Loading screen
+    ↓
+AuthContext initializes (checks localStorage token)
+    ↓
+Has valid token? → Skip modal, go to app
+No token?       → Show LoginModal (dismissible)
+                  User can close it and browse freely
+    ↓
+Write Review clicked
+    → Logged in?  YES → show review form
+    → Logged in?  NO  → show "Sign up to review" nudge
+
+Profile page visited
+    → Logged in?  YES → show ProfilePage
+    → Logged in?  NO  → redirect to home (or show locked state)
+```
+
+***
+
+## Step 1 — Track "has seen onboarding modal" in AuthContext
+
+Add one flag so it only shows once per session, never again after login:
+
+```tsx
+// In AuthContext.tsx — add this state
+const [showAuthModal, setShowAuthModal] = useState(false);
+
+// In the validateToken useEffect — after setIsLoading(false):
+useEffect(() => {
+  const validateToken = async () => {
+    if (!token) {
+      setIsLoading(false);
+      // No token = first time or logged out = show modal
+      const hasDismissed = sessionStorage.getItem('wimc_auth_dismissed');
+      if (!hasDismissed) setShowAuthModal(true);
+      return;
+    }
+    // ...existing token validation code...
+    // If token is valid, never show modal
+  };
+  validateToken();
+}, []);
+
+// Expose in context value:
+// showAuthModal, setShowAuthModal
+```
+
+***
+
+## Step 2 — Wire modal to App.tsx
+
+```tsx
+// App.tsx
+import { useAuth } from './context/AuthContext';
+import LoginModal from './components/auth/LoginModal';
+
+function App() {
+  const { showAuthModal, setShowAuthModal } = useAuth();
+
+  const handleModalClose = () => {
+    setShowAuthModal(false);
+    // Remember they dismissed it for this session
+    sessionStorage.setItem('wimc_auth_dismissed', 'true');
+  };
+
+  return (
+    <>
+      <Router>
+        {/* all your routes */}
+      </Router>
+
+      {/* Global auth modal — shows after loading screen */}
+      <LoginModal
+        isOpen={showAuthModal}
+        onClose={handleModalClose}
+        dismissible={true}  // shows the "Skip, browse freely" option
+      />
+    </>
+  );
+}
+```
+
+***
+
+## Step 3 — Add "Skip" button to LoginModal
+
+```tsx
+// In LoginModal.tsx — add below the form, only when dismissible prop is true
+interface Props {
+  isOpen: boolean;
+  onClose: () => void;
+  dismissible?: boolean;  // add this
+}
+
+// Inside the modal JSX, at the bottom:
+{dismissible && (
+  <button
+    onClick={onClose}
+    className="w-full mt-3 text-zinc-500 text-sm hover:text-zinc-300 
+    transition py-2"
+  >
+    Skip for now · Browse without account
+  </button>
+)}
+```
+
+***
+
+## Step 4 — Review gate
+
+```tsx
+// In your ReviewForm component or wherever the review input is:
+import { useAuth } from '../../context/AuthContext';
+import { useState } from 'react';
+import LoginModal from '../auth/LoginModal';
+
+export default function ReviewSection({ cafeId }: { cafeId: string }) {
+  const { isAuthenticated } = useAuth();
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+
+  return (
+    <div>
+      {isAuthenticated ? (
+        // Show actual review form
+        <ReviewForm cafeId={cafeId} />
+      ) : (
+        // Show nudge
+        <div
+          onClick={() => setShowLoginPrompt(true)}
+          className="border border-dashed border-zinc-700 rounded-2xl p-5 
+          text-center cursor-pointer hover:border-amber-500/50 transition group"
+        >
+          <p className="text-zinc-400 text-sm group-hover:text-zinc-200 transition">
+            ☕ Sign in to leave a review
+          </p>
+          <p className="text-zinc-600 text-xs mt-1">
+            Takes 30 seconds · No spam
+          </p>
+        </div>
+      )}
+
+      <LoginModal
+        isOpen={showLoginPrompt}
+        onClose={() => setShowLoginPrompt(false)}
+        dismissible={false}  // can't skip here — they explicitly clicked
+      />
+    </div>
+  );
+}
+```
+
+***
+
+## Step 5 — Protected Profile page
+
+```tsx
+// components/auth/ProtectedRoute.tsx
+import { useAuth } from '../../context/AuthContext';
+import { Navigate } from 'react-router-dom';
+
+interface Props {
+  children: React.ReactNode;
+  fallback?: string; // where to redirect if not logged in
+}
+
+export default function ProtectedRoute({
+  children,
+  fallback = '/'
+}: Props) {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  // Still checking token? Show nothing (or a spinner)
+  if (isLoading) return null;
+
+  // Not logged in → redirect
+  if (!isAuthenticated) return <Navigate to={fallback} replace />;
+
+  return <>{children}</>;
+}
+```
+
+```tsx
+// In App.tsx routes:
+<Route path="/profile" element={
+  <ProtectedRoute>
+    <ProfilePage />
+  </ProtectedRoute>
+} />
+```
+
+***
+
+## Full behavior summary
+
+| Situation | What happens |
+|---|---|
+| Fresh open, not logged in | Loading → LoginModal with Skip option |
+| Already logged in | Loading → straight to app, no modal |
+| Dismiss modal, browse | App works fully, no auth required |
+| Click "Write a Review" (not logged in) | Inline nudge → opens LoginModal (no skip) |
+| Click "Write a Review" (logged in) | Review form opens directly |
+| Visit `/profile` (logged in) | Profile page loads |
+| Visit `/profile` (not logged in) | Redirected to `/` silently |
+| Login from anywhere | Modal closes, user stays on same page |
+
+***
+
+Only thing left after this is the backend. Build frontend first, mock the auth calls, then swap in real API.
+
+Here's the complete backend auth system.
+
+## Folder structure
+
+```
+src/
+├── models/
+│   └── User.ts
+├── middleware/
+│   └── auth.ts
+├── routes/
+│   └── auth.ts
+├── controllers/
+│   └── authController.ts
+└── index.ts (wire it up)
+```
+
+***
+
+## Step 1 — User Model
+
+```ts
+// models/User.ts
+import mongoose, { Document, Schema } from 'mongoose';
+import bcrypt from 'bcryptjs';
+
+export interface IUser extends Document {
+  name: string;
+  email: string;
+  password?: string;          // optional for future OAuth users
+  avatar?: string;
+  reviewCount: number;
+  savedCafes: mongoose.Types.ObjectId[];
+  joinedAt: Date;
+  comparePassword(candidate: string): Promise<boolean>;
+}
+
+const UserSchema = new Schema<IUser>({
+  name:        { type: String, required: true, trim: true },
+  email:       { type: String, required: true, unique: true, lowercase: true },
+  password:    { type: String, minlength: 6 },
+  avatar:      { type: String, default: '' },
+  reviewCount: { type: Number, default: 0 },
+  savedCafes:  [{ type: Schema.Types.ObjectId, ref: 'Cafe' }],
+  joinedAt:    { type: Date, default: Date.now }
+});
+
+// Hash password before save
+UserSchema.pre('save', async function (next) {
+  if (!this.isModified('password') || !this.password) return next();
+  this.password = await bcrypt.hash(this.password, 12);
+  next();
+});
+
+// Compare method
+UserSchema.methods.comparePassword = async function (candidate: string) {
+  return bcrypt.compare(candidate, this.password);
+};
+
+export default mongoose.model<IUser>('User', UserSchema);
+```
+
+***
+
+## Step 2 — Auth Middleware
+
+```ts
+// middleware/auth.ts
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import User from '../models/User';
+
+export interface AuthRequest extends Request {
+  user?: any;
+}
+
+export const protect = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader?.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'No token, access denied' });
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string };
+    req.user = await User.findById(decoded.id).select('-password');
+    if (!req.user) return res.status(401).json({ message: 'User not found' });
+    next();
+  } catch {
+    return res.status(401).json({ message: 'Token invalid or expired' });
+  }
+};
+```
+
+***
+
+## Step 3 — Auth Controller
+
+```ts
+// controllers/authController.ts
+import { Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
+import User from '../models/User';
+import { AuthRequest } from '../middleware/auth';
+
+// Helper — sign token
+const signToken = (id: string) =>
+  jwt.sign({ id }, process.env.JWT_SECRET!, { expiresIn: '30d' });
+
+// Helper — clean user object to send to frontend
+const sanitizeUser = (user: any) => ({
+  _id:         user._id,
+  name:        user.name,
+  email:       user.email,
+  avatar:      user.avatar,
+  reviewCount: user.reviewCount,
+  joinedAt:    user.joinedAt
+});
+
+// POST /auth/register
+export const register = async (req: Request, res: Response) => {
+  try {
+    const { name, email, password } = req.body;
+
+    if (!name || !email || !password)
+      return res.status(400).json({ message: 'All fields required' });
+
+    const existing = await User.findOne({ email });
+    if (existing)
+      return res.status(409).json({ message: 'Email already in use' });
+
+    const user = await User.create({ name, email, password });
+    const token = signToken(user._id.toString());
+
+    res.status(201).json({ token, user: sanitizeUser(user) });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error during registration' });
+  }
+};
+
+// POST /auth/login
+export const login = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password)
+      return res.status(400).json({ message: 'Email and password required' });
+
+    // Explicitly select password since it's excluded by default later
+    const user = await User.findOne({ email }).select('+password');
+    if (!user || !user.password)
+      return res.status(401).json({ message: 'Invalid credentials' });
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch)
+      return res.status(401).json({ message: 'Invalid credentials' });
+
+    const token = signToken(user._id.toString());
+    res.json({ token, user: sanitizeUser(user) });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error during login' });
+  }
+};
+
+// GET /auth/me
+export const getMe = async (req: AuthRequest, res: Response) => {
+  res.json({ user: sanitizeUser(req.user) });
+};
+```
+
+***
+
+## Step 4 — Auth Routes
+
+```ts
+// routes/auth.ts
+import { Router } from 'express';
+import { register, login, getMe } from '../controllers/authController';
+import { protect } from '../middleware/auth';
+
+const router = Router();
+
+router.post('/register', register);
+router.post('/login',    login);
+router.get('/me',        protect, getMe);
+
+export default router;
+```
+
+***
+
+## Step 5 — Wire into index.ts
+
+```ts
+// In your main index.ts / app.ts
+import authRoutes from './routes/auth';
+
+app.use('/auth', authRoutes);
+```
+
+***
+
+## Step 6 — Environment variables
+
+```bash
+# .env (Railway + local)
+JWT_SECRET=your_super_secret_key_make_it_long_and_random
+MONGODB_URI=your_mongodb_atlas_uri
+```
+
+***
+
+## Install dependencies
+
+```bash
+npm install bcryptjs jsonwebtoken
+npm install -D @types/bcryptjs @types/jsonwebtoken
+```
+
+***
+
+## Full data flow end to end
+
+```
+REGISTER:
+POST /auth/register { name, email, password }
+→ Check duplicate email
+→ Create user (pre-save hook hashes password)
+→ Sign JWT
+→ Return { token, user }
+
+LOGIN:
+POST /auth/login { email, password }
+→ Find user by email
+→ bcrypt.compare(input, hash)
+→ Sign JWT
+→ Return { token, user }
+
+PROTECTED REQUEST (e.g. GET /auth/me):
+Header: Authorization: Bearer <token>
+→ middleware verifies JWT
+→ attaches user to req.user
+→ controller sends back user data
+```
+
+***
+
+## What protects your other routes
+
+Any route that needs a logged-in user, just drop `protect` middleware in:
+
+```ts
+// Example: only logged-in users can post reviews
+router.post('/cafes/:id/reviews', protect, createReview);
+```
+
+That's the entire auth backend. Install the packages, drop in your JWT secret on Railway, and it connects directly to the `AuthContext` we already wrote. Want to do the review backend route next?

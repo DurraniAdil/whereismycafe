@@ -3,6 +3,8 @@ import { Star, User, MessageSquare, Send, CheckCircle2, Quote } from 'lucide-rea
 import { motion, AnimatePresence } from 'motion/react';
 import { getReviewsByCafeId, postReview } from '../lib/getCafes';
 import { Review, Cafe } from '../types/cafe';
+import { useAuth } from '../context/AuthContext';
+import { LoginModal } from '../components/auth/LoginModal';
 
 interface ReviewSectionProps {
   cafe: Cafe;
@@ -21,6 +23,8 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ cafe, onRefresh })
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     loadReviews();
@@ -153,111 +157,129 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ cafe, onRefresh })
                 Add your voice
               </h3>
 
-              <form onSubmit={handleSubmit} className="space-y-8">
-                <div>
-                  <label className="text-[11px] font-black uppercase tracking-[0.2em] text-[#A8B0A0] block mb-4">
-                    Your Rating
-                  </label>
-                  <div className="flex justify-between px-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        type="button"
-                        onClick={() => setRating(star)}
-                        onMouseEnter={() => setHoverRating(star)}
-                        onMouseLeave={() => setHoverRating(0)}
-                        className="group focus:outline-none transition-all duration-300 relative"
-                      >
-                        <Star
-                          className={`w-10 h-10 transition-all duration-300
-                            ${(hoverRating || rating) >= star
-                              ? 'fill-[#FFB800] text-[#FFB800] scale-110'
-                              : 'text-[#EAEEE8]'
-                            }
-                            group-hover:scale-125
-                          `}
-                        />
-                        {rating === star && (
-                          <motion.div
-                            layoutId="star-active"
-                            className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#FFB800] rounded-full"
+              {isAuthenticated ? (
+                <form onSubmit={handleSubmit} className="space-y-8">
+                  <div>
+                    <label className="text-[11px] font-black uppercase tracking-[0.2em] text-[#A8B0A0] block mb-4">
+                      Your Rating
+                    </label>
+                    <div className="flex justify-between px-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setRating(star)}
+                          onMouseEnter={() => setHoverRating(star)}
+                          onMouseLeave={() => setHoverRating(0)}
+                          className="group focus:outline-none transition-all duration-300 relative"
+                        >
+                          <Star
+                            className={`w-10 h-10 transition-all duration-300
+                              ${(hoverRating || rating) >= star
+                                ? 'fill-[#FFB800] text-[#FFB800] scale-110'
+                                : 'text-[#EAEEE8]'
+                              }
+                              group-hover:scale-125
+                            `}
                           />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-black uppercase tracking-[0.2em] text-[#A8B0A0] block mb-4">
-                    The Experience
-                  </label>
-                  <div className="group relative">
-                    <textarea
-                      value={comment}
-                      onChange={(e) => setComment(e.target.value)}
-                      maxLength={500}
-                      placeholder="Share what makes this place special..."
-                      className="w-full h-40 bg-[#FBFBFB] rounded-3xl p-6 text-[15px] font-medium
-                                border border-[#EAEEE8] focus:outline-none focus:ring-4 
-                                focus:ring-[#0b4e9d]/5 focus:border-[#0b4e9d]/20 transition-all 
-                                resize-none placeholder-[#A8B0A0] leading-relaxed shadow-inner"
-                    />
-                    <div className="absolute bottom-4 right-6 flex items-center gap-2">
-                      <div className="h-1.5 w-1.5 rounded-full bg-[#EAEEE8] group-focus-within:bg-[#0b4e9d] transition-colors" />
-                      <span className="text-[11px] font-bold text-[#A8B0A0]">
-                        {comment.length}/500
-                      </span>
+                          {rating === star && (
+                            <motion.div
+                              layoutId="star-active"
+                              className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#FFB800] rounded-full"
+                            />
+                          )}
+                        </button>
+                      ))}
                     </div>
                   </div>
-                </div>
 
-                {error && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-[#FFF1F1] text-[#E53E3E] text-xs font-bold py-4 px-6 rounded-2xl flex items-center gap-3 border border-[#E53E3E]/10"
-                  >
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#E53E3E]" />
-                    {error}
-                  </motion.div>
-                )}
+                  <div>
+                    <label className="text-[11px] font-black uppercase tracking-[0.2em] text-[#A8B0A0] block mb-4">
+                      The Experience
+                    </label>
+                    <div className="group relative">
+                      <textarea
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        maxLength={500}
+                        placeholder="Share what makes this place special..."
+                        className="w-full h-40 bg-[#FBFBFB] rounded-3xl p-6 text-[15px] font-medium
+                                  border border-[#EAEEE8] focus:outline-none focus:ring-4 
+                                  focus:ring-[#0b4e9d]/5 focus:border-[#0b4e9d]/20 transition-all 
+                                  resize-none placeholder-[#A8B0A0] leading-relaxed shadow-inner"
+                      />
+                      <div className="absolute bottom-4 right-6 flex items-center gap-2">
+                        <div className="h-1.5 w-1.5 rounded-full bg-[#EAEEE8] group-focus-within:bg-[#0b4e9d] transition-colors" />
+                        <span className="text-[11px] font-bold text-[#A8B0A0]">
+                          {comment.length}/500
+                        </span>
+                      </div>
+                    </div>
+                  </div>
 
-                <AnimatePresence>
-                  {showSuccess && (
+                  {error && (
                     <motion.div
-                      initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      className="bg-[#F0FFF4] text-[#2F855A] text-sm font-bold py-4 px-6 rounded-2xl flex items-center gap-3 border border-[#2F855A]/10 mb-2"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-[#FFF1F1] text-[#E53E3E] text-xs font-bold py-4 px-6 rounded-2xl flex items-center gap-3 border border-[#E53E3E]/10"
                     >
-                      <CheckCircle2 className="w-5 h-5" />
-                      Posted anonymously!
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#E53E3E]" />
+                      {error}
                     </motion.div>
                   )}
-                </AnimatePresence>
 
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className={`w-full py-5 rounded-3xl bg-[#0b4e9d] text-white
-                             text-[13px] font-black uppercase tracking-[0.2em]
-                             hover:bg-[#0a3d7a] transition-all duration-300
-                             shadow-[0_15px_35px_rgba(11,78,157,0.25)]
-                             active:scale-[0.98]
-                             flex items-center justify-center gap-3
-                             ${submitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  <AnimatePresence>
+                    {showSuccess && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="bg-[#F0FFF4] text-[#2F855A] text-sm font-bold py-4 px-6 rounded-2xl flex items-center gap-3 border border-[#2F855A]/10 mb-2"
+                      >
+                        <CheckCircle2 className="w-5 h-5" />
+                        Posted anonymously!
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className={`w-full py-5 rounded-3xl bg-[#0b4e9d] text-white
+                               text-[13px] font-black uppercase tracking-[0.2em]
+                               hover:bg-[#0a3d7a] transition-all duration-300
+                               shadow-[0_15px_35px_rgba(11,78,157,0.25)]
+                               active:scale-[0.98]
+                               flex items-center justify-center gap-3
+                               ${submitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  >
+                    {submitting ? (
+                      <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        Post Review
+                      </>
+                    )}
+                  </button>
+                </form>
+              ) : (
+                <div
+                  onClick={() => setShowLoginPrompt(true)}
+                  className="border-2 border-dashed border-[#EAEEE8] rounded-[2rem] p-8 
+                  text-center cursor-pointer hover:border-[#0b4e9d]/30 transition-all group bg-[#FBFBFB]/50"
                 >
-                  {submitting ? (
-                    <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4" />
-                      Post Review
-                    </>
-                  )}
-                </button>
-              </form>
+                  <div className="w-12 h-12 bg-[#0b4e9d]/5 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-[#0b4e9d] transition-colors">
+                    <User className="w-5 h-5 text-[#0b4e9d] group-hover:text-white transition-colors" />
+                  </div>
+                  <p className="text-[#1E2020] text-sm font-bold mb-1">
+                    Sign in to leave a review
+                  </p>
+                  <p className="text-[#7A8478] text-[11px] font-medium">
+                    Takes 30 seconds · No spam
+                  </p>
+                </div>
+              )}
             </div>
           </motion.div>
         </div>
@@ -347,6 +369,12 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ cafe, onRefresh })
           )}
         </div>
       </div>
+      
+      <LoginModal 
+        isOpen={showLoginPrompt} 
+        onClose={() => setShowLoginPrompt(false)} 
+        dismissible={false} 
+      />
     </div>
   );
 };

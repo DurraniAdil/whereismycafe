@@ -1,0 +1,36 @@
+# WIMC Auth Strategy Pivot: JWT & BCrypt
+
+## Overview
+We are moving away from Google OAuth to implement a standard Email/Password authentication system.
+
+## Backend Changes (wimc-api)
+1. **User Model**: 
+   - `email`: string (unique)
+   - `password`: string (hashed)
+   - `name`: string
+   - `picture`: string (base64 or URL)
+   - `joinedAt`: date
+   - `collections`: { hearted: [string], visited: [{ id: string, date: string }] }
+
+2. **Auth Routes**:
+   - `POST /api/auth/register`: Hashes password using `bcrypt`, saves user, returns JWT.
+   - `POST /api/auth/login`: Compares passwords, returns JWT.
+   
+3. **Dependencies**:
+   - `bcryptjs`
+   - `jsonwebtoken`
+
+## Frontend Changes (src)
+1. **AuthContext**:
+   - Update `login` to accept email/password.
+   - Add `register` function.
+   - Handle JWT storage in `localStorage`.
+
+2. **New Pages**:
+   - `src/pages/Auth.tsx`: Combined Login/Register page with WIMC aesthetic.
+
+3. **Routing**:
+   - Add `/auth` route to `App.tsx`.
+
+## Data Migration
+- On successful login/register, local `heartedIds` and `visitedEntries` from `useCollections` should be synced to the backend.

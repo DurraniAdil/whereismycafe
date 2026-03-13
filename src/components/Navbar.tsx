@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Search, Heart, MapPin, Menu, X, Info, BookMarked } from 'lucide-react';
+import { Home, Search, Heart, MapPin, Menu, X, Info, BookMarked, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+import { useAuth } from '../context/AuthContext';
 
 type NavItem = {
   icon: any;
@@ -22,6 +23,17 @@ const navItems: NavItem[] = [
 export const Navbar: React.FC = () => {
   const { pathname } = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, setShowAuthModal, isAuthenticated } = useAuth();
+
+  const handleProfileClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsMenuOpen(false);
+    if (isAuthenticated) {
+      window.location.href = '/profile';
+    } else {
+      setShowAuthModal(true);
+    }
+  };
 
   return (
     <>
@@ -144,7 +156,7 @@ export const Navbar: React.FC = () => {
 
                 {/* Menu items */}
                 <div className="flex flex-col gap-1">
-                  <Link to="/about"
+                    <Link to="/about"
                     onClick={() => setIsMenuOpen(false)}
                     className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl
                                bg-white/10 active:bg-white/20 transition-colors"
@@ -157,16 +169,17 @@ export const Navbar: React.FC = () => {
 
                   <div className="h-px mx-3" />
 
-                  <Link to="/collections"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl
-                               bg-white/10 active:bg-white/20 transition-colors"
+                  <button
+                    onClick={handleProfileClick}
+                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl w-full
+                               bg-white/10 active:bg-white/20 transition-colors text-left"
                   >
-                    <BookMarked className="w-4 h-4 text-white/70" />
+                    <User className="w-4 h-4 text-white/70" />
                     <span className="text-[13px] font-bold text-white tracking-wide">
-                      Collections
+                      My Profile
                     </span>
-                  </Link>
+                  </button>
+
 
                   <div className="h-px mx-3" />
 

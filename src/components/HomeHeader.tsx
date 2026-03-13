@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, Sparkles, MapPin, Menu as MenuIcon, Info, BookMarked } from 'lucide-react';
+import { Search, Sparkles, MapPin, Menu as MenuIcon, Info, User } from 'lucide-react';
 import { getAllCafes } from '../lib/getCafes';
 import { Cafe, Vibe } from '../types/cafe';
 import { useLogoClick } from '../hooks/useLogoClick';
+import { useAuth } from '../context/AuthContext';
 
 type NavItem = {
     icon: any;
@@ -22,7 +23,7 @@ const primaryNavItems: NavItem[] = [
 // Stage 2: shown when Menu button is clicked (slides further left)
 const secondaryNavItems: NavItem[] = [
     { icon: Info, label: 'About', href: '/about' },
-    { icon: BookMarked, label: 'Collections', href: '/collections' },
+    { icon: User, label: 'Profile', href: '/profile' },
     { icon: MapPin, label: 'Studio', href: '/studio' },
 ];
 
@@ -67,6 +68,14 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({ onVibeSelect }) => {
 
     const trendingCount = allCafes.filter(c => c.isTrending).length;
     const handleLogoClick = useLogoClick();
+    const { isAuthenticated, setShowAuthModal } = useAuth();
+
+    const handleProtectedLink = (e: React.MouseEvent, href: string) => {
+        if (href === '/profile' && !isAuthenticated) {
+            e.preventDefault();
+            setShowAuthModal(true);
+        }
+    };
 
     const [isMenuOpen, setIsMenuOpen] = useState(false);        // stage 1: logo clicked
     const [isMenuExpanded, setIsMenuExpanded] = useState(false); // stage 2: Menu pill clicked
@@ -165,6 +174,7 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({ onVibeSelect }) => {
                                         >
                                             <Link
                                                 to={item.href}
+                                                onClick={(e) => handleProtectedLink(e, item.href)}
                                                 className={`flex items-center gap-2 px-4 py-2.5 rounded-full border transition-all duration-200 whitespace-nowrap focus:outline-none ${isActive
                                                     ? 'bg-[#0b4e9d] border-[#0b4e9d] text-white shadow-[0_4px_16px_rgba(11,78,157,0.35)]'
                                                     : 'bg-white border-[#D8DDD0] text-[#1E2020] hover:bg-[#EBF1FB] hover:border-[#0b4e9d]/25'

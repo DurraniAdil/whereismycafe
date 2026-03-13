@@ -8,12 +8,17 @@ import { Secret } from './pages/Secret';
 import { MapView } from './pages/MapView';
 import { Contact } from './pages/Contact';
 import { Studio } from './pages/Studio';
-import { Collections } from './pages/Collections';
+import { Profile } from './pages/Profile';
+import { Auth } from './pages/Auth';
 import { Admin } from './pages/Admin';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
+import { AuthProvider } from './context/AuthContext';
 import { useEffect, useState } from 'react';
 import { SplashScreen } from './components/SplashScreen';
+import { useAuth } from './context/AuthContext';
+import { LoginModal } from './components/auth/LoginModal';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -26,10 +31,26 @@ function ScrollToTop() {
 }
 
 export default function App() {
+  return (
+    <AuthProvider>
+      <Router>
+        <MainApp />
+      </Router>
+    </AuthProvider>
+  );
+}
+
+function MainApp() {
   const [showSplash, setShowSplash] = useState(true);
+  const { showAuthModal, setShowAuthModal } = useAuth();
+
+  const handleModalClose = () => {
+    setShowAuthModal(false);
+    sessionStorage.setItem('wimc_auth_dismissed', 'true');
+  };
 
   return (
-    <Router>
+    <>
       <ScrollToTop />
       {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
       <div className="flex flex-col min-h-screen bg-[#F8F6F1]">
@@ -44,7 +65,12 @@ export default function App() {
             <Route path="/wimc-secret" element={<Secret />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/studio" element={<Studio />} />
-            <Route path="/collections" element={<Collections />} />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            } />
+            <Route path="/auth" element={<Auth />} />
             <Route path="/wimc-super-secret-admin-access-page" element={<Admin />} />
             {/* Fallback routes */}
             <Route path="*" element={<Home />} />
@@ -53,7 +79,13 @@ export default function App() {
         <ConditionalFooter />
         <Navbar />
       </div>
-    </Router>
+
+      <LoginModal 
+        isOpen={showAuthModal} 
+        onClose={handleModalClose}
+        dismissible={true}
+      />
+    </>
   );
 }
 
