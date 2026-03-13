@@ -15,15 +15,15 @@ type NavItem = {
 
 // Stage 1: shown when logo is clicked
 const primaryNavItems: NavItem[] = [
-    { icon: Sparkles, label: 'Vibes', href: '/vibes' },
     { icon: MapPin, label: 'Map', href: '/map' },
+    { icon: Sparkles, label: 'Vibes', href: '/' },
     { icon: Search, label: 'Search', href: '/search' },
+    { icon: User, label: 'Profile', href: '/profile' },
 ];
 
 // Stage 2: shown when Menu button is clicked (slides further left)
 const secondaryNavItems: NavItem[] = [
     { icon: Info, label: 'About', href: '/about' },
-    { icon: User, label: 'Profile', href: '/profile' },
     { icon: MapPin, label: 'Studio', href: '/studio' },
 ];
 
@@ -291,32 +291,6 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({ onVibeSelect }) => {
                     </div>
                 </div>
 
-                {/* ── Stats strip ───────────────────────────────── */}
-                <motion.div
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.3 }}
-                    className="flex gap-3 mb-8"
-                >
-                    {[
-                        { value: allCafes.length, label: 'cafés listed', dot: 'bg-[#0b4e9d]' },
-                        { value: trendingCount, label: 'trending now', dot: 'bg-[#C0392B]' },
-                        { value: '6', label: 'city zones', dot: 'bg-[#6B8C5A]' },
-                    ].map((stat, i) => (
-                        <div key={i}
-                            className="flex-1 bg-white rounded-2xl border border-[#E4E7DF]
-                         px-3 py-3 text-center shadow-sm">
-                            {/* Coloured dot per stat */}
-                            <div className="flex items-center justify-center gap-1.5 mb-1">
-                                <span className={`w-1.5 h-1.5 rounded-full ${stat.dot}`} />
-                                <p className="text-xl font-black text-[#1E2020]">{stat.value}</p>
-                            </div>
-                            <p className="text-[10px] text-[#7A8478] font-semibold leading-tight">
-                                {stat.label}
-                            </p>
-                        </div>
-                    ))}
-                </motion.div>
 
                 {/* ── Vibe section label ─────────────────────────── */}
                 <motion.div

@@ -15,9 +15,9 @@ type NavItem = {
 const navItems: NavItem[] = [
   { icon: Menu, label: 'Menu', isAction: true },
   { icon: MapPin, label: 'Map', href: '/map' },
-  { icon: Home, label: 'Home', href: '/' },
+  { icon: Heart, label: 'Vibes', href: '/' },
   { icon: Search, label: 'Search', href: '/search' },
-  { icon: Heart, label: 'Vibes', href: '/vibes' },
+  { icon: User, label: 'Profile', href: '/profile' },
 ];
 
 export const Navbar: React.FC = () => {
@@ -107,7 +107,13 @@ export const Navbar: React.FC = () => {
               <Link
                 key={item.label}
                 to={item.href!}
-                onClick={() => setIsMenuOpen(false)}
+                onClick={(e) => {
+                  if (item.href === '/profile' && !isAuthenticated) {
+                    e.preventDefault();
+                    setShowAuthModal(true);
+                  }
+                  setIsMenuOpen(false);
+                }}
                 className="relative flex flex-col items-center flex-1 py-1 focus:outline-none"
               >
                 {content}
@@ -167,18 +173,6 @@ export const Navbar: React.FC = () => {
                     </span>
                   </Link>
 
-                  <div className="h-px mx-3" />
-
-                  <button
-                    onClick={handleProfileClick}
-                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl w-full
-                               bg-white/10 active:bg-white/20 transition-colors text-left"
-                  >
-                    <User className="w-4 h-4 text-white/70" />
-                    <span className="text-[13px] font-bold text-white tracking-wide">
-                      My Profile
-                    </span>
-                  </button>
 
 
                   <div className="h-px mx-3" />

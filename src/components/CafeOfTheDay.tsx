@@ -109,7 +109,7 @@ const CafeSlide: React.FC<{ cafe: Cafe }> = ({ cafe }) => {
 };
 
 // ── Main ────────────────────────────────────────────────────
-export const CafeOfTheDay: React.FC<{ cafes: Cafe[] }> = ({ cafes }) => {
+export const CafeOfTheDay: React.FC<{ cafes: Cafe[]; hideHeader?: boolean }> = ({ cafes, hideHeader }) => {
     const picks = getDailyCafes(cafes);
     const [active, setActive] = useState(0);
     const [progress, setProgress] = useState(0);
@@ -180,17 +180,19 @@ export const CafeOfTheDay: React.FC<{ cafes: Cafe[] }> = ({ cafes }) => {
         <div>
 
             {/* ── Header ──────────────────────────────────────── */}
-            <div className="flex items-center justify-between mb-3">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#A8B0A0]">
-                    Cafés of the Day
-                </p>
-                <p className="text-[10px] text-[#A8B0A0] font-medium italic"
-                    style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                    {new Date().toLocaleDateString('en-IN', {
-                        weekday: 'long', day: 'numeric', month: 'short',
-                    })}
-                </p>
-            </div>
+            {!hideHeader && (
+                <div className="flex items-center justify-between mb-3">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#A8B0A0]">
+                        Cafés of the Day
+                    </p>
+                    <p className="text-[10px] text-[#A8B0A0] font-medium italic"
+                        style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                        {new Date().toLocaleDateString('en-IN', {
+                            weekday: 'long', day: 'numeric', month: 'short',
+                        })}
+                    </p>
+                </div>
+            )}
 
             {/* ── Carousel ──────────────────────────────────────── */}
             <div className="relative group/carousel">

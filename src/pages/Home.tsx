@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAllCafes, getCachedCafes } from '../lib/getCafes';
-import { CafeCard } from '../components/CafeCard';
 import { HomeHeader } from '../components/HomeHeader';
 import { PageLoadingSkeleton } from '../components/PageLoadingSkeleton';
 import { useDelayedLoading } from '../hooks/useDelayedLoading';
+import { CafeOfTheDay } from '../components/CafeOfTheDay';
+import { MoodPicker } from '../components/MoodPicker';
+import { Roulette } from '../components/Roulette';
 import { motion } from 'motion/react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Cafe } from '../types/cafe';
-
-const PER_PAGE = 9;
 
 export const Home: React.FC = () => {
   const navigate = useNavigate();
-  const [page, setPage] = useState(1);
   const [allCafes, setAllCafes] = useState<Cafe[]>(getCachedCafes() || []);
   const [loading, setLoading] = useState(!getCachedCafes());
   const [error, setError] = useState<string | null>(null);
@@ -25,18 +23,10 @@ export const Home: React.FC = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  const totalPages = Math.ceil(allCafes.length / PER_PAGE);
-  const paginatedCafes = allCafes.slice((page - 1) * PER_PAGE, page * PER_PAGE);
-
   const showSkeleton = useDelayedLoading(loading);
 
-
-  const scrollToAll = () => {
-    document.getElementById('all-cafes')?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   if (showSkeleton) return <PageLoadingSkeleton type="home" />;
-  if (loading && allCafes.length === 0) return null; // Wait for initial fetch if no cache
+  if (loading && allCafes.length === 0) return null;
   if (error) return (
     <div className="min-h-screen flex items-center justify-center bg-[#F8F6F1] text-red-500 font-medium">
       {error}
@@ -44,68 +34,48 @@ export const Home: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#F8F6F1] pb-8">
+    <div className="min-h-screen bg-[#F8F6F1] pb-20">
       {/* Hero Header */}
       <HomeHeader onVibeSelect={(vibe) => navigate(`/search?vibe=${vibe}`)} />
 
-      {/* ── All Cafes Section ───────────────────────────────── */}
-      <main className="px-5 py-4 max-w-7xl mx-auto">
-        <section id="all-cafes">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-2xl font-black text-[#1E2020] tracking-[-0.02em] italic">
-              All Cafés <span className="not-italic font-medium text-lg text-[#7A8478]">({allCafes.length})</span>
-            </h2>
-          </div>
+      {/* Section Header: Here is your cafe today */}
+      <div className="px-5 pt-8 mb-2 max-w-7xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
+          <h2 className="text-4xl font-black text-[#1E2020] tracking-tight leading-none mb-2"
+            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+            Here is your<br />
+            <span className="relative">
+              cafe for today!
+            </span>
+          </h2>
+          <p className="text-sm text-[#7A8478] mt-3 font-medium italic"
+            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+            Cafes of the day
+          </p>
+        </motion.div>
+      </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {paginatedCafes.map((cafe) => (
-              <motion.div
-                key={cafe.id}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-40px' }}
-                transition={{ duration: 0.3 }}
-              >
-                <CafeCard cafe={cafe} />
-              </motion.div>
-            ))}
-          </div>
+      {/* Vibes Content Integrated into Home */}
+      <main className="px-5 space-y-12 max-w-7xl mx-auto pt-6">
+        {/* 1. Café of the Day */}
+        <CafeOfTheDay cafes={allCafes} hideHeader={true} />
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-10">
-              <button
-                onClick={() => { setPage(p => Math.max(1, p - 1)); scrollToAll(); }}
-                disabled={page === 1}
-                className="w-10 h-10 rounded-full flex items-center justify-center border border-[#D8DDD0] text-[#1E2020] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#E8EBE4] transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
+        {/* Thin divider */}
+        <div className="h-px bg-[#D8DDD0]/60" />
 
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                <button
-                  key={p}
-                  onClick={() => { setPage(p); scrollToAll(); }}
-                  className={`w-10 h-10 rounded-full text-sm font-semibold transition-all
-                    ${p === page
-                      ? 'bg-[#1E2020] text-white shadow-md'
-                      : 'text-[#7A8478] hover:bg-[#E8EBE4] border border-[#D8DDD0]'
-                    }`}
-                >
-                  {p}
-                </button>
-              ))}
+        {/* 2. Mood Picker */}
+        <MoodPicker cafes={allCafes} />
 
-              <button
-                onClick={() => { setPage(p => Math.min(totalPages, p + 1)); scrollToAll(); }}
-                disabled={page === totalPages}
-                className="w-10 h-10 rounded-full flex items-center justify-center border border-[#D8DDD0] text-[#1E2020] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#E8EBE4] transition-colors"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-        </section>
+        {/* Thin divider */}
+        <div className="h-px bg-[#D8DDD0]/60" />
+
+        {/* 3. Roulette */}
+        <Roulette cafes={allCafes} />
       </main>
     </div>
   );

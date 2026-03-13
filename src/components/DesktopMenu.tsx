@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, Sparkles, Info, MapPin, Menu as MenuIcon } from 'lucide-react';
+import { Search, Sparkles, Info, MapPin, Menu as MenuIcon, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 type NavItem = {
@@ -12,9 +12,10 @@ type NavItem = {
 
 const navItems: NavItem[] = [
     { icon: MenuIcon, label: 'Menu', isAction: true },
-    { icon: Sparkles, label: 'Vibes', href: '/vibes' },
-    { icon: Search, label: 'Search', href: '/search' },
     { icon: MapPin, label: 'Map', href: '/map' },
+    { icon: Sparkles, label: 'Vibes', href: '/' },
+    { icon: Search, label: 'Search', href: '/search' },
+    { icon: User, label: 'Profile', href: '/profile' },
 ];
 
 export const DesktopMenu: React.FC = () => {
