@@ -4,15 +4,14 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
     User as UserIcon, Mail, Lock, ArrowRight, 
-    AtSign, ChevronLeft, Loader2, AlertCircle
+    AtSign, ChevronLeft, Loader2, AlertCircle, Eye, EyeOff
 } from 'lucide-react';
 import { API_URL } from '../lib/api';
 
 export const Auth: React.FC = () => {
     const [mode, setMode] = useState<'login' | 'register'>('login');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [name, setName] = useState('');
+    const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     
@@ -28,8 +27,8 @@ export const Auth: React.FC = () => {
 
         const endpoint = mode === 'login' ? '/auth/login' : '/auth/register';
         const body = mode === 'login' 
-            ? { email, password } 
-            : { name, email, password };
+            ? { email: formData.email, password: formData.password } 
+            : { name: formData.name, email: formData.email, password: formData.password };
 
         try {
             const response = await fetch(`${API_URL}${endpoint}`, {
@@ -96,8 +95,8 @@ export const Auth: React.FC = () => {
                                         <AtSign className="absolute left-4 top-1/2 -translate-y-1/2 text-[#A8B0A0]" size={18} />
                                         <input
                                             type="text"
-                                            value={name}
-                                            onChange={(e) => setName(e.target.value)}
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                             required={mode === 'register'}
                                             placeholder="Adil Durrani"
                                             className="w-full bg-[#F8F6F1] border border-[#EAEEE8] rounded-2xl pl-12 pr-5 py-4 focus:outline-none focus:border-[#0b4e9d] transition-colors font-bold text-[#1E2020] placeholder:text-[#D8DDD0]"
@@ -113,8 +112,8 @@ export const Auth: React.FC = () => {
                                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#A8B0A0]" size={18} />
                                 <input
                                     type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     required
                                     placeholder="adil@example.com"
                                     className="w-full bg-[#F8F6F1] border border-[#EAEEE8] rounded-2xl pl-12 pr-5 py-4 focus:outline-none focus:border-[#0b4e9d] transition-colors font-bold text-[#1E2020] placeholder:text-[#D8DDD0]"
@@ -123,17 +122,26 @@ export const Auth: React.FC = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-[#A8B0A0] ml-1">Password</label>
-                            <div className="relative">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#A8B0A0]" size={18} />
-                                <input
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                    placeholder="••••••••"
-                                    className="w-full bg-[#F8F6F1] border border-[#EAEEE8] rounded-2xl pl-12 pr-5 py-4 focus:outline-none focus:border-[#0b4e9d] transition-colors font-bold text-[#1E2020] placeholder:text-[#D8DDD0]"
-                                />
+                            <div>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-[#A8B0A0] ml-1">Password</label>
+                                <div className="relative">
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#A8B0A0]" size={18} />
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        value={formData.password}
+                                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                        required
+                                        placeholder="••••••••"
+                                        className="w-full bg-[#F8F6F1] border border-[#EAEEE8] rounded-2xl pl-12 pr-12 py-4 focus:outline-none focus:border-[#0b4e9d] transition-colors font-bold text-[#1E2020] placeholder:text-[#D8DDD0]"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A8B0A0] hover:text-[#0b4e9d] transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
+                                </div>
                             </div>
                         </div>
 

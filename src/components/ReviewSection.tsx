@@ -80,14 +80,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ cafe, onRefresh })
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    const now = new Date();
-    const diffInMs = now.getTime() - date.getTime();
-    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-
-    if (diffInDays === 0) return 'Today';
-    if (diffInDays === 1) return 'Yesterday';
-    if (diffInDays < 7) return `${diffInDays} days ago`;
-    return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   };
 
   return (
@@ -237,7 +230,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ cafe, onRefresh })
                         className="bg-[#F0FFF4] text-[#2F855A] text-sm font-bold py-4 px-6 rounded-2xl flex items-center gap-3 border border-[#2F855A]/10 mb-2"
                       >
                         <CheckCircle2 className="w-5 h-5" />
-                        Posted anonymously!
+                        Review posted successfully!
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -311,12 +304,12 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ cafe, onRefresh })
 
                   <div className="flex items-start justify-between mb-6 relative z-10">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-[#EAF0FB] flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-500 overflow-hidden">
-                        <img
-                          src={`${import.meta.env.BASE_URL}media/map-pin.png`}
-                          alt="WIMC"
-                          className="w-full h-full object-cover"
-                        />
+                      <div className="w-12 h-12 rounded-2xl bg-[#0b4e9d]/5 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-500 overflow-hidden text-[#0b4e9d]">
+                        {review.anonymousId ? (
+                            <span className="text-xl font-black italic">{review.anonymousId.charAt(0)}</span>
+                        ) : (
+                            <User size={24} />
+                        )}
                       </div>
                       <div>
                         <p className="text-base font-bold text-[#1E2020] tracking-tight">{review.anonymousId}</p>

@@ -47,9 +47,13 @@ export async function getReviewsByCafeId(cafeId: string): Promise<any[]> {
 }
 
 export async function postReview(cafeId: string, rating: number, comment: string): Promise<any> {
+  const token = localStorage.getItem('wimc_token');
   const res = await fetch(`${API_BASE}/cafes/${cafeId}/reviews`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
     body: JSON.stringify({ rating, comment }),
   });
   if (!res.ok) {

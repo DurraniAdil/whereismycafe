@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCollections } from '../hooks/useCollections';
 import { getAllCafes } from '../lib/getCafes';
+import { API_URL } from '../lib/api';
 import { Cafe } from '../types/cafe';
 import { CafeCard } from '../components/CafeCard';
 import {
@@ -34,10 +35,13 @@ export const Profile: React.FC = () => {
     const [isDashboard, setIsDashboard] = useState(false);
     const [confirmRemove, setConfirmRemove] = useState<{ id: string; name: string; type: 'saved' | 'visited' } | null>(null);
     
-    // Form state
     const [editName, setEditName] = useState(user?.name ?? 'Adil Durrani');
     const [editEmail, setEditEmail] = useState(user?.email ?? 'adil@example.com');
-    const [editLocation, setEditLocation] = useState('Aurangabad, MH');
+    // Change Password state
+    const [showChangePassword, setShowChangePassword] = useState(false);
+    const [passwords, setPasswords] = useState({ current: '', next: '' });
+    const [pwLoading, setPwLoading] = useState(false);
+    const [pwMessage, setPwMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
     
     // Cafe data state
     const [allCafes, setAllCafes] = useState<Cafe[]>([]);
@@ -82,6 +86,41 @@ export const Profile: React.FC = () => {
             email: editEmail 
         });
         setIsDashboard(false);
+    };
+
+    const handleChangePassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setPwLoading(true);
+        setPwMessage(null);
+        try {
+            const token = localStorage.getItem('wimc_token');
+            const res = await fetch(`${API_URL}/auth/change-password`, {
+                method: 'PATCH',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    currentPassword: passwords.current,
+                    newPassword: passwords.next
+                })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Failed to change password');
+            
+            setPwMessage({ type: 'success', text: 'Password changed successfully!' });
+            setPasswords({ current: '', next: '' });
+            setTimeout(() => setShowChangePassword(false), 2000);
+        } catch (err: any) {
+            setPwMessage({ type: 'error', text: err.message });
+        } finally {
+            setPwLoading(false);
+        }
+    };
+
+    const formatDate = (dateStr: string) => {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
     };
 
     const stats = [
@@ -195,23 +234,9 @@ export const Profile: React.FC = () => {
                             {user?.picture ? (
                                 <img src={user.picture} alt="Avatar" className="w-full h-full object-cover" />
                             ) : (
-                                user?.name?.[0]?.toUpperCase() ?? 'A'
+                                <img src={`${import.meta.env.BASE_URL}media/map-pin.png`} alt="Avatar" className="w-full h-full object-cover opacity-20 p-6" />
                             )}
                         </div>
-                        <button 
-                            onClick={handleAvatarClick}
-                            className="absolute -bottom-1 -right-1 w-9 h-9 bg-[#0b4e9d] text-white
-              rounded-xl flex items-center justify-center hover:bg-[#0a3d7a] transition shadow-lg border-2 border-white"
-                        >
-                            <Camera size={14} />
-                        </button>
-                        <input 
-                            type="file" 
-                            ref={fileInputRef} 
-                            onChange={handleAvatarChange} 
-                            accept="image/*" 
-                            className="hidden" 
-                        />
                     </motion.div>
 
                     {!isDashboard && (
@@ -256,19 +281,10 @@ export const Profile: React.FC = () => {
                                         <label className="text-[10px] font-black uppercase tracking-widest text-[#A8B0A0] ml-1">Email Address</label>
                                         <input 
                                             type="email" 
+                                            disabled
                                             value={editEmail}
-                                            onChange={(e) => setEditEmail(e.target.value)}
-                                            className="w-full bg-[#F8F6F1] border border-[#EAEEE8] rounded-2xl px-5 py-4 focus:outline-none focus:border-[#0b4e9d] transition-colors font-bold text-[#1E2020]"
-                                        />
-                                    </div>
-
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-[#A8B0A0] ml-1">Location</label>
-                                        <input 
-                                            type="text" 
-                                            value={editLocation}
-                                            onChange={(e) => setEditLocation(e.target.value)}
-                                            className="w-full bg-[#F8F6F1] border border-[#EAEEE8] rounded-2xl px-5 py-4 focus:outline-none focus:border-[#0b4e9d] transition-colors font-bold text-[#1E2020]"
+                                            className="w-full bg-[#FBFBFB] border border-[#EAEEE8] rounded-2xl px-5 py-4 font-bold text-[#A8B0A0] cursor-not-allowed opacity-60"
+                                            title="Email cannot be changed"
                                         />
                                     </div>
                                 </div>
@@ -290,18 +306,72 @@ export const Profile: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="bg-[#0b4e9d]/5 border border-[#0b4e9d]/10 rounded-3xl p-6 flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-[#0b4e9d] text-white rounded-xl flex items-center justify-center shadow-lg">
-                                        <ImageIcon size={20} />
+                             {/* Change Password Trigger */}
+                             <div className="mt-8 pt-8 border-t border-[#EAEEE8]">
+                                <button 
+                                    onClick={() => setShowChangePassword(!showChangePassword)}
+                                    className="w-full bg-white border border-[#EAEEE8] text-[#1E2020] text-[11px] font-black uppercase tracking-[.2em] py-5 rounded-3xl hover:bg-[#FBFBFB] transition-all flex items-center justify-between px-8 group"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 bg-[#0b4e9d]/5 rounded-xl flex items-center justify-center text-[#0b4e9d] group-hover:bg-[#0b4e9d] group-hover:text-white transition-colors">
+                                            <Lock size={18} />
+                                        </div>
+                                        <span>Change Password</span>
                                     </div>
-                                    <div>
-                                        <p className="text-[13px] font-black text-[#1E2020] italic" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Account Verification</p>
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-[#0b4e9d]/60">Level 1 Member</p>
-                                    </div>
-                                </div>
-                                <ChevronRight className="text-[#0b4e9d]/40" size={18} />
-                            </div>
+                                    <ChevronRight size={18} className={`transition-transform duration-300 ${showChangePassword ? 'rotate-90' : ''}`} />
+                                </button>
+
+                                <AnimatePresence>
+                                    {showChangePassword && (
+                                        <motion.form 
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: 'auto', opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            onSubmit={handleChangePassword}
+                                            className="overflow-hidden"
+                                        >
+                                            <div className="pt-6 space-y-4">
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[9px] font-black uppercase tracking-widest text-[#A8B0A0] ml-1">Current Password</label>
+                                                    <input 
+                                                        type="password" 
+                                                        required
+                                                        value={passwords.current}
+                                                        onChange={(e) => setPasswords({...passwords, current: e.target.value})}
+                                                        placeholder="••••••••"
+                                                        className="w-full bg-[#FBFBFB] border border-[#EAEEE8] rounded-2xl px-5 py-4 focus:outline-none focus:border-[#0b4e9d] transition-colors font-bold text-[#1E2020] text-sm"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[9px] font-black uppercase tracking-widest text-[#A8B0A0] ml-1">New Password</label>
+                                                    <input 
+                                                        type="password" 
+                                                        required
+                                                        value={passwords.next}
+                                                        onChange={(e) => setPasswords({...passwords, next: e.target.value})}
+                                                        placeholder="••••••••"
+                                                        className="w-full bg-[#FBFBFB] border border-[#EAEEE8] rounded-2xl px-5 py-4 focus:outline-none focus:border-[#0b4e9d] transition-colors font-bold text-[#1E2020] text-sm"
+                                                    />
+                                                </div>
+                                                {pwMessage && (
+                                                    <div className={`text-[11px] font-bold p-4 rounded-2xl border ${
+                                                        pwMessage.type === 'success' ? 'bg-green-50 border-green-100 text-green-600' : 'bg-red-50 border-red-100 text-red-500'
+                                                    }`}>
+                                                        {pwMessage.text}
+                                                    </div>
+                                                )}
+                                                <button 
+                                                    type="submit"
+                                                    disabled={pwLoading}
+                                                    className="w-full bg-[#1E2020] text-white text-[10px] font-black uppercase tracking-[.2em] py-4 rounded-2xl hover:bg-black transition-colors"
+                                                >
+                                                    {pwLoading ? 'Updating...' : 'Update Password'}
+                                                </button>
+                                            </div>
+                                        </motion.form>
+                                    )}
+                                </AnimatePresence>
+                             </div>
                         </motion.div>
                     ) : (
                         <motion.div 
@@ -320,12 +390,7 @@ export const Profile: React.FC = () => {
                                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-5 text-[#A8B0A0] text-[10px] font-black uppercase tracking-[0.16em]">
                                     <div className="flex items-center gap-1.5">
                                         <Calendar size={14} className="text-[#0b4e9d]" />
-                                        <span>Since {user?.joinedAt ?? 'Mar 2026'}</span>
-                                    </div>
-                                    <div className="w-1.5 h-1.5 rounded-full bg-[#D8DDD0] hidden sm:block" />
-                                    <div className="flex items-center gap-1.5">
-                                        <MapPin size={14} className="text-[#0b4e9d]" />
-                                        <span>{editLocation}</span>
+                                        <span>Since {user?.joinedAt ? formatDate(user.joinedAt) : 'March 2026'}</span>
                                     </div>
                                 </div>
                             </div>
