@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Star, User, MessageSquare, Send, CheckCircle2, Quote } from 'lucide-react';
+import { Star, User as UserIcon, MessageSquare, Send, CheckCircle2, Quote } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { getReviewsByCafeId, postReview } from '../lib/getCafes';
 import { Review, Cafe } from '../types/cafe';
@@ -263,7 +263,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ cafe, onRefresh })
                   text-center cursor-pointer hover:border-[#0b4e9d]/30 transition-all group bg-[#FBFBFB]/50"
                 >
                   <div className="w-12 h-12 bg-[#0b4e9d]/5 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-[#0b4e9d] transition-colors">
-                    <User className="w-5 h-5 text-[#0b4e9d] group-hover:text-white transition-colors" />
+                    <UserIcon className="w-5 h-5 text-[#0b4e9d] group-hover:text-white transition-colors" />
                   </div>
                   <p className="text-[#1E2020] text-sm font-bold mb-1">
                     Sign in to leave a review
@@ -308,7 +308,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ cafe, onRefresh })
                         {review.anonymousId ? (
                             <span className="text-xl font-black italic">{review.anonymousId.charAt(0)}</span>
                         ) : (
-                            <User size={24} />
+                            <UserIcon size={24} />
                         )}
                       </div>
                       <div>

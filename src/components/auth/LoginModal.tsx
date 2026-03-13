@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../../context/AuthContext';
 import { 
     User as UserIcon, Mail, Lock, ArrowRight, 
-    AtSign, Loader2, AlertCircle, X, Eye, EyeOff 
+    AtSign, Loader2, AlertCircle, X, Eye, EyeOff, Check
 } from 'lucide-react';
 import { API_URL } from '../../lib/api';
 
@@ -14,10 +14,11 @@ interface LoginModalProps {
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, dismissible = true }) => {
-    const [mode, setMode] = useState<'login' | 'register'>('login');
+    const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login');
     const [formData, setFormData] = useState({ name: '', email: '', password: '' });
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     
     const { login: setAuthData } = useAuth();
@@ -26,12 +27,15 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, dismiss
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
+        setSuccessMessage(null);
         setLoading(true);
 
-        const endpoint = mode === 'login' ? '/auth/login' : '/auth/register';
+        const endpoint = mode === 'login' ? '/auth/login' : mode === 'register' ? '/auth/register' : '/auth/forgot-password';
         const body = mode === 'login' 
             ? { email: formData.email, password: formData.password } 
-            : { name: formData.name, email: formData.email, password: formData.password };
+            : mode === 'register'
+            ? { name: formData.name, email: formData.email, password: formData.password }
+            : { email: formData.email };
 
         try {
             const response = await fetch(`${API_URL}${endpoint}`, {
@@ -46,8 +50,12 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, dismiss
                 throw new Error(data.message || 'Something went wrong');
             }
 
-            setAuthData(data.user, data.token);
-            onClose();
+            if (mode === 'forgot') {
+                setSuccessMessage(data.message || 'Reset link sent! Please check your email.');
+            } else {
+                setAuthData(data.user, data.token);
+                onClose();
+            }
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -93,14 +101,32 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, dismiss
                                     <UserIcon size={28} />
                                 </div>
                                 <h1 className="text-2xl font-black italic text-[#1E2020] tracking-tight mb-2" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                                    {mode === 'login' ? 'Welcome Back' : 'Join the Club'}
+                                    {mode === 'login' ? 'Welcome Back' : mode === 'register' ? 'Join the Club' : 'Reset Password'}
                                 </h1>
                                 <p className="text-[13px] text-[#7A8478] font-medium italic">
-                                    {mode === 'login' ? 'Continue your café hopping journey.' : 'Start discovering and saving your favorite spots.'}
+                                    {mode === 'login' ? 'Continue your café hopping journey.' : mode === 'register' ? 'Start discovering and saving your favorite spots.' : 'Enter your email to receive a reset link.'}
                                 </p>
                             </div>
 
-                            <form onSubmit={handleSubmit} className="space-y-4">
+                            {successMessage ? (
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="text-center py-6"
+                                >
+                                    <div className="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-green-500">
+                                        <Check className="w-8 h-8" strokeWidth={3} />
+                                    </div>
+                                    <p className="text-sm font-bold text-[#1E2020] mb-6">{successMessage}</p>
+                                    <button
+                                        onClick={() => setMode('login')}
+                                        className="text-[10px] font-black uppercase tracking-[0.2em] text-[#0b4e9d] hover:underline"
+                                    >
+                                        Back to Login
+                                    </button>
+                                </motion.div>
+                            ) : (
+                                <form onSubmit={handleSubmit} className="space-y-4">
                                 <AnimatePresence mode="wait">
                                     {mode === 'register' && (
                                         <motion.div
@@ -140,29 +166,42 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, dismiss
                                     </div>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#A8B0A0] ml-2">Password</label>
-                                    <div className="relative">
-                                        <div className="absolute left-6 top-1/2 -translate-y-1/2 text-[#A8B0A0]">
-                                            <Lock size={16} />
+                                {mode !== 'forgot' && (
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between ml-2">
+                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#A8B0A0]">Password</label>
+                                            {mode === 'login' && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setMode('forgot')}
+                                                    className="text-[9px] font-black uppercase tracking-widest text-[#0b4e9d] hover:underline"
+                                                >
+                                                    Forgot?
+                                                </button>
+                                            )}
                                         </div>
-                                        <input
-                                            type={showPassword ? "text" : "password"}
-                                            required
-                                            value={formData.password}
-                                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                            className="w-full bg-[#FBFBFB] border border-[#EAEEE8] rounded-2xl py-4 pl-14 pr-14 text-sm font-medium focus:ring-4 focus:ring-[#0b4e9d]/5 focus:border-[#0b4e9d]/20 transition-all outline-none"
-                                            placeholder="••••••••"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-6 top-1/2 -translate-y-1/2 text-[#A8B0A0] hover:text-[#0b4e9d] transition-colors"
-                                        >
-                                            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                                        </button>
+                                        <div className="relative">
+                                            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-[#A8B0A0]">
+                                                <Lock size={16} />
+                                            </div>
+                                            <input
+                                                type={showPassword ? "text" : "password"}
+                                                required
+                                                value={formData.password}
+                                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                                className="w-full bg-[#FBFBFB] border border-[#EAEEE8] rounded-2xl py-4 pl-14 pr-14 text-sm font-medium focus:ring-4 focus:ring-[#0b4e9d]/5 focus:border-[#0b4e9d]/20 transition-all outline-none"
+                                                placeholder="••••••••"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-6 top-1/2 -translate-y-1/2 text-[#A8B0A0] hover:text-[#0b4e9d] transition-colors"
+                                            >
+                                                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
+                                )}
 
                                 {error && (
                                     <motion.div
@@ -184,22 +223,29 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, dismiss
                                         <Loader2 className="animate-spin" size={16} />
                                     ) : (
                                         <>
-                                            {mode === 'login' ? 'Sign In' : 'Create Account'}
+                                            {mode === 'login' ? 'Sign In' : mode === 'register' ? 'Create Account' : 'Send Reset Link'}
                                             <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                                         </>
                                     )}
                                 </button>
                             </form>
 
+                            )}
+
                             <div className="mt-6 text-center">
                                 <button
-                                    onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
+                                    onClick={() => {
+                                        if (mode === 'forgot') setMode('login');
+                                        else setMode(mode === 'login' ? 'register' : 'login');
+                                        setError(null);
+                                        setSuccessMessage(null);
+                                    }}
                                     className="text-[#7A8478] hover:text-[#0b4e9d] text-[10px] font-black uppercase tracking-widest transition-colors"
                                 >
-                                    {mode === 'login' ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
+                                    {mode === 'login' ? "Don't have an account? Sign Up" : mode === 'register' ? "Already have an account? Sign In" : "Back to Login"}
                                 </button>
                                 
-                                {dismissible && (
+                                {dismissible && mode !== 'forgot' && (
                                     <button
                                         onClick={onClose}
                                         className="block w-full mt-4 text-[#A8B0A0] hover:text-[#7A8478] text-[9px] font-bold uppercase tracking-[0.2em] transition-colors pt-4 border-t border-[#EAEEE8]"

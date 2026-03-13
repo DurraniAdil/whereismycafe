@@ -8,7 +8,7 @@ import { API_URL } from '../lib/api';
 import { Cafe } from '../types/cafe';
 import { CafeCard } from '../components/CafeCard';
 import {
-    MapPin, Star, Coffee, LogOut, Settings,
+    MapPin, Star, Coffee, LogOut, Settings, Lock,
     Bookmark, Edit3, Calendar, ChevronRight,
     User as UserIcon, Heart, X, BookmarkX,
     ChevronLeft, Camera, Check, Image as ImageIcon
