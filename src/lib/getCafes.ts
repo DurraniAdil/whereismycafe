@@ -18,7 +18,7 @@ export async function getAllCafes(): Promise<Cafe[]> {
   // Return cache if available
   if (cafesCache) return cafesCache;
 
-  const res = await fetch(`${API_BASE}/api/cafes`);
+  const res = await fetch(`${API_BASE}/cafes`);
   if (!res.ok) throw new Error('Failed to fetch cafes');
   
   const data = await res.json();
@@ -30,7 +30,7 @@ export async function getCafeById(id: string): Promise<Cafe | null> {
   // Return cache if available
   if (individualCafeCache[id]) return individualCafeCache[id];
 
-  const res = await fetch(`${API_BASE}/api/cafes/${id}`);
+  const res = await fetch(`${API_BASE}/cafes/${id}`);
   if (!res.ok) return null;
   
   const data = await res.json();
@@ -60,7 +60,7 @@ export async function postReview(cafeId: string, rating: number, comment: string
 }
 
 export async function getAllReviewsAdmin(token: string): Promise<any[]> {
-  const res = await fetch(`${API_BASE}/api/admin/reviews`, {
+  const res = await fetch(`${API_BASE}/admin/reviews`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error('Failed to fetch admin reviews');
@@ -68,7 +68,7 @@ export async function getAllReviewsAdmin(token: string): Promise<any[]> {
 }
 
 export async function deleteReviewAdmin(token: string, reviewId: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/admin/reviews/${reviewId}`, {
+  const res = await fetch(`${API_BASE}/admin/reviews/${reviewId}`, {
     method: 'DELETE',
     headers: { Authorization: `Bearer ${token}` },
   });
