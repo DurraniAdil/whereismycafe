@@ -5,6 +5,7 @@ import {
     User as UserIcon, Mail, Lock, ArrowRight, 
     AtSign, Loader2, AlertCircle, X 
 } from 'lucide-react';
+import { API_URL } from '../../lib/api';
 
 interface LoginModalProps {
     isOpen: boolean;
@@ -21,7 +22,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, dismiss
     const [loading, setLoading] = useState(false);
     
     const { login: setAuthData } = useAuth();
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+    // API_URL is now imported from ../../lib/api
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

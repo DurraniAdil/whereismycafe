@@ -6,6 +6,7 @@ import {
     User as UserIcon, Mail, Lock, ArrowRight, 
     AtSign, ChevronLeft, Loader2, AlertCircle
 } from 'lucide-react';
+import { API_URL } from '../lib/api';
 
 export const Auth: React.FC = () => {
     const [mode, setMode] = useState<'login' | 'register'>('login');
@@ -18,7 +19,7 @@ export const Auth: React.FC = () => {
     const { login: setAuthData } = useAuth();
     const navigate = useNavigate();
 
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+    // API_URL is now imported from ../lib/api
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

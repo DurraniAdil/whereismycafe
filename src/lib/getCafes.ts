@@ -1,7 +1,6 @@
 import { Cafe, Vibe } from '../types/cafe';
 
-// ── API base URL ────────────────────────────────────────────
-const API_BASE = 'https://wimc-api-production.up.railway.app';
+import { API_URL as API_BASE } from './api';
 
 // ── Cache Layer ──────────────────────────────────────────────
 let cafesCache: Cafe[] | null = null;
@@ -42,13 +41,13 @@ export async function getCafeById(id: string): Promise<Cafe | null> {
 // ── Review API ───────────────────────────────────────────────
 
 export async function getReviewsByCafeId(cafeId: string): Promise<any[]> {
-  const res = await fetch(`${API_BASE}/api/cafes/${cafeId}/reviews`);
+  const res = await fetch(`${API_BASE}/cafes/${cafeId}/reviews`);
   if (!res.ok) throw new Error('Failed to fetch reviews');
   return res.json();
 }
 
 export async function postReview(cafeId: string, rating: number, comment: string): Promise<any> {
-  const res = await fetch(`${API_BASE}/api/cafes/${cafeId}/reviews`, {
+  const res = await fetch(`${API_BASE}/cafes/${cafeId}/reviews`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ rating, comment }),
