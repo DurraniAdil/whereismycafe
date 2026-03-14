@@ -29,12 +29,12 @@ export const Profile: React.FC = () => {
         toggleHeart, removeVisited, getVisitDate
     } = useCollections();
     const navigate = useNavigate();
-    
+
     // UI state
     const [activeTab, setActiveTab] = useState<'saved' | 'visited'>('saved');
     const [isDashboard, setIsDashboard] = useState(false);
     const [confirmRemove, setConfirmRemove] = useState<{ id: string; name: string; type: 'saved' | 'visited' } | null>(null);
-    
+
     const [editName, setEditName] = useState(user?.name ?? 'Adil Durrani');
     const [editEmail, setEditEmail] = useState(user?.email ?? 'adil@example.com');
     // Change Password state
@@ -42,7 +42,7 @@ export const Profile: React.FC = () => {
     const [passwords, setPasswords] = useState({ current: '', next: '' });
     const [pwLoading, setPwLoading] = useState(false);
     const [pwMessage, setPwMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-    
+
     // Cafe data state
     const [allCafes, setAllCafes] = useState<Cafe[]>([]);
     const [loadingCafes, setLoadingCafes] = useState(true);
@@ -81,9 +81,9 @@ export const Profile: React.FC = () => {
     };
 
     const handleSaveChanges = () => {
-        updateUser({ 
-            name: editName, 
-            email: editEmail 
+        updateUser({
+            name: editName,
+            email: editEmail
         });
         setIsDashboard(false);
     };
@@ -96,7 +96,7 @@ export const Profile: React.FC = () => {
             const token = localStorage.getItem('wimc_token');
             const res = await fetch(`${API_URL}/auth/change-password`, {
                 method: 'PATCH',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
@@ -107,7 +107,7 @@ export const Profile: React.FC = () => {
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || 'Failed to change password');
-            
+
             setPwMessage({ type: 'success', text: 'Password changed successfully!' });
             setPasswords({ current: '', next: '' });
             setTimeout(() => setShowChangePassword(false), 2000);
@@ -141,17 +141,17 @@ export const Profile: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-[#F8F6F1] text-[#1E2020] pb-24 font-sans">
-            
+
             {/* Confirmation Modal */}
             <AnimatePresence>
                 {confirmRemove && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center px-5">
-                        <motion.div 
-                            initial={{ opacity: 0 }} 
-                            animate={{ opacity: 1 }} 
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setConfirmRemove(null)}
-                            className="absolute inset-0 bg-black/40 backdrop-blur-sm" 
+                            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -169,13 +169,13 @@ export const Profile: React.FC = () => {
                                 Do you really want to remove <span className="text-[#1E2020] font-bold">{confirmRemove.name}</span> from your {confirmRemove.type} list?
                             </p>
                             <div className="flex flex-col gap-3">
-                                <button 
+                                <button
                                     onClick={handleDeleteConfirm}
                                     className="bg-red-500 text-white text-[11px] font-black uppercase tracking-[.2em] py-4 rounded-2xl shadow-xl shadow-red-500/20 hover:bg-red-600 transition-colors"
                                 >
                                     Yes, Remove it
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => setConfirmRemove(null)}
                                     className="bg-white border border-[#EAEEE8] text-[#7A8478] text-[11px] font-black uppercase tracking-[.2em] py-4 rounded-2xl hover:bg-[#F4F4F0] transition-colors"
                                 >
@@ -190,13 +190,13 @@ export const Profile: React.FC = () => {
             {/* Header Banner */}
             <div className="relative h-48 md:h-64 border-b border-[#EAEEE8] overflow-hidden group">
                 {/* poster.png as cover image */}
-                <img 
-                    src="/media/poster.png" 
-                    alt="Cover" 
+                <img
+                    src="/media/poster.png"
+                    alt="Cover"
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-black/20" />
-                
+
                 {/* Desktop Back button */}
                 <div className="absolute top-6 left-6 hidden md:block">
                     <Link to="/" className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white shadow-xl hover:bg-[#F4F4F0] transition group/back border border-white/40 backdrop-blur-md">
@@ -207,11 +207,10 @@ export const Profile: React.FC = () => {
 
                 {/* Settings / Dashboard Toggle button */}
                 <div className="absolute top-6 right-6">
-                    <button 
+                    <button
                         onClick={() => setIsDashboard(!isDashboard)}
-                        className={`p-3 rounded-2xl transition-all shadow-xl backdrop-blur-md border border-white/40 ${
-                            isDashboard ? 'bg-[#0b4e9d] text-white scale-110' : 'bg-white text-[#A8B0A0] hover:bg-[#F4F4F0]'
-                        }`}
+                        className={`p-3 rounded-2xl transition-all shadow-xl backdrop-blur-md border border-white/40 ${isDashboard ? 'bg-[#0b4e9d] text-white scale-110' : 'bg-white text-[#A8B0A0] hover:bg-[#F4F4F0]'
+                            }`}
                         title={isDashboard ? "View Profile" : "Edit Profile"}
                     >
                         {isDashboard ? <X size={20} /> : <Settings size={20} />}
@@ -230,11 +229,11 @@ export const Profile: React.FC = () => {
                         className="relative"
                     >
                         <div className="w-28 h-28 rounded-[2.5rem] bg-white flex items-center justify-center text-4xl font-black italic shadow-[0_8px_32px_rgba(11,78,157,0.18)] border-4 border-[#F8F6F1] tracking-tighter text-[#0b4e9d] overflow-hidden"
-                             style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
                             {user?.picture ? (
                                 <img src={user.picture} alt="Avatar" className="w-full h-full object-cover" />
                             ) : (
-                                <img src={`${import.meta.env.BASE_URL}media/map-pin.png`} alt="Avatar" className="w-full h-full object-cover opacity-20 p-6" />
+                                <img src={`${import.meta.env.BASE_URL}media/map-pin.png`} alt="Avatar" className="w-full h-full p-6" />
                             )}
                         </div>
                     </motion.div>
@@ -253,7 +252,7 @@ export const Profile: React.FC = () => {
 
                 <AnimatePresence mode="wait">
                     {isDashboard ? (
-                        <motion.div 
+                        <motion.div
                             key="dashboard"
                             initial={{ opacity: 0, y: 15 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -269,8 +268,8 @@ export const Profile: React.FC = () => {
                                 <div className="space-y-5">
                                     <div className="space-y-1.5">
                                         <label className="text-[10px] font-black uppercase tracking-widest text-[#A8B0A0] ml-1">Full Name</label>
-                                        <input 
-                                            type="text" 
+                                        <input
+                                            type="text"
                                             value={editName}
                                             onChange={(e) => setEditName(e.target.value)}
                                             className="w-full bg-[#F8F6F1] border border-[#EAEEE8] rounded-2xl px-5 py-4 focus:outline-none focus:border-[#0b4e9d] transition-colors font-bold text-[#1E2020]"
@@ -279,8 +278,8 @@ export const Profile: React.FC = () => {
 
                                     <div className="space-y-1.5">
                                         <label className="text-[10px] font-black uppercase tracking-widest text-[#A8B0A0] ml-1">Email Address</label>
-                                        <input 
-                                            type="email" 
+                                        <input
+                                            type="email"
                                             disabled
                                             value={editEmail}
                                             className="w-full bg-[#FBFBFB] border border-[#EAEEE8] rounded-2xl px-5 py-4 font-bold text-[#A8B0A0] cursor-not-allowed opacity-60"
@@ -290,14 +289,14 @@ export const Profile: React.FC = () => {
                                 </div>
 
                                 <div className="mt-8 flex gap-3">
-                                    <button 
+                                    <button
                                         onClick={handleSaveChanges}
                                         className="flex-1 bg-[#0b4e9d] text-white text-[11px] font-black uppercase tracking-[.2em] py-4 rounded-2xl shadow-xl hover:bg-[#0a3d7a] transition-colors flex items-center justify-center gap-2"
                                     >
                                         <Check size={16} strokeWidth={3} />
                                         Save Changes
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={() => setIsDashboard(false)}
                                         className="px-8 bg-white border border-[#EAEEE8] text-[#7A8478] text-[11px] font-black uppercase tracking-[.2em] py-4 rounded-2xl hover:bg-[#F4F4F0] transition-colors"
                                     >
@@ -306,9 +305,9 @@ export const Profile: React.FC = () => {
                                 </div>
                             </div>
 
-                             {/* Change Password Trigger */}
-                             <div className="mt-8 pt-8 border-t border-[#EAEEE8]">
-                                <button 
+                            {/* Change Password Trigger */}
+                            <div className="mt-8 pt-8 border-t border-[#EAEEE8]">
+                                <button
                                     onClick={() => setShowChangePassword(!showChangePassword)}
                                     className="w-full bg-white border border-[#EAEEE8] text-[#1E2020] text-[11px] font-black uppercase tracking-[.2em] py-5 rounded-3xl hover:bg-[#FBFBFB] transition-all flex items-center justify-between px-8 group"
                                 >
@@ -323,7 +322,7 @@ export const Profile: React.FC = () => {
 
                                 <AnimatePresence>
                                     {showChangePassword && (
-                                        <motion.form 
+                                        <motion.form
                                             initial={{ height: 0, opacity: 0 }}
                                             animate={{ height: 'auto', opacity: 1 }}
                                             exit={{ height: 0, opacity: 0 }}
@@ -333,34 +332,33 @@ export const Profile: React.FC = () => {
                                             <div className="pt-6 space-y-4">
                                                 <div className="space-y-1.5">
                                                     <label className="text-[9px] font-black uppercase tracking-widest text-[#A8B0A0] ml-1">Current Password</label>
-                                                    <input 
-                                                        type="password" 
+                                                    <input
+                                                        type="password"
                                                         required
                                                         value={passwords.current}
-                                                        onChange={(e) => setPasswords({...passwords, current: e.target.value})}
+                                                        onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
                                                         placeholder="••••••••"
                                                         className="w-full bg-[#FBFBFB] border border-[#EAEEE8] rounded-2xl px-5 py-4 focus:outline-none focus:border-[#0b4e9d] transition-colors font-bold text-[#1E2020] text-sm"
                                                     />
                                                 </div>
                                                 <div className="space-y-1.5">
                                                     <label className="text-[9px] font-black uppercase tracking-widest text-[#A8B0A0] ml-1">New Password</label>
-                                                    <input 
-                                                        type="password" 
+                                                    <input
+                                                        type="password"
                                                         required
                                                         value={passwords.next}
-                                                        onChange={(e) => setPasswords({...passwords, next: e.target.value})}
+                                                        onChange={(e) => setPasswords({ ...passwords, next: e.target.value })}
                                                         placeholder="••••••••"
                                                         className="w-full bg-[#FBFBFB] border border-[#EAEEE8] rounded-2xl px-5 py-4 focus:outline-none focus:border-[#0b4e9d] transition-colors font-bold text-[#1E2020] text-sm"
                                                     />
                                                 </div>
                                                 {pwMessage && (
-                                                    <div className={`text-[11px] font-bold p-4 rounded-2xl border ${
-                                                        pwMessage.type === 'success' ? 'bg-green-50 border-green-100 text-green-600' : 'bg-red-50 border-red-100 text-red-500'
-                                                    }`}>
+                                                    <div className={`text-[11px] font-bold p-4 rounded-2xl border ${pwMessage.type === 'success' ? 'bg-green-50 border-green-100 text-green-600' : 'bg-red-50 border-red-100 text-red-500'
+                                                        }`}>
                                                         {pwMessage.text}
                                                     </div>
                                                 )}
-                                                <button 
+                                                <button
                                                     type="submit"
                                                     disabled={pwLoading}
                                                     className="w-full bg-[#1E2020] text-white text-[10px] font-black uppercase tracking-[.2em] py-4 rounded-2xl hover:bg-black transition-colors"
@@ -371,10 +369,10 @@ export const Profile: React.FC = () => {
                                         </motion.form>
                                     )}
                                 </AnimatePresence>
-                             </div>
+                            </div>
                         </motion.div>
                     ) : (
-                        <motion.div 
+                        <motion.div
                             key="profile"
                             initial={{ opacity: 0, y: 15 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -434,15 +432,15 @@ export const Profile: React.FC = () => {
                                                 {savedCafes.map((cafe) => (
                                                     <div key={cafe.id} className="relative group">
                                                         <CafeCard cafe={cafe} />
-                                            <button 
-                                                onClick={(e) => { 
-                                                    e.preventDefault(); 
-                                                    setConfirmRemove({ id: cafe.id, name: cafe.name, type: 'saved' });
-                                                }}
-                                                className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center border border-[#EAEEE8] shadow-sm hover:bg-red-50 hover:border-red-100 transition-all group/btn"
-                                            >
-                                                <Heart className="w-4 h-4 fill-[#0b4e9d] text-[#0b4e9d] group-hover/btn:fill-red-400 group-hover/btn:text-red-400" />
-                                            </button>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                setConfirmRemove({ id: cafe.id, name: cafe.name, type: 'saved' });
+                                                            }}
+                                                            className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center border border-[#EAEEE8] shadow-sm hover:bg-red-50 hover:border-red-100 transition-all group/btn"
+                                                        >
+                                                            <Heart className="w-4 h-4 fill-[#0b4e9d] text-[#0b4e9d] group-hover/btn:fill-red-400 group-hover/btn:text-red-400" />
+                                                        </button>
                                                     </div>
                                                 ))}
                                             </div>
@@ -475,7 +473,7 @@ export const Profile: React.FC = () => {
                                                             <p className="text-[#0b4e9d] text-[10px] font-bold">{getVisitDate(cafe.id)}</p>
                                                         </div>
                                                     </div>
-                                                    <button 
+                                                    <button
                                                         onClick={() => setConfirmRemove({ id: cafe.id, name: cafe.name, type: 'visited' })}
                                                         className="w-10 h-10 rounded-2xl flex items-center justify-center hover:bg-red-50 text-[#C8D0C0] hover:text-red-400 transition-colors"
                                                     >
