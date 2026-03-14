@@ -1,36 +1,599 @@
-# WIMC Auth Strategy Pivot: JWT & BCrypt
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Compass, Sparkles, CloudRain, Wind, Heart, Mountain, Flame, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { allPoems } from '../data/poems';
+import { collections } from '../data/metadata';
+import { getThemeForCollection } from '../utils/themes';
+import PoemCard from '../components/PoemCard';
+import { Poem } from '../types';
 
-## Overview
-We are moving away from Google OAuth to implement a standard Email/Password authentication system.
+const MotionDiv = motion.div as any;
 
-## Backend Changes (wimc-api)
-1. **User Model**: 
-   - `email`: string (unique)
-   - `password`: string (hashed)
-   - `name`: string
-   - `picture`: string (base64 or URL)
-   - `joinedAt`: date
-   - `collections`: { hearted: [string], visited: [{ id: string, date: string }] }
+// Keyword mappings for axes
+const KEYWORDS = {
+    north: ['god', 'divine', 'khuda', 'allah', 'soul', 'ruh', 'spirit', 'prayer', 'dua', 'worship', 'sacred', 'heaven', 'arsh', 'sufi', 'mystic', 'faith'],
+    south: ['earth', 'mitti', 'clay', 'world', 'duniya', 'human', 'insaan', 'reality', 'ground', 'roots', 'body', 'jism', 'dust', 'nature'],
+    east: ['joy', 'happy', 'smile', 'union', 'vasl', 'meeting', 'milan', 'light', 'noor', 'hope', 'umeed', 'love', 'ishq', 'beauty', 'peace', 'sukoon'],
+    west: ['grief', 'gham', 'pain', 'dard', 'separation', 'hijr', 'tears', 'aasu', 'sad', 'broken', 'toot', 'dark', 'andhera', 'death', 'maut', 'loss'],
+};
 
-2. **Auth Routes**:
-   - `POST /api/auth/register`: Hashes password using `bcrypt`, saves user, returns JWT.
-   - `POST /api/auth/login`: Compares passwords, returns JWT.
-   
-3. **Dependencies**:
-   - `bcryptjs`
-   - `jsonwebtoken`
+interface ScoredPoem extends Poem {
+    angle: number;
+    score: number;
+}
 
-## Frontend Changes (src)
-1. **AuthContext**:
-   - Update `login` to accept email/password.
-   - Add `register` function.
-   - Handle JWT storage in `localStorage`.
+export default function MoodCompassPage() {
+    const [angle, setAngle] = useState(0);
+    const [isDragging, setIsDragging] = useState(false);
+    const compassRef = useRef<HTMLDivElement>(null);
 
-2. **New Pages**:
-   - `src/pages/Auth.tsx`: Combined Login/Register page with WIMC aesthetic.
+    const scoredPoems = useMemo(() => {
+        // Collections to hide from the compass
+        const hiddenCollections = ['Meri Hond', 'Naghma Haye Hoor'];
 
-3. **Routing**:
-   - Add `/auth` route to `App.tsx`.
+        return allPoems
+            .filter((poem) => !hiddenCollections.includes(poem.collection))
+            .map((poem) => {
+                const text = `${poem.title} ${poem.content} ${poem.themes.join(' ')}`.toLowerCase();
 
-## Data Migration
-- On successful login/register, local `heartedIds` and `visitedEntries` from `useCollections` should be synced to the backend.
+                let north = 0,
+                    south = 0,
+                    east = 0,
+                    west = 0;
+
+                KEYWORDS.north.forEach((k) => {
+                    if (text.includes(k)) north++;
+                });
+                KEYWORDS.south.forEach((k) => {
+                    if (text.includes(k)) south++;
+                });
+                KEYWORDS.east.forEach((k) => {
+                    if (text.includes(k)) east++;
+                });
+                KEYWORDS.west.forEach((k) => {
+                    if (text.includes(k)) west++;
+                });
+
+                const y = north - south;
+                const x = east - west;
+
+                let theta = Math.atan2(x, y);
+                let degrees = (theta * 180) / Math.PI;
+
+                if (degrees < 0) degrees += 360;
+
+                const score = Math.sqrt(x * x + y * y);
+
+                return { ...poem, angle: degrees, score };
+            })
+            .filter((p) => p.score > 0);
+    }, []);
+
+    const visiblePoems = useMemo(() => {
+        const filtered = scoredPoems.filter((p) => {
+            let diff = Math.abs(p.angle - angle);
+            if (diff > 180) diff = 360 - diff;
+            return diff < 45;
+        });
+
+        return filtered
+            .sort((a, b) => {
+                let diffA = Math.abs(a.angle - angle);
+                if (diffA > 180) diffA = 360 - diffA;
+
+                let diffB = Math.abs(b.angle - angle);
+                if (diffB > 180) diffB = 360 - diffB;
+
+                return diffA - diffB;
+            })
+            .slice(0, 3);
+    }, [angle, scoredPoems]);
+
+    const handleMouseMove = (e: MouseEvent | React.MouseEvent | TouchEvent | React.TouchEvent) => {
+        if (!isDragging || !compassRef.current) return;
+
+        const rect = compassRef.current.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        let clientX, clientY;
+        if ('touches' in e) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            // @ts-ignore
+            clientX = e.clientX;
+            // @ts-ignore
+            clientY = e.clientY;
+        }
+
+        const dx = clientX - centerX;
+        const dy = clientY - centerY;
+
+        let theta = Math.atan2(dy, dx);
+        let degrees = (theta * 180) / Math.PI;
+
+        degrees += 90;
+
+        if (degrees < 0) degrees += 360;
+
+        setAngle(degrees);
+    };
+
+    useEffect(() => {
+        const endDrag = () => setIsDragging(false);
+        if (isDragging) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', endDrag);
+            window.addEventListener('touchmove', handleMouseMove);
+            window.addEventListener('touchend', endDrag);
+        }
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', endDrag);
+            window.removeEventListener('touchmove', handleMouseMove);
+            window.removeEventListener('touchend', endDrag);
+        };
+    }, [isDragging]);
+
+    const getCurrentLabel = () => {
+        if (angle >= 337.5 || angle < 22.5)
+            return {
+                id: 'north',
+                label: 'Divine',
+                sub: 'Spiritual • Sacred • Transcendence',
+                icon: Sparkles,
+                color: 'text-indigo-900',
+            };
+        if (angle >= 22.5 && angle < 67.5)
+            return {
+                id: 'northeast',
+                label: 'Epiphany',
+                sub: 'Revelation • Wonder • Grace',
+                icon: Sparkles,
+                color: 'text-violet-800',
+            };
+        if (angle >= 67.5 && angle < 112.5)
+            return {
+                id: 'east',
+                label: 'Union',
+                sub: 'Joy • Love • Connection',
+                icon: Heart,
+                color: 'text-rose-800',
+            };
+        if (angle >= 112.5 && angle < 157.5)
+            return {
+                id: 'southeast',
+                label: 'Serenity',
+                sub: 'Peace • Acceptance • Calm',
+                icon: CloudRain,
+                color: 'text-amber-800',
+            };
+        if (angle >= 157.5 && angle < 202.5)
+            return {
+                id: 'south',
+                label: 'Grounded',
+                sub: 'Earth • Routine • Reality',
+                icon: Mountain,
+                color: 'text-emerald-900',
+            };
+        if (angle >= 202.5 && angle < 247.5)
+            return {
+                id: 'southwest',
+                label: 'Solitude',
+                sub: 'Silence • Reflection • Exile',
+                icon: Wind,
+                color: 'text-teal-800',
+            };
+        if (angle >= 247.5 && angle < 292.5)
+            return {
+                id: 'west',
+                label: 'Longing',
+                sub: 'Separation • Pain • Memory',
+                icon: CloudRain,
+                color: 'text-slate-700',
+            };
+        return {
+            id: 'northwest',
+            label: 'Devotion',
+            sub: 'Sacrifice • Seeking • Prayer',
+            icon: Flame,
+            color: 'text-blue-900',
+        };
+    };
+
+    const currentMood = getCurrentLabel();
+    const MoodIcon = currentMood.icon;
+
+    return (
+        <main className="min-h-screen relative overflow-hidden bg-[#F5EFE7]">
+            {/* Background layers */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[#F5EFE7] via-[#E8DDD0] to-[#DDD0BE]" />
+            <div className="absolute inset-0 opacity-40 bg-[url('https://www.transparenttextures.com/patterns/old-map.png')]" />
+            <div className="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/paper.png')]" />
+
+            {/* Map grid */}
+            <svg className="absolute inset-0 w-full h-full opacity-[0.07] pointer-events-none">
+                {[...Array(20)].map((_, i) => (
+                    <line key={`v-${i}`} x1={`${i * 5}%`} y1="0" x2={`${i * 5}%`} y2="100%" stroke="#8B7355" strokeWidth="0.5" />
+                ))}
+                {[...Array(20)].map((_, i) => (
+                    <line key={`h-${i}`} x1="0" y1={`${i * 5}%`} x2="100%" y2={`${i * 5}%`} stroke="#8B7355" strokeWidth="0.5" />
+                ))}
+            </svg>
+
+            {/* Corners – reduced offsets on mobile */}
+            <div className="absolute top-6 sm:top-8 left-4 sm:left-8 w-20 sm:w-32 h-20 sm:h-32 opacity-20">
+                <svg viewBox="0 0 100 100" className="w-full h-full">
+                    <path d="M 0 0 L 30 0 M 0 0 L 0 30" stroke="#8B7355" strokeWidth="2" fill="none" />
+                    <path d="M 5 5 L 20 5 M 5 5 L 5 20" stroke="#8B7355" strokeWidth="1" fill="none" />
+                    <circle cx="15" cy="15" r="3" fill="#8B7355" />
+                </svg>
+            </div>
+            <div className="absolute top-6 sm:top-8 right-4 sm:right-8 w-20 sm:w-32 h-20 sm:h-32 opacity-20 scale-x-[-1]">
+                <svg viewBox="0 0 100 100" className="w-full h-full">
+                    <path d="M 0 0 L 30 0 M 0 0 L 0 30" stroke="#8B7355" strokeWidth="2" fill="none" />
+                    <path d="M 5 5 L 20 5 M 5 5 L 5 20" stroke="#8B7355" strokeWidth="1" fill="none" />
+                    <circle cx="15" cy="15" r="3" fill="#8B7355" />
+                </svg>
+            </div>
+            <div className="absolute bottom-6 sm:bottom-8 left-4 sm:left-8 w-20 sm:w-32 h-20 sm:h-32 opacity-20 scale-y-[-1]">
+                <svg viewBox="0 0 100 100" className="w-full h-full">
+                    <path d="M 0 0 L 30 0 M 0 0 L 0 30" stroke="#8B7355" strokeWidth="2" fill="none" />
+                    <path d="M 5 5 L 20 5 M 5 5 L 5 20" stroke="#8B7355" strokeWidth="1" fill="none" />
+                    <circle cx="15" cy="15" r="3" fill="#8B7355" />
+                </svg>
+            </div>
+            <div className="absolute bottom-6 sm:bottom-8 right-4 sm:right-8 w-20 sm:w-32 h-20 sm:h-32 opacity-20 scale-[-1]">
+                <svg viewBox="0 0 100 100" className="w-full h-full">
+                    <path d="M 0 0 L 30 0 M 0 0 L 0 30" stroke="#8B7355" strokeWidth="2" fill="none" />
+                    <path d="M 5 5 L 20 5 M 5 5 L 5 20" stroke="#8B7355" strokeWidth="1" fill="none" />
+                    <circle cx="15" cy="15" r="3" fill="#8B7355" />
+                </svg>
+            </div>
+
+            {/* Coffee stains */}
+            <div className="absolute top-1/4 right-1/4 w-32 sm:w-40 h-32 sm:h-40 bg-[#C19A6B]/5 rounded-full blur-3xl" />
+            <div className="absolute bottom-1/3 left-1/3 w-40 sm:w-52 h-40 sm:h-52 bg-[#8B7355]/5 rounded-full blur-3xl" />
+
+            {/* Header */}
+            <div className="absolute top-0 left-0 w-full px-3 sm:px-6 py-4 sm:py-6 z-50 flex justify-between items-center pointer-events-none">
+                <Link
+                    to="/"
+                    className="pointer-events-auto flex items-center gap-2 text-stone-700 hover:text-stone-900 transition-colors uppercase tracking-[0.18em] sm:tracking-[0.2em] text-[9px] sm:text-[10px] font-bold border-2 border-stone-400/40 bg-[#F5EFE7]/80 backdrop-blur-sm px-3 py-2 sm:px-5 sm:py-2.5 rounded-sm shadow-lg hover:shadow-xl"
+                >
+                    <ArrowLeft className="w-3 h-3" /> Archive
+                </Link>
+
+                {/* Title badge - hidden on xs, shown from sm up */}
+                <div className="pointer-events-auto hidden sm:block absolute left-1/2 -translate-x-1/2 top-4 sm:top-6">
+                    <div className="relative bg-[#F5EFE7]/80 px-4 sm:px-6 py-2 rounded-sm border-2 border-stone-400/40 backdrop-blur-sm shadow-lg">
+                        <div className="absolute inset-0 border border-stone-300/30 m-1.5" />
+                        <div className="relative flex items-center gap-2 text-stone-800">
+                            <Compass className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-600" />
+                            <span className="text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em]">
+                                Cartographer&apos;s Compass
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Main content */}
+            <div className="relative z-10 min-h-screen pt-24 sm:pt-28 pb-10 sm:pb-12 px-4 sm:px-6 lg:px-10">
+                <div className="max-w-5xl lg:max-w-6xl mx-auto">
+                    {/* Title */}
+                    <div className="text-center mb-10 sm:mb-12">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.05 }}
+                            className="flex items-center justify-center gap-4 mb-3 sm:mb-4"
+                        >
+                            <div className="h-px w-12 sm:w-20 bg-gradient-to-r from-transparent via-stone-400 to-stone-500" />
+                            <svg width="14" height="14" viewBox="0 0 24 24" className="text-stone-600">
+                                <path
+                                    fill="currentColor"
+                                    d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
+                                />
+                            </svg>
+                            <div className="h-px w-12 sm:w-20 bg-gradient-to-l from-transparent via-stone-400 to-stone-500" />
+                        </motion.div>
+
+                        <motion.h1
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-stone-900 tracking-tight mb-2 sm:mb-3"
+                        >
+                            Emotional Cartography
+                        </motion.h1>
+
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.15 }}
+                            className="text-stone-600 font-serif italic text-sm sm:text-base"
+                        >
+                            Navigate the territories of the soul
+                        </motion.p>
+                    </div>
+
+                    {/* Layout: Compass + Poems */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-start">
+                        {/* Compass column */}
+                        <div className="flex flex-col items-center justify-center lg:sticky lg:top-24">
+                            <div className="relative scale-90 sm:scale-95 lg:scale-100">
+                                {/* Outer frame – responsive inset */}
+                                <div className="absolute -inset-6 sm:-inset-8 md:-inset-10 lg:-inset-12 border-4 border-stone-400/30 bg-gradient-to-br from-[#F5EFE7]/50 to-[#E8DDD0]/50 rounded-sm shadow-2xl">
+                                    <div className="absolute inset-0 border-2 border-stone-300/20 m-2" />
+                                </div>
+
+                                {/* Corner ornaments – reduced offsets on mobile */}
+                                <div className="absolute -top-4 sm:-top-6 md:-top-8 -left-4 sm:-left-6 md:-left-8 w-10 sm:w-14 md:w-16 h-10 sm:h-14 md:h-16">
+                                    <div className="w-full h-full border-t-2 border-l-2 border-stone-500/40" />
+                                    <div className="absolute top-1.5 left-1.5 w-7 sm:w-9 h-7 sm:h-9 border-t border-l border-stone-400/30" />
+                                </div>
+                                <div className="absolute -top-4 sm:-top-6 md:-top-8 -right-4 sm:-right-6 md:-right-8 w-10 sm:w-14 md:w-16 h-10 sm:h-14 md:h-16">
+                                    <div className="w-full h-full border-t-2 border-r-2 border-stone-500/40" />
+                                    <div className="absolute top-1.5 right-1.5 w-7 sm:w-9 h-7 sm:h-9 border-t border-r border-stone-400/30" />
+                                </div>
+                                <div className="absolute -bottom-4 sm:-bottom-6 md:-bottom-8 -left-4 sm:-left-6 md:-left-8 w-10 sm:w-14 md:w-16 h-10 sm:h-14 md:h-16">
+                                    <div className="w-full h-full border-b-2 border-l-2 border-stone-500/40" />
+                                    <div className="absolute bottom-1.5 left-1.5 w-7 sm:w-9 h-7 sm:h-9 border-b border-l border-stone-400/30" />
+                                </div>
+                                <div className="absolute -bottom-4 sm:-bottom-6 md:-bottom-8 -right-4 sm:-right-6 md:-right-8 w-10 sm:w-14 md:w-16 h-10 sm:h-14 md:h-16">
+                                    <div className="w-full h-full border-b-2 border-r-2 border-stone-500/40" />
+                                    <div className="absolute bottom-1.5 right-1.5 w-7 sm:w-9 h-7 sm:h-9 border-b border-r border-stone-400/30" />
+                                </div>
+
+                                {/* Cardinal labels – closer on mobile */}
+                                <div className="absolute -top-8 sm:-top-10 md:-top-12 left-1/2 -translate-x-1/2 text-center">
+                                    <div className="font-serif text-xs sm:text-sm font-bold text-stone-700 mb-0.5 sm:mb-1">N</div>
+                                    <div className="text-[8px] sm:text-[9px] uppercase tracking-[0.2em] sm:tracking-[0.3em] text-stone-600">
+                                        Divine
+                                    </div>
+                                </div>
+                                <div className="absolute -bottom-8 sm:-bottom-10 md:-bottom-12 left-1/2 -translate-x-1/2 text-center">
+                                    <div className="font-serif text-xs sm:text-sm font-bold text-stone-700 mb-0.5 sm:mb-1">S</div>
+                                    <div className="text-[8px] sm:text-[9px] uppercase tracking-[0.2em] sm:tracking-[0.3em] text-stone-600">
+                                        Grounded
+                                    </div>
+                                </div>
+                                <div className="absolute -right-10 sm:-right-14 md:-right-16 top-1/2 -translate-y-1/2 text-center">
+                                    <div className="font-serif text-xs sm:text-sm font-bold text-stone-700 mb-0.5 sm:mb-1">E</div>
+                                    <div className="text-[8px] sm:text-[9px] uppercase tracking-[0.2em] sm:tracking-[0.3em] text-stone-600 whitespace-nowrap">
+                                        Union
+                                    </div>
+                                </div>
+                                <div className="absolute -left-10 sm:-left-14 md:-left-16 top-1/2 -translate-y-1/2 text-center">
+                                    <div className="font-serif text-xs sm:text-sm font-bold text-stone-700 mb-0.5 sm:mb-1">W</div>
+                                    <div className="text-[8px] sm:text-[9px] uppercase tracking-[0.2em] sm:tracking-[0.3em] text-stone-600 whitespace-nowrap">
+                                        Longing
+                                    </div>
+                                </div>
+
+                                {/* Intercardinal */}
+                                <div className="absolute top-[12%] right-[12%] text-[10px] sm:text-xs font-serif text-stone-500">NE</div>
+                                <div className="absolute bottom-[12%] right-[12%] text-[10px] sm:text-xs font-serif text-stone-500">SE</div>
+                                <div className="absolute bottom-[12%] left-[12%] text-[10px] sm:text-xs font-serif text-stone-500">SW</div>
+                                <div className="absolute top-[12%] left-[12%] text-[10px] sm:text-xs font-serif text-stone-500">NW</div>
+
+                                {/* Compass rose */}
+                                <motion.div
+                                    ref={compassRef}
+                                    className="w-64 h-64 sm:w-72 sm:h-72 md:w-80 md:h-80 rounded-full relative cursor-grab active:cursor-grabbing flex items-center justify-center overflow-hidden"
+                                    style={{
+                                        background: 'linear-gradient(135deg, #F5EFE7 0%, #E8DDD0 50%, #DDD0BE 100%)',
+                                        boxShadow:
+                                            '0 0 0 4px rgba(120, 100, 80, 0.15), 0 0 0 10px rgba(139, 115, 85, 0.1), 0 20px 60px -12px rgba(0,0,0,0.15), inset 0 4px 20px rgba(0,0,0,0.05)',
+                                    }}
+                                    onMouseDown={() => setIsDragging(true)}
+                                    onTouchStart={() => setIsDragging(true)}
+                                    whileTap={{ scale: 0.98 }}
+                                >
+                                    <div className="absolute inset-0 opacity-40 bg-[url('https://www.transparenttextures.com/patterns/old-map.png')]" />
+                                    <div className="absolute inset-0 rounded-full shadow-[inset_0_6px_24px_rgba(0,0,0,0.08)]" />
+
+                                    <div className="absolute inset-6 sm:inset-8 rounded-full border-2 border-stone-400/30" />
+                                    <div className="absolute inset-9 sm:inset-12 rounded-full border border-stone-300/20" />
+                                    <div className="absolute inset-12 sm:inset-16 rounded-full border border-stone-300/15" />
+
+                                    {/* Spokes */}
+                                    {[...Array(16)].map((_, i) => (
+                                        <div
+                                            key={i}
+                                            className="absolute left-0 top-1/2 w-full h-px pointer-events-none"
+                                            style={{ transform: `rotate(${i * 22.5}deg)` }}
+                                        >
+                                            <div
+                                                className={`h-px mx-auto ${i % 4 === 0
+                                                    ? 'w-full bg-stone-500/30'
+                                                    : i % 2 === 0
+                                                        ? 'w-[85%] bg-stone-400/20'
+                                                        : 'w-[70%] bg-stone-300/15'
+                                                    }`}
+                                            />
+                                        </div>
+                                    ))}
+
+                                    {/* Degree ticks */}
+                                    {[...Array(72)].map((_, i) => (
+                                        <div
+                                            key={`tick-${i}`}
+                                            className="absolute left-0 top-1/2 w-full h-px pointer-events-none"
+                                            style={{ transform: `rotate(${i * 5}deg)` }}
+                                        >
+                                            {i % 9 === 0 && (
+                                                <>
+                                                    <div className="absolute left-5 sm:left-6 w-3 sm:w-4 h-0.5 bg-stone-600/60" />
+                                                    <div className="absolute right-5 sm:right-6 w-3 sm:w-4 h-0.5 bg-stone-600/60" />
+                                                </>
+                                            )}
+                                            {i % 9 !== 0 && i % 3 === 0 && (
+                                                <>
+                                                    <div className="absolute left-6 sm:left-8 w-1.5 sm:w-2 h-px bg-stone-500/40" />
+                                                    <div className="absolute right-6 sm:right-8 w-1.5 sm:w-2 h-px bg-stone-500/40" />
+                                                </>
+                                            )}
+                                        </div>
+                                    ))}
+
+                                    {/* Rotating needle */}
+                                    <motion.div
+                                        className="absolute inset-0 pointer-events-none"
+                                        style={{ rotate: angle }}
+                                        transition={{ type: 'spring', stiffness: 90, damping: 20 }}
+                                    >
+                                        {/* North pointer */}
+                                        <div className="absolute top-10 sm:top-12 left-1/2 -translate-x-1/2 flex flex-col items-center">
+                                            <svg width="22" height="32" viewBox="0 0 24 36" className="drop-shadow-md">
+                                                <path d="M 12 0 L 18 28 L 12 24 L 6 28 Z" fill="#C41E3A" stroke="#8B1E1E" strokeWidth="1" />
+                                            </svg>
+                                        </div>
+
+                                        {/* South pointer */}
+                                        <div className="absolute bottom-10 sm:bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center rotate-180">
+                                            <svg width="22" height="32" viewBox="0 0 24 36" className="drop-shadow-md">
+                                                <path d="M 12 0 L 18 28 L 12 24 L 6 28 Z" fill="#F5EFE7" stroke="#8B7355" strokeWidth="1" />
+                                            </svg>
+                                        </div>
+
+                                        {/* Pivot */}
+                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-5 sm:w-6 h-5 sm:h-6 rounded-full bg-gradient-to-br from-stone-400 to-stone-600 shadow-lg border-2 border-stone-700" />
+                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 sm:w-3 h-2.5 sm:h-3 rounded-full bg-stone-300" />
+                                    </motion.div>
+
+                                    {/* Center mood display */}
+                                    <div className="relative z-10 w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full flex flex-col items-center justify-center p-3 sm:p-4 bg-[#F5EFE7]/95 shadow-[inset_0_2px_8px_rgba(0,0,0,0.1)] border-2 border-stone-300/40">
+                                        <div className="absolute inset-0 rounded-full border border-stone-400/20 m-2.5 sm:m-3" />
+                                        <AnimatePresence mode="wait">
+                                            <MotionDiv
+                                                key={currentMood.id}
+                                                initial={{ opacity: 0, scale: 0.8, rotate: -90 }}
+                                                animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                                                exit={{ opacity: 0, scale: 0.8, rotate: 90 }}
+                                                transition={{ duration: 0.3 }}
+                                                className="flex flex-col items-center"
+                                            >
+                                                <MoodIcon className={`w-5 h-5 sm:w-6 sm:h-6 mb-1.5 sm:mb-2 ${currentMood.color} drop-shadow-sm`} />
+                                                <span
+                                                    className={`text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.12em] sm:tracking-[0.15em] ${currentMood.color} text-center leading-tight`}
+                                                >
+                                                    {currentMood.label}
+                                                </span>
+                                            </MotionDiv>
+                                        </AnimatePresence>
+                                    </div>
+                                </motion.div>
+                            </div>
+
+                            {/* Current territory text */}
+                            <div className="mt-6 sm:mt-8 text-center max-w-xs">
+                                <div className="mb-3 sm:mb-4">
+                                    <div className="h-px bg-gradient-to-r from-transparent via-stone-400 to-transparent mb-2 sm:mb-3" />
+                                    <span className="text-[9px] sm:text-xs font-bold uppercase tracking-[0.22em] sm:tracking-[0.3em] text-stone-500 block mt-6 sm:mt-8 mb-1.5">
+                                        Current Territory
+                                    </span>
+                                    <h2 className={`font-serif text-2xl sm:text-3xl font-bold ${currentMood.color} drop-shadow-sm`}>
+                                        {currentMood.label}
+                                    </h2>
+                                    <p className="font-serif italic text-stone-600 mt-2 text-xs sm:text-sm">{currentMood.sub}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Poems column */}
+                        <div className="flex flex-col min-h-[380px] sm:min-h-[480px] md:min-h-[600px]">
+                            {/* Header */}
+                            <div className="mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-stone-400/30">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+                                    <div>
+                                        <span className="text-[9px] sm:text-xs font-bold uppercase tracking-[0.22em] sm:tracking-[0.3em] text-stone-500 block mb-1">
+                                            Discoveries
+                                        </span>
+                                        <div className="text-stone-900 font-serif text-xl sm:text-2xl font-bold">
+                                            {visiblePoems.length} Pieces Found
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-start sm:justify-end gap-1.5">
+                                        {[...Array(3)].map((_, i) => (
+                                            <div
+                                                key={i}
+                                                className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${i < visiblePoems.length ? 'bg-stone-700' : 'bg-stone-300'
+                                                    }`}
+                                                style={{
+                                                    clipPath:
+                                                        'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)',
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Poems list */}
+                            <div className="grid grid-cols-1 gap-5 sm:gap-6 flex-1">
+                                <AnimatePresence mode="popLayout">
+                                    {visiblePoems.length > 0 ? (
+                                        visiblePoems.map((poem, i) => (
+                                            <MotionDiv
+                                                key={poem.id}
+                                                layout
+                                                initial={{ opacity: 0, x: 40, scale: 0.95 }}
+                                                animate={{ opacity: 1, x: 0, scale: 1 }}
+                                                exit={{ opacity: 0, x: -20, scale: 0.95, transition: { duration: 0.2 } }}
+                                                transition={{
+                                                    type: 'spring',
+                                                    stiffness: 100,
+                                                    damping: 20,
+                                                    delay: i * 0.08,
+                                                }}
+                                            >
+                                                <PoemCard
+                                                    poem={poem}
+                                                    theme={getThemeForCollection(
+                                                        collections.find((c) => c.name === poem.collection)?.slug || '',
+                                                    )}
+                                                />
+                                            </MotionDiv>
+                                        ))
+                                    ) : (
+                                        <motion.div
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            className="flex flex-col items-center justify-center py-20 sm:py-24 lg:py-32 relative"
+                                        >
+                                            <div className="relative">
+                                                <Wind className="w-12 h-12 sm:w-16 sm:h-16 mb-4 sm:mb-6 text-stone-400/40" />
+                                            </div>
+                                            <p className="font-serif text-xl sm:text-2xl italic text-stone-500/60 mb-1 sm:mb-2">
+                                                Terra Incognita
+                                            </p>
+                                            <p className="text-[9px] sm:text-xs font-bold uppercase tracking-[0.22em] sm:tracking-[0.3em] text-stone-400/50">
+                                                Rotate to chart new lands
+                                            </p>
+                                            <div className="flex items-center gap-3 sm:gap-4 mt-4 sm:mt-6">
+                                                <div className="h-px w-12 sm:w-16 bg-stone-300" />
+                                                <svg width="10" height="10" viewBox="0 0 24 24" className="text-stone-400/40">
+                                                    <path
+                                                        fill="currentColor"
+                                                        d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
+                                                    />
+                                                </svg>
+                                                <div className="h-px w-12 sm:w-16 bg-stone-300" />
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    );
+}
+
+heres the code for that compass from the other code, take inspo for styling from here and then implement it in the mood picker

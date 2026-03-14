@@ -5,10 +5,10 @@ import { HomeHeader } from '../components/HomeHeader';
 import { PageLoadingSkeleton } from '../components/PageLoadingSkeleton';
 import { useDelayedLoading } from '../hooks/useDelayedLoading';
 import { CafeOfTheDay } from '../components/CafeOfTheDay';
-import { MoodPicker } from '../components/MoodPicker';
 import { Roulette } from '../components/Roulette';
 import { motion } from 'motion/react';
 import { Cafe } from '../types/cafe';
+import { MoodPicker } from '../components/MoodPicker';
 
 export const Home: React.FC = () => {
   const navigate = useNavigate();

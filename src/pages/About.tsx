@@ -250,9 +250,8 @@ export const About: React.FC = () => {
             <div className="px-5 pb-8">
                 <FadeUp>
                     <div className="bg-[#0b4e9d] rounded-3xl p-6 text-white
-                          shadow-[0_8px_32px_rgba(11,78,157,0.28)]">
+              shadow-[0_8px_32px_rgba(11,78,157,0.28)]">
                         <div className="flex items-center gap-2 mb-3">
-                            <Zap className="w-4 h-4 text-white/50" />
                             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">
                                 Café owners
                             </span>
@@ -263,28 +262,31 @@ export const About: React.FC = () => {
                                 fontFamily: "'Playfair Display', Georgia, serif",
                                 fontStyle: 'italic'
                             }}>
-                            Your café isn't on here yet?
+                            When someone searches "café near me" — do you show up?
                         </h3>
 
                         <p className="text-white/60 text-[13px] leading-relaxed mb-5">
-                            Get listed for free. I also help cafés build websites, set up
-                            Instagram, and get found online. No jargon, no big agency prices —
-                            just hustling and doing it for the love of the game.
+                            We set up your Google Business Profile, get you ranking on Maps,
+                            and make sure customers find you before they find someone else.
+                            Free listing on WIMC included.
                         </p>
 
-                        <Link
-                            to="/studio"
+                        <a
+                            href="https://wimc-studio.vercel.app/"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="inline-flex items-center gap-2
-                         bg-white text-[#0b4e9d]
-                         font-black text-[11px] uppercase tracking-[0.14em]
-                         px-5 py-2.5 rounded-full
-                         hover:bg-[#EAF0FB] transition-colors active:scale-95"
+                 bg-white text-[#0b4e9d]
+                 font-black text-[11px] uppercase tracking-[0.14em]
+                 px-5 py-2.5 rounded-full
+                 hover:bg-[#EAF0FB] transition-colors active:scale-95"
                         >
-                            Get in touch <ArrowRight className="w-3.5 h-3.5" />
-                        </Link>
+                            Get on the map <ArrowRight className="w-3.5 h-3.5" />
+                        </a>
                     </div>
                 </FadeUp>
             </div>
+
 
             {/* ── PULL QUOTE ────────────────────────────────────── */}
             <div className="px-5 pb-10">

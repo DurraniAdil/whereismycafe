@@ -35,9 +35,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const token = localStorage.getItem('wimc_token');
     if (!token) {
       setLoading(false);
-      // No token = check if dismissed for this session
-      const hasDismissed = sessionStorage.getItem('wimc_auth_dismissed');
-      if (!hasDismissed) setShowAuthModal(true);
       return;
     }
 

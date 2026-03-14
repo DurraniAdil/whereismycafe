@@ -259,6 +259,9 @@ export const CafeDetail: React.FC = () => {
   // ── Loading & Errors ──────────────────────────────────────────
   const showSkeleton = useDelayedLoading(loading);
 
+  if (error) return <div className="p-8 text-center text-red-500 font-medium">Error: {error}</div>;
+  if (showSkeleton) return <PageLoadingSkeleton type="detail" />;
+  if (loading && !cafe) return null;
 
   // ── Not found ──────────────────────────────────────────
   if (!cafe) return (
@@ -305,10 +308,6 @@ export const CafeDetail: React.FC = () => {
       href: cafe.website ?? null
     },
   ];
-
-  if (error) return <div className="p-8 text-center text-red-500 font-medium">Error: {error}</div>;
-  if (showSkeleton) return <PageLoadingSkeleton type="detail" />;
-  if (loading && !cafe) return null;
 
   return (
     <div className="min-h-screen bg-[#F8F6F1] pb-36">

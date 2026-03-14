@@ -32,20 +32,36 @@ const stats = [
 ];
 
 const skills = [
+    // Code — Full Stack
     { label: 'React.js', category: 'code' },
-    { label: 'TypeScript', category: 'code' },
     { label: 'Next.js', category: 'code' },
+    { label: 'TypeScript', category: 'code' },
     { label: 'Tailwind CSS', category: 'code' },
     { label: 'Framer Motion', category: 'code' },
     { label: 'Node.js', category: 'code' },
+    { label: 'Express.js', category: 'code' },
+    { label: 'PostgreSQL', category: 'code' },
+    { label: 'MongoDB', category: 'code' },
+    { label: 'Prisma', category: 'code' },
+    { label: 'REST APIs', category: 'code' },
     { label: 'Firebase', category: 'code' },
+    { label: 'Supabase', category: 'code' },
+    { label: 'Auth & JWT', category: 'code' },
+    { label: 'AI Integration', category: 'code' },
     { label: 'Figma', category: 'code' },
+
+    // Content
     { label: 'SEO Writing', category: 'content' },
     { label: 'Copywriting', category: 'content' },
     { label: 'Poetry', category: 'content' },
+
+    // Ops
     { label: 'Project Management', category: 'ops' },
     { label: 'Human Resources', category: 'ops' },
+    { label: 'Local SEO', category: 'ops' },
+    { label: 'Google Business', category: 'ops' },
 ];
+
 
 const categoryColor: Record<string, string> = {
     code: 'bg-[#EAF0FB] text-[#0b4e9d]    border-[#C8D8F0]',
@@ -104,35 +120,20 @@ export const Contact: React.FC = () => {
     const handleLogoClick = useLogoClick();
 
     return (
-        <div className="min-h-screen bg-[#F8F6F1] pb-8">
+        <div className="min-h-screen bg-[#F8F6F1] pb-8 relative">
 
             {/* Desktop home logo */}
-            <Link to="/" className="hidden md:block fixed top-6 right-6 z-50">
+            <Link to="/" className="hidden md:block absolute top-6 right-6 z-50">
                 <img src={`${import.meta.env.BASE_URL}media/circle.png`} alt="Home"
-                    className="w-12 h-12 rounded-full object-cover border-2 border-white
+                    className="w-40 h-40 rounded-full object-cover border-2 border-white
                      shadow-[0_2px_10px_rgba(11,78,157,0.18)]
                      hover:scale-105 hover:shadow-[0_4px_18px_rgba(11,78,157,0.28)]
                      transition-all" />
             </Link>
 
-            <div className="flex justify-center mb-8 md:hidden">
-                <img src={`${import.meta.env.BASE_URL}media/circle.png`} alt="logo" onClick={handleLogoClick}
-                    className="w-24 h-24 rounded-full object-cover shadow-[0_4px_24px_rgba(11,78,157,0.25)] border-4 border-white cursor-pointer hover:scale-105 transition-transform" />
-            </div>
-            {/* Mobile easter-egg logo */}
-            <img src="/media/circle.png" alt="logo" onClick={handleLogoClick}
-                className="md:hidden fixed top-6 right-6 z-50 w-12 h-12 rounded-full
-                   object-cover cursor-pointer border-2 border-white
-                   shadow-[0_2px_10px_rgba(11,78,157,0.18)]
-                   hover:scale-105 transition-transform" />
-
             {/* ── HERO ──────────────────────────────────────────── */}
-            <div className="px-5 pt-12 pb-10">
+            <div className="px-5 pt-6 md:pt-12 pb-10">
                 <FadeUp>
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em]
-                           text-[#A8B0A0] mb-4 block">
-                        Contact
-                    </span>
 
                     <h1 className="text-5xl font-bold text-[#1E2020] leading-[1.1] tracking-tight"
                         style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
@@ -144,9 +145,7 @@ export const Contact: React.FC = () => {
                     </p>
 
                     <p className="text-[14px] text-[#7A8478] leading-[1.8] mt-5 max-w-md">
-                        Whether you want your café listed, need a website built, want to
-                        collaborate on the project, or just want to say hi — the door's
-                        always open.
+                        Whether you're invisible on Google, need a website that actually ranks, want your café on WIMC, or just want to talk. Feel free to reach out. We'll figure it out together.
                     </p>
                 </FadeUp>
             </div>
@@ -162,7 +161,7 @@ export const Contact: React.FC = () => {
                     </span>
                     <h2 className="text-3xl font-bold text-[#1E2020] tracking-tight leading-tight mb-1"
                         style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                        Durrani Adil Khan
+                        Durrani Adil
                     </h2>
                     <div className="flex items-center gap-1.5 mb-6">
                         <MapPin className="w-3.5 h-3.5 text-[#A8B0A0]" />
@@ -174,49 +173,23 @@ export const Contact: React.FC = () => {
 
                 <FadeUp delay={0.1}>
                     <div className="bg-[#0b4e9d] rounded-3xl border border-[#EAEEE8]
-                          shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-6 space-y-3 mb-5">
+                  shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-6 space-y-3 mb-5">
                         <p className="text-[#FFFFFF] text-[14px] leading-relaxed">
-                            B.Tech Computer Science graduate from P.E.S College of Engineering— currently
-                            working as a Project Manager/SDE at Be Endless while building things
-                            on the side that actually matter to this city.
+                            B.Tech CS from P.E.S College of Engineering. Currently Project Manager
+                            and SDE at Be Endless and at the same time building things on the side that actually
+                            mean something to this city.
                         </p>
                         <p className="text-[#FFFFFF] text-[14px] leading-relaxed">
-                            Front-end developer by craft, poet by nature, project manager by
-                            circumstance. The unholy combination of React.js and Sufi poetry
-                            is exactly what it sounds like — and somehow it works.
+                            Full Stack developer by craft. Poet by nature. The combination of
+                            React.js and Sufi poetry shouldn't work as well as it does and yet it does.
                         </p>
                         <p className="text-[#FFFFFF] text-[14px] leading-relaxed">
                             Published in 3 international anthologies. 500+ original poems.
-                            28 gold medals in writing and elocution. Also builds authentication
-                            systems and AI tools when not overthinking a couplet.
+                            28 gold medals in writing and elocution. Builds authentication
+                            systems and AI tools in the same hours when I am not overthinking a couplet.
                         </p>
                     </div>
-                </FadeUp>
-            </div>
 
-            {/* ── STATS ─────────────────────────────────────────── */}
-            <div className="px-5 pb-10">
-                <FadeUp>
-                    <div className="grid grid-cols-2 gap-3">
-                        {stats.map(({ icon: Icon, value, label }, i) => (
-                            <motion.div key={label}
-                                initial={{ opacity: 0, y: 12 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: i * 0.08, duration: 0.35 }}
-                                className="bg-white rounded-2xl border border-[#EAEEE8]
-                           shadow-[0_2px_8px_rgba(0,0,0,0.04)] p-4 flex flex-col gap-2">
-                                <Icon className="w-4 h-4 text-[#0b4e9d]" />
-                                <p className="text-2xl font-bold text-[#1E2020] leading-none"
-                                    style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                                    {value}
-                                </p>
-                                <p className="text-[11px] text-[#A8B0A0] font-bold uppercase tracking-wider">
-                                    {label}
-                                </p>
-                            </motion.div>
-                        ))}
-                    </div>
                 </FadeUp>
             </div>
 
