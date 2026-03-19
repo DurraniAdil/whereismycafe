@@ -30,3 +30,13 @@ body {
 body.filter-open nav.fixed.bottom-0 {
   display: none;
 }
+
+/* Roulette Wheel Styling */
+.roulette-wheel-container {
+    filter: drop-shadow(0 0 30px rgba(75, 158, 245, 0.2));
+}
+
+.roulette-wheel-container canvas {
+    max-width: 100% !important;
+    height: auto !important;
+}
