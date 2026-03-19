@@ -31,9 +31,12 @@ export const Profile: React.FC = () => {
     const navigate = useNavigate();
 
     // UI state
-    const [activeTab, setActiveTab] = useState<'saved' | 'visited'>('saved');
+    const [activeTab, setActiveTab] = useState<'saved' | 'visited' | 'reviews'>('saved');
     const [isDashboard, setIsDashboard] = useState(false);
     const [confirmRemove, setConfirmRemove] = useState<{ id: string; name: string; type: 'saved' | 'visited' } | null>(null);
+
+    const [allReviews, setAllReviews] = useState<any[]>([]);
+    const [loadingReviews, setLoadingReviews] = useState(false);
 
     const [editName, setEditName] = useState(user?.name ?? 'Adil Durrani');
     const [editEmail, setEditEmail] = useState(user?.email ?? 'adil@example.com');
@@ -54,6 +57,30 @@ export const Profile: React.FC = () => {
             .then(setAllCafes)
             .finally(() => setLoadingCafes(false));
     }, []);
+
+    useEffect(() => {
+        if (activeTab === 'reviews') {
+            loadUserReviews();
+        }
+    }, [activeTab]);
+
+    const loadUserReviews = async () => {
+        try {
+            setLoadingReviews(true);
+            const token = localStorage.getItem('wimc_token');
+            const res = await fetch(`${API_URL}/user/reviews`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setAllReviews(data);
+            }
+        } catch (err) {
+            console.error('Failed to load reviews:', err);
+        } finally {
+            setLoadingReviews(false);
+        }
+    };
 
     const savedCafes = allCafes.filter(c => heartedIds.includes(c.id));
     const visitedCafes = visitedEntries
@@ -408,7 +435,7 @@ export const Profile: React.FC = () => {
 
                             {/* Tabs */}
                             <div className="flex bg-white rounded-[1.5rem] p-1.5 mb-8 border border-[#EAEEE8] shadow-sm">
-                                {(['saved', 'visited'] as const).map((tab) => (
+                                {(['saved', 'visited', 'reviews'] as const).map((tab) => (
                                     <button
                                         key={tab}
                                         onClick={() => setActiveTab(tab)}
@@ -417,7 +444,7 @@ export const Profile: React.FC = () => {
                                             : 'text-[#7A8478] hover:text-[#0b4e9d] hover:bg-[#F4F4F0]'
                                             }`}
                                     >
-                                        {tab === 'saved' ? `Saved` : `Visited`}
+                                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
                                     </button>
                                 ))}
                             </div>
@@ -453,7 +480,7 @@ export const Profile: React.FC = () => {
                                             </div>
                                         )}
                                     </motion.div>
-                                ) : (
+                                ) : activeTab === 'visited' ? (
                                     <motion.div key="visited" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
                                         className="space-y-3">
                                         {visitedCafes.length > 0 ? (
@@ -486,6 +513,43 @@ export const Profile: React.FC = () => {
                                                 <Coffee size={40} className="mx-auto mb-4 text-[#0b4e9d]/10" />
                                                 <h3 className="text-xl font-black italic text-[#1E2020] mb-2" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>No visits yet.</h3>
                                                 <p className="text-sm text-[#7A8478] mb-8 opacity-70">Mark cafés as visited while you explore.</p>
+                                                <Link to="/search" className="text-[10px] font-black uppercase tracking-[.2em] bg-[#0b4e9d] text-white px-8 py-4 rounded-2xl shadow-xl">Start Exploring</Link>
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                ) : (
+                                    <motion.div key="reviews" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                                        className="space-y-4">
+                                        {loadingReviews ? (
+                                            <div className="flex justify-center py-20">
+                                                <div className="w-8 h-8 border-4 border-[#0b4e9d]/10 border-t-[#0b4e9d] rounded-full animate-spin" />
+                                            </div>
+                                        ) : allReviews.length > 0 ? (
+                                            allReviews.map((review) => (
+                                                <div key={review._id} className="bg-white rounded-[2rem] p-6 border border-[#EAEEE8] shadow-sm hover:shadow-md transition-shadow">
+                                                    <div className="flex justify-between items-start mb-4">
+                                                        <div>
+                                                            <Link to={`/cafes/${review.cafeId}`}>
+                                                                <h4 className="font-black text-[#0b4e9d] italic" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{review.cafeName}</h4>
+                                                            </Link>
+                                                            <div className="flex items-center gap-1 text-[#FFB800] mt-1">
+                                                                {Array.from({ length: 5 }).map((_, i) => (
+                                                                    <Star key={i} size={12} className={i < review.rating ? 'fill-[#FFB800]' : 'text-[#EAEEE8]'} />
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                        <span className="text-[10px] font-bold text-[#A8B0A0] uppercase tracking-wider">{formatDate(review.createdAt)}</span>
+                                                    </div>
+                                                    {review.comment && (
+                                                        <p className="text-sm text-[#4A4E4F] italic leading-relaxed">"{review.comment}"</p>
+                                                    )}
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="text-center py-24 bg-white border border-[#EAEEE8] rounded-[2.5rem]">
+                                                <Edit3 size={40} className="mx-auto mb-4 text-[#0b4e9d]/10" />
+                                                <h3 className="text-xl font-black italic text-[#1E2020] mb-2" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>No reviews yet.</h3>
+                                                <p className="text-sm text-[#7A8478] mb-8 opacity-70">Share your thoughts on the cafés you visit.</p>
                                                 <Link to="/search" className="text-[10px] font-black uppercase tracking-[.2em] bg-[#0b4e9d] text-white px-8 py-4 rounded-2xl shadow-xl">Start Exploring</Link>
                                             </div>
                                         )}

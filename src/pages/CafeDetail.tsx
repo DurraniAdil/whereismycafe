@@ -587,9 +587,9 @@ export const CafeDetail: React.FC = () => {
                       Opening Hours
                     </span>
                     <div className="flex items-center gap-2.5 mt-2">
-                       <div className="w-8 h-8 rounded-full bg-[#EAF0FB] flex items-center justify-center flex-shrink-0">
-                         <Clock className="w-4 h-4 text-[#0b4e9d]" />
-                       </div>
+                      <div className="w-8 h-8 rounded-full bg-[#EAF0FB] flex items-center justify-center flex-shrink-0">
+                        <Clock className="w-4 h-4 text-[#0b4e9d]" />
+                      </div>
                       <span className="text-base font-bold text-[#1E2020] leading-tight break-words">
                         {cafe.openingHours}
                       </span>
@@ -709,14 +709,7 @@ export const CafeDetail: React.FC = () => {
                 )}
 
                 {/* Reviews (Mobile) */}
-                <ReviewSection
-                  cafe={cafe}
-                  onRefresh={() => {
-                    if (id) {
-                      getCafeById(id).then(setCafe);
-                    }
-                  }}
-                />
+
 
                 {/* Gallery (Mobile) */}
                 {cafe.photos.length > 1 && (
@@ -729,6 +722,14 @@ export const CafeDetail: React.FC = () => {
                     <Gallery photos={cafe.photos} cafeName={cafe.name} onImageClick={i => setLightboxIndex(i)} />
                   </motion.section>
                 )}
+                <ReviewSection
+                  cafe={cafe}
+                  onRefresh={() => {
+                    if (id) {
+                      getCafeById(id).then(setCafe);
+                    }
+                  }}
+                />
               </div>
             </div>
           </aside>

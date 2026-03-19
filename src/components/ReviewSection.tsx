@@ -24,7 +24,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ cafe, onRefresh })
   const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated, updateUser } = useAuth();
 
   useEffect(() => {
     loadReviews();
@@ -58,6 +58,11 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ cafe, onRefresh })
       setRating(0);
       setComment('');
       setShowSuccess(true);
+
+      // Cache update for local user profile
+      if (user) {
+        updateUser({ reviewCount: (user.reviewCount || 0) + 1 });
+      }
 
       // Refresh list
       await loadReviews();
