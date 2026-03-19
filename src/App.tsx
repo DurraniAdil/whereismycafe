@@ -80,8 +80,8 @@ function MainApp() {
         <Navbar />
       </div>
 
-      <LoginModal 
-        isOpen={showAuthModal} 
+      <LoginModal
+        isOpen={showAuthModal}
         onClose={handleModalClose}
         dismissible={true}
       />
