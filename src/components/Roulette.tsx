@@ -111,9 +111,9 @@ export const Roulette: React.FC<{ cafes: Cafe[] }> = ({ cafes }) => {
 
                         {/* Custom Center Pin/Logo */}
                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
-                                      w-12 h-12 bg-[#07152A] rounded-full border-2 border-[#4B9EF5]
-                                      flex items-center justify-center shadow-lg z-20">
-                            <div className="w-2 h-2 rounded-full bg-[#4B9EF5] animate-pulse" />
+                                      w-12 h-12 bg-white rounded-full border-2 border-[#4B9EF5]
+                                      flex items-center justify-center shadow-lg z-20 overflow-hidden">
+                            <img src="/media/circle.png" alt="WIMC" className="w-15 h-15 object-contain" />
                         </div>
                     </div>
                 </div>

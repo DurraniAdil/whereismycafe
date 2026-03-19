@@ -405,7 +405,7 @@ export const CafeDetail: React.FC = () => {
       {/* ── BODY ──────────────────────────────────────── */}
       <div className="px-5 pt-7 pb-8 max-w-5xl lg:max-w-7xl lg:px-10 mx-auto">
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-2 lg:gap-12">
 
           {/* ── MAIN CONTENT (Left on Desktop) ── */}
           <div className="space-y-12">
@@ -563,6 +563,34 @@ export const CafeDetail: React.FC = () => {
                 transition={{ delay: 0.2 }}
                 className="flex flex-col gap-4"
               >
+
+                {/* Contact icons row */}
+                <div className="flex flex-row gap-3">
+                  {contactItems.map(({ type, icon: Icon, value, href }) =>
+                    value?.trim() && href ? (
+                      <a key={type} href={href}
+                        target={type !== 'phone' ? '_blank' : undefined}
+                        rel="noreferrer"
+                        className="w-full h-14 rounded-2xl bg-white border border-[#EAEEE8]
+                                   flex items-center justify-center shadow-sm
+                                   text-[#A8B0A0]
+                                   hover:text-[#0b4e9d] hover:border-[#0b4e9d]/25
+                                   hover:shadow-[0_4px_12px_rgba(11,78,157,0.12)]
+                                   transition-all flex-1">
+                        <Icon className="w-5 h-5" />
+                      </a>
+                    ) : (
+                      <button key={type}
+                        onClick={() => setMissingType(type)}
+                        className="w-full h-14 rounded-2xl bg-[#F4F4F0] border border-[#EAEEE8]
+                                   flex items-center justify-center
+                                   text-[#C8D0C0] hover:text-[#A8B0A0]
+                                   transition-all flex-1">
+                        <Icon className="w-5 h-5" />
+                      </button>
+                    )
+                  )}
+                </div>
                 {/* Price & Hours row */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
                   {/* Price */}
@@ -600,34 +628,6 @@ export const CafeDetail: React.FC = () => {
                       </span>
                     )}
                   </div>
-                </div>
-
-                {/* Contact icons row */}
-                <div className="flex flex-row gap-3">
-                  {contactItems.map(({ type, icon: Icon, value, href }) =>
-                    value?.trim() && href ? (
-                      <a key={type} href={href}
-                        target={type !== 'phone' ? '_blank' : undefined}
-                        rel="noreferrer"
-                        className="w-full h-14 rounded-2xl bg-white border border-[#EAEEE8]
-                                   flex items-center justify-center shadow-sm
-                                   text-[#A8B0A0]
-                                   hover:text-[#0b4e9d] hover:border-[#0b4e9d]/25
-                                   hover:shadow-[0_4px_12px_rgba(11,78,157,0.12)]
-                                   transition-all flex-1">
-                        <Icon className="w-5 h-5" />
-                      </a>
-                    ) : (
-                      <button key={type}
-                        onClick={() => setMissingType(type)}
-                        className="w-full h-14 rounded-2xl bg-[#F4F4F0] border border-[#EAEEE8]
-                                   flex items-center justify-center
-                                   text-[#C8D0C0] hover:text-[#A8B0A0]
-                                   transition-all flex-1">
-                        <Icon className="w-5 h-5" />
-                      </button>
-                    )
-                  )}
                 </div>
               </motion.div>
 
@@ -707,8 +707,6 @@ export const CafeDetail: React.FC = () => {
                     </div>
                   </motion.section>
                 )}
-
-                {/* Reviews (Mobile) */}
 
 
                 {/* Gallery (Mobile) */}
