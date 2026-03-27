@@ -6,6 +6,7 @@ const API_BASE = import.meta.env.DEV ? 'http://localhost:4000' : 'https://wimc-a
 export function Admin() {
     const [token, setToken] = useState<string | null>(localStorage.getItem('wimc_admin_token'));
     const [password, setPassword] = useState('');
+    const [username, setUsername] = useState('');
     const [loading, setLoading] = useState(false);
     const [editingCafe, setEditingCafe] = useState<Cafe | null>(null);
     const [reviews, setReviews] = useState<any[]>([]);
@@ -23,7 +24,7 @@ export function Admin() {
             const res = await fetch(`${API_BASE}/api/admin/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password })
+                body: JSON.stringify({ username, password })
             });
             const data = await res.json();
             if (res.ok) {
@@ -127,6 +128,16 @@ export function Admin() {
                         WIMC Admin
                     </h2>
                     {error && <div className="mb-6 text-red-500 text-sm text-center bg-red-500/10 py-2 rounded">{error}</div>}
+                    <div className="mb-4">
+                        <label className="block text-gray-400 text-sm font-medium mb-3">Username</label>
+                        <input
+                            type="text"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            className="w-full px-4 py-3 bg-[#1a1a1a] text-white border border-white/10 rounded-lg focus:outline-none focus:border-[#0b4e9d] focus:ring-1 focus:ring-[#0b4e9d] transition-colors"
+                            required
+                        />
+                    </div>
                     <div className="mb-6">
                         <label className="block text-gray-400 text-sm font-medium mb-3">Password</label>
                         <input
