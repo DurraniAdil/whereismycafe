@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { RefreshCw, ArrowRight, Star } from 'lucide-react';
@@ -65,6 +65,45 @@ export const Roulette: React.FC<{ cafes: Cafe[] }> = ({ cafes }) => {
 
     if (cafes.length === 0) return null;
 
+    // Detect desktop (lg breakpoint = 1024px)
+    const [isDesktop, setIsDesktop] = useState(() =>
+        typeof window !== 'undefined' ? window.innerWidth >= 1024 : false
+    );
+    useEffect(() => {
+        const mq = window.matchMedia('(min-width: 1024px)');
+        const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+        setIsDesktop(mq.matches);
+        mq.addEventListener('change', handler);
+        return () => mq.removeEventListener('change', handler);
+    }, []);
+
+    // Different marker positioning for mobile vs desktop
+    const pointerProps = useMemo(() => {
+        if (isDesktop) {
+            return {
+                src: '/media/marker.png',
+                style: {
+                    width: '65px',
+                    height: 'auto',
+                    right: '15px',
+                    top: '0px',
+                    transform: 'rotate(230deg)',
+                } as React.CSSProperties,
+            };
+        }
+        // Mobile — keep exactly as-is
+        return {
+            src: '/media/marker.png',
+            style: {
+                width: '100px',
+                height: 'auto',
+                right: '-20px',
+                top: '-40px',
+                transform: 'rotate(230deg)',
+            } as React.CSSProperties,
+        };
+    }, [isDesktop]);
+
     return (
         <div className="w-full max-w-md lg:max-w-5xl mx-auto">
             {/* Section label */}
@@ -110,16 +149,7 @@ export const Roulette: React.FC<{ cafes: Cafe[] }> = ({ cafes }) => {
                             fontSize={12}
                             textDistance={65}
                             spinDuration={0.6}
-                            pointerProps={{
-                                src: '/media/marker.png',
-                                style: {
-                                    width: '100px',
-                                    height: 'auto',
-                                    right: '-20px',
-                                    top: '-40px',
-                                    transform: 'rotate(230deg)',
-                                }
-                            }}
+                            pointerProps={pointerProps}
                         />
 
                         {/* Custom Center Pin/Logo */}
