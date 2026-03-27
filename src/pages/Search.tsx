@@ -5,7 +5,7 @@ import { CafeCard } from '../components/CafeCard';
 import { Cafe, Vibe, NoiseLevel } from '../types/cafe';
 import { useLogoClick } from '../hooks/useLogoClick';
 import { motion, AnimatePresence } from 'motion/react';
-import { Eye, EyeOff, Navigation, Search as SearchIcon, SlidersHorizontal, X, ChevronLeft, ChevronRight, Wifi, Wind, Trees, ParkingCircle, Star, Clock, MapPin, Volume2 } from 'lucide-react';
+import { Eye, EyeOff, Navigation, Search as SearchIcon, SlidersHorizontal, X, ChevronLeft, ChevronRight, Wifi, Wind, Trees, ParkingCircle, Star, Clock, MapPin, Volume2, MessageCircle } from 'lucide-react';
 import { PageLoadingSkeleton } from '../components/PageLoadingSkeleton';
 import { useDelayedLoading } from '../hooks/useDelayedLoading';
 import { ZONES, ALL_ZONED_CAFES } from '../lib/zones';
@@ -704,25 +704,70 @@ export const SearchPage: React.FC = () => {
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col items-center justify-center py-28 text-center">
-                <div className="w-20 h-20 rounded-3xl bg-[#EAF0FB] flex items-center
-                                justify-center mb-5">
-                  <SearchIcon className="w-8 h-8 text-[#0b4e9d]/40" />
+                className="flex flex-col lg:flex-row gap-5 items-stretch justify-center py-16">
+
+                {/* No results message */}
+                <div className="flex flex-col items-center justify-center text-center flex-1
+                                bg-white rounded-3xl border border-[#EAEEE8] p-8 shadow-sm">
+                  <div className="w-16 h-16 rounded-2xl bg-[#EAF0FB] flex items-center
+                                  justify-center mb-4">
+                    <SearchIcon className="w-7 h-7 text-[#0b4e9d]/40" />
+                  </div>
+                  <h3 className="text-lg font-bold text-[#1E2020] mb-2"
+                    style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                    No cafes found
+                  </h3>
+                  <p className="text-sm text-[#7A8478] max-w-[220px] leading-relaxed mb-5">
+                    Try adjusting your filters or search term.
+                  </p>
+                  <button onClick={clearAll}
+                    className="text-[11px] font-black uppercase tracking-[0.14em]
+                               text-white bg-[#0b4e9d] px-6 py-3 rounded-2xl
+                               hover:bg-[#0a3d7a] transition-colors
+                               shadow-[0_4px_14px_rgba(11,78,157,0.3)]">
+                    Reset everything
+                  </button>
                 </div>
-                <h3 className="text-lg font-bold text-[#1E2020] mb-2"
-                  style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                  No cafés found
-                </h3>
-                <p className="text-sm text-[#7A8478] max-w-[200px] leading-relaxed mb-6">
-                  Try adjusting your filters or search term.
-                </p>
-                <button onClick={clearAll}
-                  className="text-[11px] font-black uppercase tracking-[0.14em]
-                             text-white bg-[#0b4e9d] px-6 py-3 rounded-2xl
-                             hover:bg-[#0a3d7a] transition-colors
-                             shadow-[0_4px_14px_rgba(11,78,157,0.3)]">
-                  Reset everything
-                </button>
+
+                {/* Can't find your cafe CTA */}
+                <div className="flex flex-col items-center justify-center text-center flex-1
+                                bg-[#07152A] rounded-3xl p-8 shadow-sm relative overflow-hidden">
+                  {/* Subtle background pattern */}
+                  <div className="absolute inset-0 opacity-[0.04]"
+                    style={{
+                      backgroundImage: `radial-gradient(circle at 20% 50%, #4B9EF5 1px, transparent 1px),
+                                        radial-gradient(circle at 80% 20%, #4B9EF5 1px, transparent 1px)`,
+                      backgroundSize: '40px 40px',
+                    }} />
+                  <div className="relative z-10">
+                    <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/10
+                                    flex items-center justify-center mb-4 mx-auto">
+                      <MapPin className="w-6 h-6 text-[#4B9EF5]" />
+                    </div>
+                    <h3 className="text-lg font-bold text-white mb-2"
+                      style={{ fontFamily: "'Playfair Display', Georgia, serif", fontStyle: 'italic' }}>
+                      Can't find your favourite cafe?
+                    </h3>
+                    <p className="text-[13px] text-white/50 max-w-[260px] leading-relaxed mb-6 mx-auto">
+                      No stress. Just drop us a message and we will get it listed on WIMC within minutes.
+                    </p>
+                    <a
+                      href={`https://wa.me/917028512087?text=${encodeURIComponent(
+                        query
+                          ? `Hey, I'd like to get "${query}" listed on Where Is My Cafe!`
+                          : `Hey, I'd like to get a cafe listed on Where Is My Cafe!`
+                      )}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-2.5 bg-[#25D366] text-white
+                                 px-6 py-3 rounded-2xl text-[11px] font-black uppercase
+                                 tracking-[0.14em] hover:bg-[#1fba58] transition-colors
+                                 shadow-[0_4px_14px_rgba(37,211,102,0.3)]">
+                      <MessageCircle className="w-4 h-4" />
+                      Get it listed
+                    </a>
+                  </div>
+                </div>
               </motion.div>
             )}
           </div>

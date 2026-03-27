@@ -28,42 +28,190 @@ const AMENITY_CONFIG: Record<string, { label: string; icon: React.FC<any> }> = {
   parking: { label: 'Parking', icon: ParkingCircle },
 };
 
-const levelToPercent: Record<string, number> = {
-  Quiet: 25, Moderate: 60, Loud: 95,
-  Dim: 25, Warm: 55, Bright: 90,
-  None: 0, 'Lo-fi': 35, Bollywood: 65, Western: 65, Live: 95,
-};
+// ── Noise Indicator – VLC-style volume bar ──────────────────
+const NoiseIndicator: React.FC<{ level: string }> = ({ level }) => {
+  const pct = level === 'Quiet' ? 25 : level === 'Moderate' ? 58 : 92;
+  const totalSegments = 20;
+  const filledSegments = Math.round((pct / 100) * totalSegments);
 
-// ── Vibe Bar ────────────────────────────────────────────────
-const VibeBar: React.FC<{
-  icon: React.FC<any>; label: string; value: string; accent: string;
-}> = ({ icon: Icon, label, value, accent }) => {
-  const pct = levelToPercent[value] ?? 50;
   return (
     <div className="flex items-center gap-4">
-      <div className="w-8 h-8 rounded-xl bg-[#EAF0FB] flex items-center
-                      justify-center flex-shrink-0">
-        <Icon className="w-3.5 h-3.5 text-[#0b4e9d]" />
+      <div className="w-10 h-10 rounded-2xl bg-[#EAF0FB] flex items-center justify-center flex-shrink-0">
+        <Volume2 className="w-4 h-4 text-[#0b4e9d]" />
       </div>
-      <div className="flex-1 space-y-1.5">
+      <div className="flex-1 space-y-2.5">
         <div className="flex justify-between items-baseline">
-          <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[#A8B0A0]">
-            {label}
-          </span>
-          <span className="text-[12px] font-bold text-[#1E2020]">{value}</span>
+          <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[#A8B0A0]">Noise</span>
+          <span className="text-[12px] font-bold text-[#1E2020]">{level}</span>
         </div>
-        <div className="h-1 w-full bg-[#EAF0FB] rounded-full overflow-hidden">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${pct}%` }}
-            transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }}
-            className={`h-full rounded-full ${accent}`}
-          />
+        <div className="flex gap-[3px] h-4">
+          {Array.from({ length: totalSegments }, (_, i) => {
+            const isFilled = i < filledSegments;
+            return (
+              <motion.div
+                key={i}
+                initial={{ scaleY: 0 }}
+                animate={{ scaleY: 1 }}
+                transition={{ delay: 0.15 + i * 0.025, duration: 0.3, ease: 'easeOut' }}
+                className="flex-1 rounded-[2px] origin-bottom"
+                style={{
+                  background: isFilled
+                    ? `linear-gradient(to right, #0b4e9d, #4B9EF5)`
+                    : '#E4EEF9',
+                  height: '100%',
+                }}
+              />
+            );
+          })}
         </div>
       </div>
     </div>
   );
 };
+
+// ── Lighting Indicator – row of lightbulbs ──────────────────
+const LightingIndicator: React.FC<{ level: string }> = ({ level }) => {
+  const totalBulbs = 7;
+  const litCount = level === 'Dim' ? 2 : level === 'Warm' ? 4 : 7;
+
+  return (
+    <div className="flex items-center gap-4">
+      <div className="w-10 h-10 rounded-2xl bg-[#EAF0FB] flex items-center justify-center flex-shrink-0">
+        <Sun className="w-4 h-4 text-[#0b4e9d]" />
+      </div>
+      <div className="flex-1 space-y-2.5">
+        <div className="flex justify-between items-baseline">
+          <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[#A8B0A0]">Lighting</span>
+          <span className="text-[12px] font-bold text-[#1E2020]">{level}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          {Array.from({ length: totalBulbs }, (_, i) => {
+            const isLit = i < litCount;
+            return (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 + i * 0.06, type: 'spring', stiffness: 300, damping: 22 }}
+                className="relative flex items-center justify-center"
+              >
+                {isLit && (
+                  <div
+                    className="absolute w-7 h-7 rounded-full"
+                    style={{
+                      background: 'radial-gradient(circle, rgba(11,78,157,0.15) 0%, transparent 70%)',
+                    }}
+                  />
+                )}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke={isLit ? '#0b4e9d' : '#D0D8E8'}
+                  strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  style={{ opacity: isLit ? 1 : 0.45 }}
+                >
+                  <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
+                  <path d="M9 18h6" />
+                  <path d="M10 22h4" />
+                  {isLit && (
+                    <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"
+                      fill="#4B9EF5" stroke="none" opacity={0.35} />
+                  )}
+                </svg>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Music Indicator – in-place undulating wave ──────────────
+const MusicIndicator: React.FC<{ type: string }> = ({ type }) => {
+  const isNone = type === 'None';
+  const amplitude = isNone ? 1 : type === 'Lo-fi' ? 5 : type === 'Live' ? 8 : 6;
+  const speed = isNone ? 0 : type === 'Lo-fi' ? 0.02 : type === 'Live' ? 0.06 : 0.035;
+
+  const vw = 200;
+  const vh = 22;
+  const cy = vh / 2;
+  const pathRef = React.useRef<SVGPathElement>(null);
+  const phaseRef = React.useRef(0);
+
+  const buildPath = React.useCallback((phase: number) => {
+    return Array.from({ length: vw + 1 }, (_, x) => {
+      const t = x / vw;
+      const y = cy
+        + Math.sin(t * Math.PI * 6 + phase) * amplitude
+        + Math.sin(t * Math.PI * 10 + phase * 1.4) * (amplitude * 0.3);
+      return `${x === 0 ? 'M' : 'L'}${x},${y.toFixed(1)}`;
+    }).join(' ');
+  }, [amplitude, cy]);
+
+  React.useEffect(() => {
+    if (speed === 0 || !pathRef.current) return;
+    let raf: number;
+    const tick = () => {
+      phaseRef.current += speed;
+      pathRef.current?.setAttribute('d', buildPath(phaseRef.current));
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [speed, buildPath]);
+
+  const staticPath = buildPath(0);
+
+  return (
+    <div className="flex items-center gap-4">
+      <div className="w-10 h-10 rounded-2xl bg-[#EAF0FB] flex items-center justify-center flex-shrink-0">
+        <Music className="w-4 h-4 text-[#0b4e9d]" />
+      </div>
+      <div className="flex-1 space-y-2.5">
+        <div className="flex justify-between items-baseline">
+          <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[#A8B0A0]">Music</span>
+          <span className="text-[12px] font-bold text-[#1E2020]">{type}</span>
+        </div>
+        <svg
+          width="100%"
+          height={vh}
+          viewBox={`0 0 ${vw} ${vh}`}
+          preserveAspectRatio="none"
+        >
+          {speed > 0 ? (
+            <path
+              ref={pathRef}
+              d={staticPath}
+              fill="none"
+              stroke="#4B9EF5"
+              strokeWidth="2"
+              strokeLinecap="round"
+              opacity={0.85}
+            />
+          ) : (
+            <line
+              x1="0" y1={cy} x2={vw} y2={cy}
+              stroke="#D0D8E8" strokeWidth="1.5" opacity={0.5}
+              strokeDasharray="4 4"
+            />
+          )}
+        </svg>
+      </div>
+    </div>
+  );
+};
+
+// ── VibeCheck wrapper ───────────────────────────────────────
+const VibeCheck: React.FC<{ noiseLevel: string; lighting: string; music: string }> = ({
+  noiseLevel, lighting, music
+}) => (
+  <div className="bg-white rounded-2xl lg:rounded-3xl border border-[#EAEEE8] px-5 lg:px-8 py-5 lg:py-8 shadow-sm space-y-5 lg:space-y-6">
+    <NoiseIndicator level={noiseLevel} />
+    <div className="h-px bg-[#F0F2EC]" />
+    <LightingIndicator level={lighting} />
+    <div className="h-px bg-[#F0F2EC]" />
+    <MusicIndicator type={music} />
+  </div>
+);
 
 // ── Lightbox ────────────────────────────────────────────────
 const Lightbox: React.FC<{
@@ -477,13 +625,7 @@ export const CafeDetail: React.FC = () => {
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#A8B0A0]">Vibe Check</p>
                 <div className="flex-1 h-px bg-[#EAEEE8]" />
               </div>
-              <div className="bg-white rounded-3xl border border-[#EAEEE8] px-8 py-8 shadow-sm space-y-6">
-                <VibeBar icon={Volume2} label="Noise" value={cafe.noiseLevel} accent="bg-[#0b4e9d]" />
-                <div className="h-px bg-[#F0F2EC]" />
-                <VibeBar icon={Sun} label="Lighting" value={cafe.lighting} accent="bg-amber-400" />
-                <div className="h-px bg-[#F0F2EC]" />
-                <VibeBar icon={Music} label="Music" value={cafe.music} accent="bg-violet-400" />
-              </div>
+              <VibeCheck noiseLevel={cafe.noiseLevel} lighting={cafe.lighting} music={cafe.music} />
             </motion.section>
 
             {/* AMENITIES (PC) */}
@@ -678,13 +820,7 @@ export const CafeDetail: React.FC = () => {
                   transition={{ delay: 0.3 }}
                 >
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#A8B0A0] mb-5">Vibe Check</p>
-                  <div className="bg-white rounded-2xl border border-[#EAEEE8] px-5 py-5 shadow-sm space-y-5">
-                    <VibeBar icon={Volume2} label="Noise" value={cafe.noiseLevel} accent="bg-[#0b4e9d]" />
-                    <div className="h-px bg-[#F0F2EC]" />
-                    <VibeBar icon={Sun} label="Lighting" value={cafe.lighting} accent="bg-amber-400" />
-                    <div className="h-px bg-[#F0F2EC]" />
-                    <VibeBar icon={Music} label="Music" value={cafe.music} accent="bg-violet-400" />
-                  </div>
+                  <VibeCheck noiseLevel={cafe.noiseLevel} lighting={cafe.lighting} music={cafe.music} />
                 </motion.section>
 
                 {/* Amenities (Mobile) */}
