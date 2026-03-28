@@ -731,24 +731,17 @@ export const SearchPage: React.FC = () => {
 
                 {/* Can't find your cafe CTA */}
                 <div className="flex flex-col items-center justify-center text-center flex-1
-                                bg-[#07152A] rounded-3xl p-8 shadow-sm relative overflow-hidden">
-                  {/* Subtle background pattern */}
-                  <div className="absolute inset-0 opacity-[0.04]"
-                    style={{
-                      backgroundImage: `radial-gradient(circle at 20% 50%, #4B9EF5 1px, transparent 1px),
-                                        radial-gradient(circle at 80% 20%, #4B9EF5 1px, transparent 1px)`,
-                      backgroundSize: '40px 40px',
-                    }} />
+                                bg-white rounded-3xl border border-[#EAEEE8] p-8 shadow-sm">
                   <div className="relative z-10">
-                    <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/10
-                                    flex items-center justify-center mb-4 mx-auto">
-                      <MapPin className="w-6 h-6 text-[#4B9EF5]" />
+                    <div className="w-16 h-16 rounded-2xl bg-[#EAF0FB] flex items-center
+                                    justify-center mb-4 mx-auto">
+                      <MapPin className="w-7 h-7 text-[#0b4e9d]/40" />
                     </div>
-                    <h3 className="text-lg font-bold text-white mb-2"
-                      style={{ fontFamily: "'Playfair Display', Georgia, serif", fontStyle: 'italic' }}>
+                    <h3 className="text-lg font-bold text-[#1E2020] mb-2"
+                      style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
                       Can't find your favourite cafe?
                     </h3>
-                    <p className="text-[13px] text-white/50 max-w-[260px] leading-relaxed mb-6 mx-auto">
+                    <p className="text-sm text-[#7A8478] max-w-[260px] leading-relaxed mb-5 mx-auto">
                       No stress. Just drop us a message and we will get it listed on WIMC within minutes.
                     </p>
                     <a

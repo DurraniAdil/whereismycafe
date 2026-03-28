@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Star, User as UserIcon, MessageSquare, Send, CheckCircle2, Quote } from 'lucide-react';
+import { Star, User as UserIcon, Send, CheckCircle2, Quote } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { getReviewsByCafeId, postReview } from '../lib/getCafes';
 import { Review, Cafe } from '../types/cafe';
@@ -138,9 +138,9 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ cafe, onRefresh })
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
         {/* Review Form - Stick it for better UX */}
-        <div className="lg:col-span-4 lg:sticky lg:top-32 h-fit">
+        <div className="lg:col-span-5 lg:sticky lg:top-32 h-fit">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -283,7 +283,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ cafe, onRefresh })
         </div>
 
         {/* Reviews List */}
-        <div className="lg:col-span-8">
+        <div className="lg:col-span-7">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-32 space-y-6">
               <div className="relative">
@@ -347,15 +347,12 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ cafe, onRefresh })
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-[#F8F6F1]/50 rounded-[3rem] border-2 border-dashed border-[#EAEEE8] py-32 px-12 text-center"
+              className="bg-[#F8F6F1]/50 rounded-[3rem] border-2 border-dashed border-[#EAEEE8] py-20 px-8 text-center flex flex-col items-center justify-center h-full min-h-[280px]"
             >
-              <div className="w-24 h-24 rounded-[2rem] bg-white flex items-center justify-center mx-auto mb-10 shadow-[0_10px_30px_rgba(0,0,0,0.04)] rotate-3">
-                <MessageSquare className="w-10 h-10 text-[#0b4e9d]/20" />
-              </div>
-              <h4 className="text-3xl font-bold text-[#1E2020] mb-6" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+              <h4 className="text-2xl font-bold text-[#1E2020] mb-4" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
                 Silence is golden...
               </h4>
-              <p className="text-[16px] text-[#7A8478] max-w-sm mx-auto leading-relaxed font-medium mb-10">
+              <p className="text-[15px] text-[#7A8478] max-w-xs mx-auto leading-relaxed font-medium mb-8">
                 But your thoughts are more valuable. Be the first to grace this café with a review.
               </p>
               <div className="flex justify-center gap-2">

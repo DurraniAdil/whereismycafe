@@ -276,14 +276,17 @@ export const MapView: React.FC = () => {
     const handleCafeSelect = (cafe: Cafe) => {
         setSelectedCafe(cafe);
         if (mapRef.current && cafe.latitude && cafe.longitude) {
-            // Adjust latitude so the pin isn't hidden under the popup card at the bottom
+            const map = mapRef.current;
             const isMobile = window.innerWidth < 768;
-            const latOffset = isMobile ? 0.008 : 0.003;
+            // Offset in pixels to push the marker above the preview card
+            const pixelOffset = isMobile ? 160 : 100;
 
-            mapRef.current.panTo(
-                [cafe.latitude - latOffset, cafe.longitude],
-                { animate: true, duration: 0.4 }
-            );
+            // Convert the cafe's lat/lng to a pixel point, shift it up, then convert back
+            const targetPoint = map.latLngToContainerPoint([cafe.latitude, cafe.longitude]);
+            const offsetPoint = L.point(targetPoint.x, targetPoint.y + pixelOffset);
+            const offsetLatLng = map.containerPointToLatLng(offsetPoint);
+
+            map.panTo(offsetLatLng, { animate: true, duration: 0.4 });
         }
     };
 
