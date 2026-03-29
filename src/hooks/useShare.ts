@@ -13,9 +13,17 @@ export function useShare() {
     const [copied, setCopied] = useState(false);
     const [sharing, setSharing] = useState(false);
 
-    const share = async ({ cafeId }: CafeShareData) => {
-        const wimc_url = `${window.location.origin}/cafes/${cafeId}`;
-        const text = `hey check this cafe out ${wimc_url}`;
+    const share = async (data?: CafeShareData, customText?: string) => {
+        let text = '';
+        
+        if (customText) {
+            text = customText;
+        } else if (data) {
+            const wimc_url = `${window.location.origin}/cafes/${data.cafeId}`;
+            text = `hey check this cafe out ${wimc_url}`;
+        } else {
+            return; // Nothing to share
+        }
 
         setSharing(true);
 

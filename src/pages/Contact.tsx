@@ -5,9 +5,10 @@ import {
     Mail, Github, Linkedin, MapPin,
     Code2, PenLine, Coffee, Users,
     ArrowRight, ArrowUpRight, Heart,
-    Globe,
+    Globe, Check, Loader2,
 } from 'lucide-react';
 import { useLogoClick } from '../hooks/useLogoClick';
+import { useShare } from '../hooks/useShare';
 
 // ── Fade-up wrapper ─────────────────────────────────────────
 const FadeUp: React.FC<{ children: React.ReactNode; delay?: number }> = ({
@@ -111,7 +112,7 @@ const collaborationWays = [
         title: 'Share it around',
         body: 'No code needed. Just tell a friend who\'s looking for a quiet corner to study or somewhere nice for a date.',
         cta: 'Share it!',
-        href: 'https://whereismycafe.vercel.app/',
+        type: 'share',
     },
     {
         title: 'Explore the Studio',
@@ -124,6 +125,7 @@ const collaborationWays = [
 // ── Page ────────────────────────────────────────────────────
 export const Contact: React.FC = () => {
     const handleLogoClick = useLogoClick();
+    const { share, copied, sharing } = useShare();
 
     return (
         <div className="min-h-screen bg-[#F8F6F1] pb-8 relative">
@@ -321,15 +323,35 @@ export const Contact: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {way.cta && way.href && (
-                                    <a href={way.href}
-                                        target={way.href.startsWith('http') ? '_blank' : undefined}
-                                        rel={way.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                                        className="inline-flex items-center gap-1.5 mt-4
-                               text-[11px] font-black uppercase tracking-[0.14em]
-                               text-[#0b4e9d] hover:gap-2.5 transition-all">
-                                        {way.cta} <ArrowRight className="w-3 h-3" />
-                                    </a>
+                                {way.cta && (
+                                    way.type === 'share' ? (
+                                        <button
+                                            onClick={() => share(undefined, 'Check this app out @ https://whereismycafe.vercel.app/')}
+                                            disabled={sharing}
+                                            className="inline-flex items-center gap-1.5 mt-4
+                                   text-[11px] font-black uppercase tracking-[0.14em]
+                                   text-[#0b4e9d] hover:gap-2.5 transition-all disabled:opacity-50"
+                                        >
+                                            {sharing ? (
+                                                <Loader2 className="w-3 h-3 animate-spin" />
+                                            ) : copied ? (
+                                                <Check className="w-3 h-3" />
+                                            ) : (
+                                                null
+                                            )}
+                                            {copied ? 'Copied!' : way.cta}
+                                            {!copied && !sharing && <ArrowRight className="w-3 h-3" />}
+                                        </button>
+                                    ) : way.href ? (
+                                        <a href={way.href}
+                                            target={way.href.startsWith('http') ? '_blank' : undefined}
+                                            rel={way.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                                            className="inline-flex items-center gap-1.5 mt-4
+                                   text-[11px] font-black uppercase tracking-[0.14em]
+                                   text-[#0b4e9d] hover:gap-2.5 transition-all">
+                                            {way.cta} <ArrowRight className="w-3 h-3" />
+                                        </a>
+                                    ) : null
                                 )}
                             </div>
                         </FadeUp>
