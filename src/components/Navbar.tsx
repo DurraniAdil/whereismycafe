@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Search, Heart, MapPin, Menu, X, Info, BookMarked, User } from 'lucide-react';
+import { Home, Search, Heart, MapPin, Menu, X, Info, BookMarked, User, MessageSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { useAuth } from '../context/AuthContext';
@@ -173,11 +173,20 @@ export const Navbar: React.FC = () => {
                     </span>
                   </Link>
 
-
+                  <Link to="/contact"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl
+                               bg-white/10 active:bg-white/20 transition-colors"
+                  >
+                    <MessageSquare className="w-4 h-4 text-white/70" />
+                    <span className="text-[13px] font-bold text-white tracking-wide">
+                      Contact Us
+                    </span>
+                  </Link>
 
                   <div className="h-px mx-3" />
 
-                  <Link to="/studio"
+                  {/* <Link to="/studio"
                     onClick={() => setIsMenuOpen(false)}
                     className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl
                                bg-white/10 active:bg-white/20 transition-colors"
@@ -186,7 +195,7 @@ export const Navbar: React.FC = () => {
                     <span className="text-[13px] font-bold text-white tracking-wide">
                       WIMC Studio
                     </span>
-                  </Link>
+                  </Link> */}
                 </div>
               </div>
             </motion.div>

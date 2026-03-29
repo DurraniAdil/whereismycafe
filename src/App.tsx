@@ -64,7 +64,7 @@ function MainApp() {
             <Route path="/map" element={<MapView />} />
             <Route path="/wimc-secret" element={<Secret />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/studio" element={<Studio />} />
+            {/* <Route path="/studio" element={<Studio />} /> */}
             <Route path="/profile" element={
               <ProtectedRoute>
                 <Profile />

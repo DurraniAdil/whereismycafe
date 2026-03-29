@@ -949,7 +949,7 @@ export const CafeDetail: React.FC = () => {
               </p>
 
               <div className="space-y-2.5">
-                <a href="https://wimc-studio.vercel.app" target="_blank" rel="noreferrer"
+                {/* <a href="https://wimc-studio.vercel.app" target="_blank" rel="noreferrer"
                   className="w-full flex items-center justify-center gap-2.5
                              bg-[#0b4e9d] text-white py-3.5 rounded-2xl
                              font-black text-[11px] uppercase tracking-[0.14em]
@@ -957,7 +957,7 @@ export const CafeDetail: React.FC = () => {
                              hover:bg-[#0a3d7a] transition-colors">
                   <Sparkles className="w-4 h-4" />
                   WIMC Studio
-                </a>
+                </a> */}
                 <a href={`https://wa.me/917028512087?text=${encodeURIComponent(`Here is the ${missingType} for ${cafe?.name}: `)}`} target="_blank" rel="noreferrer"
                   className="w-full flex items-center justify-center gap-2.5
                              bg-[#25D366] text-white py-3.5 rounded-2xl

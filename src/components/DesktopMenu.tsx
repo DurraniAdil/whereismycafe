@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, Sparkles, Info, MapPin, Menu as MenuIcon, User } from 'lucide-react';
+import { Search, Sparkles, Info, MapPin, Menu as MenuIcon, User, MessageSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 type NavItem = {
@@ -56,6 +56,17 @@ export const DesktopMenu: React.FC = () => {
                 </Link>
 
                 <Link
+                    to="/contact"
+                    onClick={() => setIsMenuDropdownOpen(false)}
+                    className="flex items-center gap-3 px-3 py-3 rounded-2xl bg-white hover:bg-[#EAF0FB] border border-transparent hover:border-[#E8EDF8] group transition-all"
+                >
+                    <div className="w-10 h-10 rounded-xl bg-[#F8F7F4] flex items-center justify-center group-hover:bg-white text-[#B8C0C8] group-hover:text-[#0b4e9d] transition-colors shadow-sm">
+                        <MessageSquare className="w-5 h-5" />
+                    </div>
+                    <span className="text-sm font-bold text-[#1E2020] tracking-wide">Contact Us</span>
+                </Link>
+
+                {/* <Link
                     to="/studio"
                     onClick={() => setIsMenuDropdownOpen(false)}
                     className="flex items-center gap-3 px-3 py-3 rounded-2xl bg-white hover:bg-[#EAF0FB] border border-transparent hover:border-[#E8EDF8] group transition-all"
@@ -64,7 +75,7 @@ export const DesktopMenu: React.FC = () => {
                         <MapPin className="w-5 h-5" />
                     </div>
                     <span className="text-sm font-bold text-[#1E2020] tracking-wide">WIMC Studio</span>
-                </Link>
+                </Link> */}
             </div>
 
             {/* ── Divider ───────────────────────────────────────── */}

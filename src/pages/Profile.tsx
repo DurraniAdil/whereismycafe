@@ -156,15 +156,16 @@ export const Profile: React.FC = () => {
         { icon: <Bookmark size={18} />, label: 'Saved', value: heartedIds.length.toString() },
     ];
 
-    const handleDeleteConfirm = () => {
+    const handleDeleteConfirm = async () => {
         if (!confirmRemove) return;
         if (confirmRemove.type === 'saved') {
-            toggleHeart(confirmRemove.id);
+            await toggleHeart(confirmRemove.id);
         } else {
-            removeVisited(confirmRemove.id);
+            await removeVisited(confirmRemove.id);
         }
         setConfirmRemove(null);
     };
+
 
     return (
         <div className="min-h-screen bg-[#F8F6F1] text-[#1E2020] pb-24 font-sans">

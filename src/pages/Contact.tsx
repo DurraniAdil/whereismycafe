@@ -113,6 +113,12 @@ const collaborationWays = [
         cta: null,
         href: null,
     },
+    {
+        title: 'Explore the Studio',
+        body: 'WIMC Studio is the engine behind this app. We build premium digital experiences for local cafes that want to stand out.',
+        cta: 'Visit Studio',
+        href: 'https://wimc-studio.vercel.app/',
+    },
 ];
 
 // ── Page ────────────────────────────────────────────────────

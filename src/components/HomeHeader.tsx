@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, Sparkles, MapPin, Menu as MenuIcon, Info, User } from 'lucide-react';
+import { Search, Sparkles, MapPin, Menu as MenuIcon, Info, User, MessageSquare } from 'lucide-react';
 import { getAllCafes } from '../lib/getCafes';
 import { Cafe, Vibe } from '../types/cafe';
 import { useLogoClick } from '../hooks/useLogoClick';
@@ -24,7 +24,8 @@ const primaryNavItems: NavItem[] = [
 // Stage 2: shown when Menu button is clicked (slides further left)
 const secondaryNavItems: NavItem[] = [
     { icon: Info, label: 'About', href: '/about' },
-    { icon: MapPin, label: 'Studio', href: '/studio' },
+    { icon: MessageSquare, label: 'Contact', href: '/contact' },
+    // { icon: MapPin, label: 'Studio', href: '/studio' },
 ];
 
 function getGreeting() {

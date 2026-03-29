@@ -79,6 +79,16 @@ export const useCollections = () => {
     }, [state, user]);
 
     const toggleHeart = async (id: string) => {
+        const isCurrentlyHearted = state.hearted.includes(id);
+
+        // Optimistic update
+        setState(prev => ({
+            ...prev,
+            hearted: isCurrentlyHearted
+                ? prev.hearted.filter(h => h !== id)
+                : [...prev.hearted, id]
+        }));
+
         const token = localStorage.getItem('wimc_token');
         if (user && token) {
             try {
@@ -92,20 +102,26 @@ export const useCollections = () => {
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    setState(data);
+                    setState(data); // Sync with server state
+                } else {
+                    // Rollback on error
+                    setState(prev => ({
+                        ...prev,
+                        hearted: isCurrentlyHearted
+                            ? [...prev.hearted, id]
+                            : prev.hearted.filter(h => h !== id)
+                    }));
                 }
             } catch (error) {
                 console.error('Toggle heart failed:', error);
-            }
-        } else {
-            // Local mode
-            setState(prev => {
-                const isHearted = prev.hearted.includes(id);
-                return {
+                // Rollback on error
+                setState(prev => ({
                     ...prev,
-                    hearted: isHearted ? prev.hearted.filter(s => s !== id) : [...prev.hearted, id]
-                };
-            });
+                    hearted: isCurrentlyHearted
+                        ? [...prev.hearted, id]
+                        : prev.hearted.filter(h => h !== id)
+                }));
+            }
         }
     };
 
@@ -144,35 +160,37 @@ export const useCollections = () => {
     };
 
     const removeVisited = async (id: string) => {
+        const originalVisited = [...state.visited];
+
+        // Optimistic update
+        setState(prev => ({
+            ...prev,
+            visited: prev.visited.filter(v => v.id !== id)
+        }));
+
         const token = localStorage.getItem('wimc_token');
         if (user && token) {
             try {
-                // We'll use sync to update by filtering out on frontend first
-                const updatedVisited = state.visited.filter(v => v.id !== id);
-                const response = await fetch(`${API_URL}/collections/sync`, {
+                const response = await fetch(`${API_URL}/collections/visited/remove`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ hearted: state.hearted, visited: updatedVisited })
+                    body: JSON.stringify({ cafeId: id })
                 });
-                // Wait, our sync route merges. We need a way to REMOVE.
-                // Let's just override on the backend if sync is called? No, sync should merge.
-                // For now, I'll just update the state locally and assume sync will handle it or I'll fix the backend sync to allow full replacement.
-                // Actually, let's just update local state for UI responsiveness.
                 if (response.ok) {
                     const data = await response.json();
-                    setState(data);
+                    setState(data); // Sync with server
+                } else {
+                    // Rollback
+                    setState(prev => ({ ...prev, visited: originalVisited }));
                 }
             } catch (error) {
                 console.error('Remove visited failed:', error);
+                // Rollback
+                setState(prev => ({ ...prev, visited: originalVisited }));
             }
-        } else {
-            setState(prev => ({
-                ...prev,
-                visited: prev.visited.filter(v => v.id !== id)
-            }));
         }
     };
 
