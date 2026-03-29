@@ -110,8 +110,8 @@ const collaborationWays = [
     {
         title: 'Share it around',
         body: 'No code needed. Just tell a friend who\'s looking for a quiet corner to study or somewhere nice for a date.',
-        cta: null,
-        href: null,
+        cta: 'Share it!',
+        href: 'https://whereismycafe.vercel.app/',
     },
     {
         title: 'Explore the Studio',
