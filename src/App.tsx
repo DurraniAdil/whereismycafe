@@ -11,6 +11,7 @@ import { Studio } from './pages/Studio';
 import { Profile } from './pages/Profile';
 import { Auth } from './pages/Auth';
 import { Admin } from './pages/Admin';
+import { FinanceDashboard } from './pages/FinanceDashboard';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { AuthProvider } from './context/AuthContext';
@@ -72,6 +73,7 @@ function MainApp() {
             } />
             <Route path="/auth" element={<Auth />} />
             <Route path="/wimc-super-secret-admin-access-page" element={<Admin />} />
+            <Route path="/wimc-cafe-owner-portal" element={<FinanceDashboard />} />
             {/* Fallback routes */}
             <Route path="*" element={<Home />} />
           </Routes>
@@ -91,6 +93,6 @@ function MainApp() {
 
 function ConditionalFooter() {
   const { pathname } = useLocation();
-  if (pathname.startsWith('/cafes/') || pathname === '/wimc-secret') return null;
+  if (pathname.startsWith('/cafes/') || pathname === '/wimc-secret' || pathname === '/wimc-cafe-owner-portal') return null;
   return <Footer />;
 }

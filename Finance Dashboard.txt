@@ -1,0 +1,52 @@
+WIMC Finance Dashboard Implementation Overview
+
+1. Project Summary
+Instead of building a simple frontend mock-up, a fully functional, end-to-end finance management portal was integrated directly into the existing WIMC full-stack application. It provides cafe owners with a secure dashboard to manage their real-time financial tracking using a live backend infrastructure.
+
+2. Architecture and State Management
+The project utilizes a React frontend connected to an Express/MongoDB backend via a dedicated finance API. State management is handled through React hooks at the component level. The main dashboard component securely manages overarching states such as active tabs and JWT authentication tokens, propagating them downwards to optimized child components. 
+
+3. Authentication and Access Security
+The portal is placed behind a secure route intended for internal owner usage. It features a complete authentication flow.
+- Registration requires a hard-coded invite passcode to ensure only authorized entities can establish accounts.
+- JWT-based authentication maintains sessions and secures endpoint requests.
+- Custom backend middleware validates token authenticity, ensuring an owner is strictly restricted to their specific cafe's financial database limits.
+
+4. Dashboard Overview and Visualizations
+The main overview aggregates totals using optimized backend pipelines and maps them to custom interactive interfaces.
+- Summary Cards: Real-time calculation of Total Balance, Total Income, and Total Expenses.
+- Balance Trend Visualization: A custom-built SVG line chart illustrating transaction volume chronologically.
+- Categorical Breakdown: A custom SVG donut chart dividing total expenses by category to visualize spending proportions quickly.
+
+5. Transactions Management
+Full CRUD capability is implemented for transaction data, satisfying all assignment requirements.
+- Table Display: Transactions are structured into a list containing Date, Type, Category, Amount, and Description.
+- Data Filtering: Users can filter logs by fixed time ranges, transaction types, or active text search.
+- Export Capabilities: Integrated tools allow owners to download their ledger seamlessly in both CSV and JSON formats directly from the component.
+
+6. Deep Insights
+The insights interface applies localized analytics to deliver actionable feedback immediately.
+- Identifies the highest spending categories and income sources mapped dynamically to size-scaled bars.
+- A rolling daily trend comparison bar chart visualizing the last 14 days of volume.
+- "Smart Observations" generated based on live database queries to produce useful context about recent financial activity.
+
+7. Primary Files Included for Review
+The following files encompass the core deliverables for this assignment:
+
+Frontend Implementation:
+- src/pages/FinanceDashboard.tsx (Main dashboard container)
+- src/components/finance/FinanceLogin.tsx (Registration and access portal)
+- src/components/finance/DashboardOverview.tsx (Overview grid and metrics)
+- src/components/finance/TransactionsTab.tsx (Transaction list, filtering, and CRUD logic)
+- src/components/finance/InsightsTab.tsx (Analytics and observations interface)
+- src/components/finance/Charts.tsx (Custom lightweight SVG visualization elements)
+
+Frontend Utilities:
+- src/lib/financeApi.ts (Client-side communication to the backend interface)
+- src/types/finance.ts (TypeScript interface definitions)
+
+Backend Architecture:
+- wimc-api/src/routes/finance.ts (Express handlers processing aggregation limits, authentication, and CRUD)
+- wimc-api/src/models/Transaction.ts (Mongoose schema managing financial document storage and indexing)
+- wimc-api/src/models/CafeOwner.ts (Mongoose schema configuring authentication definitions)
+- wimc-api/src/middleware/cafeOwnerAuth.ts (Security middleware controlling endpoint validation)
