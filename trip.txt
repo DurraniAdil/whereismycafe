@@ -1,0 +1,52 @@
+WIMC Cafe Trip Planner - Implementation Architecture & Expansion
+
+1. Overview & Extended Vision
+The "Cafe Trip Planner" transforms WIMC from a solo-discovery tool into a social utility. It solves the "group chat ping-pong" problem of deciding where and when to meet. 
+- Core loop: Create Plan -> Share Link/Invite -> Group Votes -> Auto-Resolves -> Enjoy & Log Trip.
+- Social Flywheel: By enabling "Shareable Links", even non-registered users can open the link, see the RSVP card, and are motivated to sign up to lock in their RSVP or Vote.
+
+2. Database Schema (MongoDB Backend)
+We will introduce new collections to handle social synchronization:
+
+A. Trip Schema
+- _id: ObjectId
+- creatorId: ObjectId (ref: User)
+- title: String (e.g., "Sunday Brunch Catchup")
+- eventDate: Date
+- selectedCafeId: String (ref: Cafe, nullable if poll is active)
+- status: String ('planning', 'confirmed', 'completed', 'cancelled')
+- shareableCode: String (unique shortcode for invite links)
+
+B. TripParticipant Schema
+- tripId: ObjectId (ref: Trip)
+- userId: ObjectId (ref: User, nullable if guest)
+- guestName: String (for non-registered web-visitors trying to RSVP)
+- rsvpStatus: String ('pending', 'going', 'maybe', 'declined')
+
+C. TripPoll Schema (Embedded in Trip or Linked)
+- options: Array of objects [{ cafeId, votes: [userIds] }]
+- autoResolveStrategy: String ('majority', 'creator_chooses')
+
+3. API Architecture (Express Routes)
+- POST /api/trips: Initialize a trip, select poll cafes or a definitive cafe.
+- GET /api/trips/:shareableCode: Public/Protected route to view the RSVP card live.
+- POST /api/trips/:tripId/rsvp: Update the user's status. Websockets (Socket.io) or polling can be used so the RSVP card updates in real-time on everyone's screen.
+- POST /api/trips/:tripId/vote: Cast a vote on a cafe option. Logic checks if all attendees have voted and auto-sets `selectedCafeId`.
+
+4. Frontend Implementation & UI Flows
+- Trip Feed Screen (/trips): A vertical feed showing "Upcoming Plans" and "Memories" (past plans). Acts as the social hub.
+- Create Wizard: A smooth, step-by-step modal. Step 1: Pick Date/Time. Step 2: Pick Cafe (or pick 3 for a poll). Step 3: Get Share Link.
+- Live RSVP Card Component: A beautifully animated card, mimicking an elegant digital invitation. It displays the cafe vibe, the countdown clock, and live avatars of friends who clicked "Going".
+- Conflict UI: If the chosen cafe is closed on the selected date/time, the UI gracefully warns the creator before finalizing.
+
+5. Notification & Engagement System
+- "Nudge" Worker: A server-side cron job running every 10 minutes.
+- 2-Hour Warning: "You're heading to [Cafe Name] in 2 hours! Check directions."
+- Post-Trip Hook: 2 hours after the trip time, ping attendees: "How was [Cafe Name]? Drop a photo or review." (This seamlessly generates User Generated Content for the main database).
+
+6. Implementation Phases
+Phase 1: Basic Trip creation with one definitive cafe and a shareable RSVP link.
+Phase 2: Group polling system and auto-resolve logic.
+Phase 3: The Trip Feed, Past Memories (photo uploads), and interactive push notifications.
+
+This feature locks users in: when friends rely on WIMC to coordinate their weekend, the app becomes indispensable.

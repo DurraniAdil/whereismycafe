@@ -12,6 +12,8 @@ import { Profile } from './pages/Profile';
 import { Auth } from './pages/Auth';
 import { Admin } from './pages/Admin';
 import { FinanceDashboard } from './pages/FinanceDashboard';
+import { TripPlanner } from './pages/TripPlanner';
+import { InvitePage } from './pages/InvitePage';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { AuthProvider } from './context/AuthContext';
@@ -74,6 +76,12 @@ function MainApp() {
             <Route path="/auth" element={<Auth />} />
             <Route path="/wimc-super-secret-admin-access-page" element={<Admin />} />
             <Route path="/wimc-cafe-owner-portal" element={<FinanceDashboard />} />
+            <Route path="/trip" element={
+              <ProtectedRoute>
+                <TripPlanner />
+              </ProtectedRoute>
+            } />
+            <Route path="/trip/invite/:code" element={<InvitePage />} />
             {/* Fallback routes */}
             <Route path="*" element={<Home />} />
           </Routes>

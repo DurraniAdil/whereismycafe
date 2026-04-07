@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, Sparkles, MapPin, Menu as MenuIcon, Info, User, MessageSquare } from 'lucide-react';
+import { Search, Sparkles, MapPin, Menu as MenuIcon, Info, User, MessageSquare, CalendarDays } from 'lucide-react';
 import { getAllCafes } from '../lib/getCafes';
 import { Cafe, Vibe } from '../types/cafe';
 import { useLogoClick } from '../hooks/useLogoClick';
@@ -25,7 +25,7 @@ const primaryNavItems: NavItem[] = [
 const secondaryNavItems: NavItem[] = [
     { icon: Info, label: 'About', href: '/about' },
     { icon: MessageSquare, label: 'Contact', href: '/contact' },
-    // { icon: MapPin, label: 'Studio', href: '/studio' },
+    { icon: CalendarDays, label: 'Trip Planner', href: '/trip' },
 ];
 
 function getGreeting() {
@@ -72,7 +72,7 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({ onVibeSelect }) => {
     const { isAuthenticated, setShowAuthModal } = useAuth();
 
     const handleProtectedLink = (e: React.MouseEvent, href: string) => {
-        if (href === '/profile' && !isAuthenticated) {
+        if ((href === '/profile' || href === '/trip') && !isAuthenticated) {
             e.preventDefault();
             setShowAuthModal(true);
         }
