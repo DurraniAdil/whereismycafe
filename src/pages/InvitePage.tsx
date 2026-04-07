@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Calendar, Clock, MapPin, ExternalLink, Check, Copy, Users, LogIn } from 'lucide-react';
-import { fetchTripByCode, rsvpTrip, voteOnPoll } from '../lib/tripApi';
+import { Calendar, Clock, MapPin, ExternalLink, Check, Copy, Users, LogIn, X, Search } from 'lucide-react';
+import { fetchTripByCode, rsvpTrip, voteOnPoll, fetchCafesForPicker } from '../lib/tripApi';
 import { useAuth } from '../context/AuthContext';
 import type { Trip } from '../types/trip';
+
+type CafeOption = { id: string; name: string; area: string; photos: string[] };
 
 const RSVP_BUTTONS = [
   { status: 'going' as const, label: 'Going', cls: 'bg-emerald-50 border-emerald-200 text-emerald-700', active: 'bg-emerald-500 border-emerald-500 text-white' },
@@ -24,6 +26,18 @@ export const InvitePage: React.FC = () => {
   const [error, setError] = useState('');
   const [actionLoading, setActionLoading] = useState('');
   const [copied, setCopied] = useState(false);
+
+  // Suggesting new cafe
+  const [isSuggesting, setIsSuggesting] = useState(false);
+  const [cafes, setCafes] = useState<CafeOption[]>([]);
+  const [cafeSearch, setCafeSearch] = useState('');
+  const [stagedSuggestion, setStagedSuggestion] = useState<CafeOption | null>(null);
+
+  useEffect(() => {
+    if (isSuggesting && cafes.length === 0) {
+      fetchCafesForPicker().then(setCafes).catch(console.error);
+    }
+  }, [isSuggesting, cafes.length]);
 
   useEffect(() => {
     if (!code) return;
@@ -46,12 +60,13 @@ export const InvitePage: React.FC = () => {
     setActionLoading('');
   };
 
-  const handleVote = async (cafeId: string) => {
+  const handleVote = async (cafeId: string, newCafeName?: string) => {
     if (!trip || !isAuthenticated) return;
     setActionLoading(`vote-${cafeId}`);
     try {
-      const updated = await voteOnPoll(trip._id, cafeId);
+      const updated = await voteOnPoll(trip._id, cafeId, newCafeName);
       setTrip(updated);
+      setIsSuggesting(false);
     } catch (err) {
       console.error(err);
     }
@@ -89,11 +104,12 @@ export const InvitePage: React.FC = () => {
     );
   }
 
+  const currentUserId = user?._id || user?.id;
   const eventDate = new Date(trip.eventDate);
   const isPast = eventDate < new Date();
-  const myParticipant = trip.participants.find(p => p.userId === user?.id);
+  const myParticipant = trip.participants.find(p => p.userId === currentUserId);
   const myRsvp = myParticipant?.rsvpStatus || null;
-  const myVote = trip.poll?.options.find(o => o.votes.includes(user?.id || ''))?.cafeId || null;
+  const myVote = trip.poll?.options.find(o => o.votes.includes(currentUserId || ''))?.cafeId || null;
   const goingCount = trip.participants.filter(p => p.rsvpStatus === 'going').length;
 
   const getCountdown = () => {
@@ -128,10 +144,22 @@ export const InvitePage: React.FC = () => {
               You're Invited
             </span>
 
-            <h1 className="text-2xl font-bold text-[#1E2020] mt-4 leading-tight"
-              style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-              {trip.title}
-            </h1>
+            <div className="flex items-center justify-between mt-4">
+              <h1 className="text-2xl font-bold text-[#1E2020] leading-tight"
+                style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                {trip.title}
+              </h1>
+              {/* Removing Map SVG as requested */}
+              {/* <div className="w-10 h-10 rounded-full bg-[#EAF0FB] flex items-center justify-center flex-shrink-0">
+                <MapPin className="w-5 h-5 text-[#0b4e9d]" />
+              </div> */}
+            </div>
+
+            {trip.description && (
+              <p className="text-[13px] text-[#7A8478] mt-2 leading-relaxed">
+                {trip.description}
+              </p>
+            )}
 
             {/* Date/time */}
             <div className="flex items-center gap-4 mt-4">
@@ -187,11 +215,67 @@ export const InvitePage: React.FC = () => {
                     );
                   })}
                 </div>
+
+                {!isPast && isAuthenticated && !isSuggesting && (
+                  <button type="button" onClick={() => setIsSuggesting(true)}
+                    className="w-full mt-2 py-2.5 rounded-xl border border-dashed border-[#B8C0C8] text-[11px] font-bold text-[#7A8478] hover:bg-gray-50 transition-colors uppercase tracking-wider">
+                    + Suggest another cafe
+                  </button>
+                )}
+
+                {isSuggesting && (
+                  <div className="mt-3 p-3 bg-[#F8F6F1] rounded-xl border border-[#EAEEE8]">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-[10px] uppercase font-bold text-[#1E2020]">
+                        {stagedSuggestion ? 'Ready to Suggest?' : 'Find a Cafe'}
+                      </p>
+                      <button type="button" onClick={() => { setIsSuggesting(false); setStagedSuggestion(null); }} className="text-gray-400 hover:text-gray-600"><X className="w-4 h-4" /></button>
+                    </div>
+
+                    {!stagedSuggestion ? (
+                      <>
+                        <div className="relative mb-2">
+                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                          <input type="text" value={cafeSearch} onChange={e => setCafeSearch(e.target.value)}
+                            placeholder="Search..." className="w-full pl-8 pr-3 py-2 bg-white text-xs border border-[#EAEEE8] rounded-lg focus:outline-none focus:border-[#0b4e9d]" />
+                        </div>
+                        <div className="max-h-40 overflow-y-auto space-y-1">
+                          {cafes
+                            .filter(c => !trip.poll!.options.some(opt => opt.cafeId === c.id) && c.name.toLowerCase().includes(cafeSearch.toLowerCase()))
+                            .map(cafe => (
+                            <button type="button" key={cafe.id} onClick={() => setStagedSuggestion(cafe)}
+                              className="w-full flex items-center justify-between p-2 hover:bg-[#EAF0FB] rounded-lg text-left transition-colors">
+                              <span className="text-[12px] font-medium text-[#1E2020] truncate">{cafe.name}</span>
+                              <span className="text-[9px] text-[#0b4e9d] font-bold">SELECT</span>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="bg-white p-3 rounded-xl border border-[#EAEEE8] flex items-center gap-2">
+                          <MapPin className="w-4 h-4 text-[#0b4e9d]" />
+                          <span className="text-sm font-bold text-[#1E2020]">{stagedSuggestion.name}</span>
+                        </div>
+                        <button type="button" 
+                          onClick={() => handleVote(stagedSuggestion.id, stagedSuggestion.name)}
+                          disabled={actionLoading.startsWith('vote')}
+                          className="w-full py-3 bg-[#0b4e9d] text-white rounded-xl text-xs font-bold hover:bg-[#093d7a] transition-all flex items-center justify-center gap-2">
+                          {actionLoading.startsWith('vote') ? 'Suggesting...' : 'CONFIRM SUGGESTION'}
+                        </button>
+                        <button type="button" onClick={() => setStagedSuggestion(null)}
+                          className="w-full py-2 text-[10px] font-bold text-[#7A8478] uppercase tracking-wider">
+                          Back to Search
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
             {/* RSVP */}
-            {!isPast && trip.status !== 'cancelled' && isAuthenticated && (
+            {!isPast && trip.status !== 'cancelled' && isAuthenticated && (!trip.poll || trip.poll.resolved || myVote) && (
               <div className="mt-5">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-[#7A8478] mb-2">Your RSVP</p>
                 <div className="flex gap-2">

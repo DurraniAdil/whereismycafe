@@ -3,6 +3,7 @@ import { API_URL } from '../lib/api';
 
 export interface User {
   id: string;
+  _id?: string;
   name: string;
   email: string;
   picture?: string;

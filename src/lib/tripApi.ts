@@ -10,6 +10,7 @@ const authHeaders = () => ({
 
 export async function createTrip(data: {
   title: string;
+  description?: string;
   eventDate: string;
   cafeId?: string;
   cafeName?: string;
@@ -66,11 +67,11 @@ export async function rsvpTrip(tripId: string, status: 'going' | 'maybe' | 'decl
   return res.json();
 }
 
-export async function voteOnPoll(tripId: string, cafeId: string): Promise<Trip> {
+export async function voteOnPoll(tripId: string, cafeId: string, newCafeName?: string): Promise<Trip> {
   const res = await fetch(`${API_URL}/trips/${tripId}/vote`, {
     method: 'POST',
     headers: authHeaders(),
-    body: JSON.stringify({ cafeId })
+    body: JSON.stringify({ cafeId, newCafeName })
   });
   if (!res.ok) {
     const err = await res.json();
@@ -79,7 +80,7 @@ export async function voteOnPoll(tripId: string, cafeId: string): Promise<Trip> 
   return res.json();
 }
 
-export async function updateTrip(tripId: string, data: Partial<{ title: string; eventDate: string; status: string }>): Promise<Trip> {
+export async function updateTrip(tripId: string, data: Partial<{ title: string; description: string; eventDate: string; status: string }>): Promise<Trip> {
   const res = await fetch(`${API_URL}/trips/${tripId}`, {
     method: 'PATCH',
     headers: authHeaders(),

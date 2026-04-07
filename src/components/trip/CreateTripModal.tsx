@@ -8,11 +8,13 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onCreated: (trip: Trip) => void;
+  prefillCafeId?: string;
+  prefillCafeName?: string;
 }
 
 type CafeOption = { id: string; name: string; area: string; photos: string[] };
 
-export const CreateTripModal: React.FC<Props> = ({ isOpen, onClose, onCreated }) => {
+export const CreateTripModal: React.FC<Props> = ({ isOpen, onClose, onCreated, prefillCafeId, prefillCafeName }) => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -21,6 +23,7 @@ export const CreateTripModal: React.FC<Props> = ({ isOpen, onClose, onCreated })
   const [title, setTitle] = useState('');
   const [eventDate, setEventDate] = useState('');
   const [eventTime, setEventTime] = useState('');
+  const [description, setDescription] = useState('');
 
   // Step 2
   const [mode, setMode] = useState<'single' | 'poll'>('single');
@@ -35,19 +38,28 @@ export const CreateTripModal: React.FC<Props> = ({ isOpen, onClose, onCreated })
 
   useEffect(() => {
     if (isOpen) {
-      fetchCafesForPicker().then(setCafes).catch(console.error);
+      if (!prefillCafeId) {
+        fetchCafesForPicker().then(setCafes).catch(console.error);
+      }
       // Reset
       setStep(1);
       setTitle('');
       setEventDate('');
       setEventTime('');
-      setMode('single');
-      setSelectedCafe(null);
+      setDescription('');
+      
+      if (prefillCafeId && prefillCafeName) {
+        setMode('single');
+        setSelectedCafe({ id: prefillCafeId, name: prefillCafeName, area: '', photos: [] });
+      } else {
+        setMode('single');
+        setSelectedCafe(null);
+      }
       setPollCafes([]);
       setCreatedTrip(null);
       setError('');
     }
-  }, [isOpen]);
+  }, [isOpen, prefillCafeId, prefillCafeName]);
 
   const filteredCafes = cafes.filter(c =>
     c.name.toLowerCase().includes(cafeSearch.toLowerCase()) ||
@@ -60,7 +72,11 @@ export const CreateTripModal: React.FC<Props> = ({ isOpen, onClose, onCreated })
         return setError('Please fill in all fields');
       }
       setError('');
-      setStep(2);
+      if (prefillCafeId) {
+        handleCreate();
+      } else {
+        setStep(2);
+      }
     } else if (step === 2) {
       if (mode === 'single' && !selectedCafe) {
         return setError('Please select a cafe');
@@ -79,6 +95,7 @@ export const CreateTripModal: React.FC<Props> = ({ isOpen, onClose, onCreated })
     try {
       const dateTime = `${eventDate}T${eventTime}`;
       const data: any = { title: title.trim(), eventDate: dateTime };
+      if (description.trim()) data.description = description.trim();
 
       if (mode === 'single' && selectedCafe) {
         data.cafeId = selectedCafe.id;
@@ -143,7 +160,7 @@ export const CreateTripModal: React.FC<Props> = ({ isOpen, onClose, onCreated })
                 style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
                 {step === 3 ? 'Trip Created!' : 'Plan a Trip'}
               </h2>
-              {step < 3 && (
+              {step < 3 && !prefillCafeId && (
                 <p className="text-[10px] text-[#7A8478] uppercase tracking-wider mt-0.5">
                   Step {step} of 2
                 </p>
@@ -183,6 +200,11 @@ export const CreateTripModal: React.FC<Props> = ({ isOpen, onClose, onCreated })
                     <input type="time" value={eventTime} onChange={e => setEventTime(e.target.value)}
                       className={inputClass} />
                   </div>
+                </div>
+                <div>
+                  <label className={labelClass}>Description <span className="text-[#A8B0A0] font-normal lowercase">(optional)</span></label>
+                  <textarea value={description} onChange={e => setDescription(e.target.value)}
+                    placeholder="Briefly describe the plan..." className={`${inputClass} resize-none h-20`} />
                 </div>
               </motion.div>
             )}
@@ -305,7 +327,7 @@ export const CreateTripModal: React.FC<Props> = ({ isOpen, onClose, onCreated })
               )}
               <button onClick={handleNext} disabled={loading}
                 className="flex-1 py-2.5 bg-[#0b4e9d] text-white rounded-xl text-sm font-bold hover:bg-[#093d7a] disabled:opacity-50 transition-all flex items-center justify-center gap-1.5">
-                {loading ? 'Creating...' : step === 2 ? 'Create Trip' : <>Next <ChevronRight className="w-3.5 h-3.5" /></>}
+                {loading ? 'Creating...' : (step === 2 || prefillCafeId) ? 'Create Trip' : <>Next <ChevronRight className="w-3.5 h-3.5" /></>}
               </button>
             </div>
           )}

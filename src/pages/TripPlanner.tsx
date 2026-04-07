@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Plus, Calendar, MapPin, Coffee } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -11,6 +11,10 @@ import type { Trip } from '../types/trip';
 
 export const TripPlanner: React.FC = () => {
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const prefillCafeId = searchParams.get('prefillCafeId');
+  const prefillCafeName = searchParams.get('prefillCafeName');
+
   const [upcoming, setUpcoming] = useState<Trip[]>([]);
   const [past, setPast] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,10 +34,14 @@ export const TripPlanner: React.FC = () => {
 
   useEffect(() => {
     loadTrips();
-  }, [loadTrips]);
+    if (prefillCafeId && prefillCafeName) {
+      setShowCreate(true);
+    }
+  }, [loadTrips, prefillCafeId, prefillCafeName]);
 
   const handleTripCreated = () => {
     loadTrips();
+    if (prefillCafeId) setSearchParams({});
   };
 
   const handleTripUpdate = (updated: Trip) => {
@@ -173,8 +181,13 @@ export const TripPlanner: React.FC = () => {
       {/* Modals */}
       <CreateTripModal
         isOpen={showCreate}
-        onClose={() => setShowCreate(false)}
+        onClose={() => {
+          setShowCreate(false);
+          if (prefillCafeId) setSearchParams({});
+        }}
         onCreated={handleTripCreated}
+        prefillCafeId={prefillCafeId || undefined}
+        prefillCafeName={prefillCafeName || undefined}
       />
 
       <TripDetailModal

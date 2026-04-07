@@ -19,6 +19,7 @@ export interface Trip {
   _id: string;
   creatorId: string;
   title: string;
+  description?: string;
   eventDate: string;
   selectedCafeId: string | null;
   selectedCafeName: string | null;

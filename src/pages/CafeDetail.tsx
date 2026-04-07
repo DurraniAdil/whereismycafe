@@ -6,7 +6,7 @@ import {
   Plus, ChevronLeft, ChevronRight, X, Phone, Globe,
   Mail, MessageCircle, Wifi, Wind, Trees, Zap,
   Gamepad2, ParkingCircle, Star, Clock, Volume2,
-  Sun, Music, Utensils, IndianRupee, Heart, Check, Share, Loader2, Share2, Upload
+  Sun, Music, Utensils, IndianRupee, Heart, Check, Share, Loader2, Share2, Upload, CalendarDays
 } from 'lucide-react';
 import { VibeChip } from '../components/VibeChip';
 import { useCollections } from '../hooks/useCollections.ts';
@@ -585,6 +585,13 @@ export const CafeDetail: React.FC = () => {
                   >
                     <Check className={`w-4 h-4 transition-colors ${visited ? 'stroke-[3px] text-[#2D6A4F]' : 'text-[#A8B0A0]'}`} />
                   </button>
+                  <Link
+                    to={`/trip?prefillCafeId=${cafe.id}&prefillCafeName=${encodeURIComponent(cafe.name)}`}
+                    className="w-9 h-9 flex items-center justify-center rounded-full flex-shrink-0 transition-all bg-[#F4F4F0] hover:bg-gray-100"
+                    title="Plan a Trip"
+                  >
+                    <CalendarDays className="w-4 h-4 text-[#A8B0A0] transition-colors" />
+                  </Link>
                   <button
                     disabled={sharing}
                     onClick={() => share({
@@ -944,12 +951,21 @@ export const CafeDetail: React.FC = () => {
                 Not available yet
               </h3>
               <p className="text-[14px] text-[#7A8478] leading-relaxed mb-6">
-                We don't have this café's {missingType} on record.
-                If ya know about it then just message me, or if you want to explore the WIMC studio!
+                We don't have this café's {missingType} on record rn.
+                If you have the details, put us on! <br />
+                Hit us up on WhatsApp. Or check out WIMC Studio to stay ahead!
               </p>
 
               <div className="space-y-2.5">
-                {/* <a href="https://wimc-studio.vercel.app" target="_blank" rel="noreferrer"
+                <a href={`https://wa.me/917028512087?text=${encodeURIComponent(`Here is the ${missingType} for ${cafe?.name}: `)}`} target="_blank" rel="noreferrer"
+                  className="w-full flex items-center justify-center gap-2.5
+                             bg-[#25D366] text-white py-3.5 rounded-2xl
+                             font-black text-[11px] uppercase tracking-[0.14em]
+                             hover:bg-[#1fba58] transition-colors">
+                  <MessageCircle className="w-4 h-4" />
+                  Hit up WhatsApp
+                </a>
+                <a href="https://wimc-studio.vercel.app" target="_blank" rel="noreferrer"
                   className="w-full flex items-center justify-center gap-2.5
                              bg-[#0b4e9d] text-white py-3.5 rounded-2xl
                              font-black text-[11px] uppercase tracking-[0.14em]
@@ -957,14 +973,6 @@ export const CafeDetail: React.FC = () => {
                              hover:bg-[#0a3d7a] transition-colors">
                   <Sparkles className="w-4 h-4" />
                   WIMC Studio
-                </a> */}
-                <a href={`https://wa.me/917028512087?text=${encodeURIComponent(`Here is the ${missingType} for ${cafe?.name}: `)}`} target="_blank" rel="noreferrer"
-                  className="w-full flex items-center justify-center gap-2.5
-                             bg-[#25D366] text-white py-3.5 rounded-2xl
-                             font-black text-[11px] uppercase tracking-[0.14em]
-                             hover:bg-[#1fba58] transition-colors">
-                  <MessageCircle className="w-4 h-4" />
-                  WhatsApp
                 </a>
               </div>
             </motion.div>
