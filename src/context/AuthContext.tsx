@@ -48,7 +48,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (response.ok) {
         const userData = await response.json();
-        setUser(userData);
+        // Normalize ID
+        const normalizedUser = {
+          ...userData,
+          id: userData.id || userData._id
+        };
+        setUser(normalizedUser);
       } else {
         localStorage.removeItem('wimc_token');
         setUser(null);
@@ -65,7 +70,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = (userData: User, token: string) => {
-    setUser(userData);
+    const normalizedUser = {
+      ...userData,
+      id: userData.id || userData._id || ''
+    };
+    setUser(normalizedUser);
     localStorage.setItem('wimc_token', token);
   };
 

@@ -110,3 +110,16 @@ export async function fetchCafesForPicker(): Promise<{ id: string; name: string;
   const cafes = await res.json();
   return cafes.map((c: any) => ({ id: c.id, name: c.name, area: c.area, photos: c.photos || [] }));
 }
+
+export async function submitTripFeedback(tripId: string, feedback: 'success' | 'next_time'): Promise<Trip> {
+  const res = await fetch(`${API_URL}/trips/${tripId}/feedback`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ feedback })
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || 'Feedback submission failed');
+  }
+  return res.json();
+}

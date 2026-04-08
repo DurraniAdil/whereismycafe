@@ -1,0 +1,64 @@
+# Boneyard Implementation Plan - WIMC
+
+## Goal
+Implement pixel-perfect skeleton loading using the Boneyard framework (https://github.com/0xGF/boneyard).
+
+## 1. Setup
+- Install: `npm install boneyard-js`
+- Create `boneyard.config.json`:
+```json
+{
+  "breakpoints": [375, 768, 1280],
+  "out": "./src/bones",
+  "wait": 800,
+  "color": "rgba(0,0,0,0.06)",
+  "animate": "shimmer"
+}
+```
+- Entry Point (`src/main.tsx`):
+```tsx
+import './bones/registry';
+```
+
+## 2. Component Refactoring
+
+### CafeCard.tsx
+Wrap the component content:
+```tsx
+import { Skeleton } from 'boneyard-js/react'
+
+export const CafeCard = ({ cafe, loading }) => {
+  return (
+    <Skeleton name="cafe-card" loading={loading}>
+      {/* Existing Card Content */}
+    </Skeleton>
+  );
+}
+```
+
+### Search.tsx
+Wrap the results grid:
+```tsx
+<Skeleton name="search-grid" loading={loading} fallback={<OldSkeleton />}>
+  <div className="grid ...">
+    {cafes.map(c => <CafeCard cafe={c} />)}
+  </div>
+</Skeleton>
+```
+
+### HomeHeader.tsx
+Wrap the brand strip and greeting:
+```tsx
+<Skeleton name="home-header" loading={loading}>
+  <header>...</header>
+</Skeleton>
+```
+
+## 3. Build Process
+Run the following to generate the bones:
+`npx boneyard-js build`
+
+Note: This requires the dev server to be running (`npm run dev`).
+
+## 4. Maintenance
+Whenever the UI layout changes significantly (e.g., changing padding, font sizes, or grid structure), re-run the build command to update the `.bones.json` snapshots.

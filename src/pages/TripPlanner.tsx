@@ -146,9 +146,9 @@ export const TripPlanner: React.FC = () => {
             {/* Past */}
             {past.length > 0 && (
               <div>
-                <h2 className="text-[13px] font-bold text-[#7A8478] uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5" />
-                  Past Trips
+                <h2 className="text-[13px] font-bold text-[#7A8478] uppercase tracking-wider mb-3 flex items-center gap-1.5 mt-4">
+                  <Coffee className="w-3.5 h-3.5 text-[#0b4e9d]" />
+                  Memories
                 </h2>
                 <div className="space-y-3">
                   {past.map((trip, i) => (

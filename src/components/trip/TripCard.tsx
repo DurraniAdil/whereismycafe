@@ -29,6 +29,7 @@ export const TripCard: React.FC<Props> = ({ trip, onClick, currentUserId }) => {
   const eventDate = new Date(trip.eventDate);
   const isPast = eventDate < new Date();
   const goingCount = trip.participants.filter(p => p.rsvpStatus === 'going').length;
+  const myParticipant = trip.participants.find(p => p.userId?.toString() === currentUserId?.toString());
 
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -117,6 +118,25 @@ export const TripCard: React.FC<Props> = ({ trip, onClick, currentUserId }) => {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Post-trip feedback status */}
+          {isPast && currentUserId && (
+            <div className="flex items-center gap-1.5 mr-1">
+              {trip.participants.find(p => p.userId?.toString() === currentUserId?.toString())?.feedback === 'success' ? (
+                <div className="flex items-center gap-1 text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                  <Check className="w-2.5 h-2.5" /> Success
+                </div>
+              ) : trip.participants.find(p => p.userId?.toString() === currentUserId?.toString())?.feedback === 'next_time' ? (
+                <div className="flex items-center gap-1 text-[10px] text-gray-400 font-bold bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100">
+                  Next Time
+                </div>
+              ) : myParticipant?.rsvpStatus === 'going' ? (
+                <div className="flex items-center gap-1 text-[10px] text-[#0b4e9d] font-bold bg-[#EAF0FB] px-2 py-0.5 rounded-full border border-blue-100 animate-pulse">
+                  Unlogged
+                </div>
+              ) : null}
+            </div>
+          )}
+
           {/* Countdown */}
           {countdown && (
             <div className="flex items-center gap-1 text-[10px] text-[#0b4e9d] font-semibold bg-[#EAF0FB] px-2 py-0.5 rounded-full">

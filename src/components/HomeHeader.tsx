@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link, useLocation } from 'react-router-dom';
 import { Search, Sparkles, MapPin, Menu as MenuIcon, Info, User, MessageSquare, CalendarDays } from 'lucide-react';
@@ -46,7 +46,8 @@ const VIBES: { label: Vibe; hover: string }[] = [
     { label: 'Me Time', hover: 'hover:bg-[#8B5E3C] hover:text-white hover:border-[#8B5E3C]' },
 ];
 
-const MARQUEE_ITEMS = [
+// fallback if API is slow
+const FALLBACK_MARQUEE = [
     'Coffea Sambhajinagar', 'Two Stories Cafe', 'Neem Chhav Cafe',
     'The Golden Hour', 'Chéri Cafe', 'Royal Cafe',
     'Kelvin 77', 'Cafe AK47', 'Omnific Caff',
@@ -60,11 +61,29 @@ interface HomeHeaderProps {
 export const HomeHeader: React.FC<HomeHeaderProps> = ({ onVibeSelect }) => {
     const greeting = getGreeting();
     const [allCafes, setAllCafes] = useState<Cafe[]>([]);
+    const [marqueeDuration, setMarqueeDuration] = useState(10);
+
+    const marqueeItems = useMemo(() => {
+        if (allCafes.length === 0) return FALLBACK_MARQUEE;
+        return allCafes.map(c => c.name);
+    }, [allCafes]);
+
+    useEffect(() => {
+        const updateSpeed = () => {
+            const isMobile = window.innerWidth < 768;
+            // Balanced "Readable" speed:
+            const speedPerItem = isMobile ? 1.2 : 1.5; 
+            setMarqueeDuration(marqueeItems.length * speedPerItem);
+        };
+        updateSpeed();
+        window.addEventListener('resize', updateSpeed);
+        return () => window.removeEventListener('resize', updateSpeed);
+    }, [marqueeItems.length]);
 
     useEffect(() => {
         getAllCafes()
-          .then(setAllCafes)
-          .catch(err => console.error("HomeHeader failed to fetch cafes:", err));
+            .then(setAllCafes)
+            .catch(err => console.error("HomeHeader failed to fetch cafes:", err));
     }, []);
 
     const trendingCount = allCafes.filter(c => c.isTrending).length;
@@ -331,11 +350,12 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({ onVibeSelect }) => {
             <div className="relative z-10 overflow-hidden border-y border-[#0b4e9d]/30
                       bg-[#0b4e9d] py-2.5 mb-6">
                 <motion.div
-                    className="flex gap-8 whitespace-nowrap"
+                    key={marqueeDuration}
+                    className="flex gap-8 whitespace-nowrap w-max"
                     animate={{ x: ['0%', '-50%'] }}
-                    transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
+                    transition={{ duration: marqueeDuration, repeat: Infinity, ease: 'linear' }}
                 >
-                    {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, i) => (
+                    {[...marqueeItems, ...marqueeItems].map((item, i) => (
                         <span key={i} className="text-[11px] font-semibold text-white/75 flex-shrink-0
                                      uppercase tracking-[0.12em]">
                             {item}

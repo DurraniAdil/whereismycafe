@@ -2,6 +2,7 @@ export interface TripParticipant {
   userId: string;
   name: string;
   rsvpStatus: 'pending' | 'going' | 'maybe' | 'declined';
+  feedback?: 'success' | 'next_time' | null;
 }
 
 export interface TripPollOption {

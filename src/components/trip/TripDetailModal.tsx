@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, MapPin, Calendar, Clock, Copy, Check, ExternalLink, Users, Search, Edit2, Save } from 'lucide-react';
-import { rsvpTrip, voteOnPoll, deleteTrip, updateTrip, fetchCafesForPicker } from '../../lib/tripApi';
+import { X, MapPin, Calendar, Clock, Copy, Check, ExternalLink, Users, Search, Edit2, Save, Trophy, Frown, Star } from 'lucide-react';
+import { rsvpTrip, voteOnPoll, deleteTrip, updateTrip, fetchCafesForPicker, submitTripFeedback } from '../../lib/tripApi';
 import type { Trip } from '../../types/trip';
 
 interface Props {
@@ -72,6 +72,7 @@ export const TripDetailModal: React.FC<Props> = ({ trip, isOpen, onClose, onUpda
   const isCreator = currentUserId.toString() === trip.creatorId.toString();
   const myParticipant = trip.participants.find(p => p.userId.toString() === currentUserId.toString());
   const myRsvp = myParticipant?.rsvpStatus || null;
+  const showFeedbackBanner = isPast && myRsvp === 'going' && trip.status !== 'cancelled';
   const myVote = trip.poll?.options.find(o => o.votes.some(v => v.toString() === currentUserId.toString()))?.cafeId || null;
 
   const handleRsvp = async (status: 'going' | 'maybe' | 'declined') => {
@@ -144,6 +145,17 @@ export const TripDetailModal: React.FC<Props> = ({ trip, isOpen, onClose, onUpda
     navigator.clipboard.writeText(`${window.location.origin}/trip/invite/${trip.shareableCode}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleFeedback = async (val: 'success' | 'next_time') => {
+    setLoading(`feedback-${val}`);
+    try {
+      const updated = await submitTripFeedback(trip._id, val);
+      onUpdate(updated);
+    } catch (err) {
+      console.error(err);
+    }
+    setLoading('');
   };
 
   const getCountdown = () => {
@@ -225,6 +237,63 @@ export const TripDetailModal: React.FC<Props> = ({ trip, isOpen, onClose, onUpda
           <div className="px-6 pb-6 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 160px)' }}>
             
             {/* Description */}
+            {showFeedbackBanner && (
+              <div className="mb-6 p-4 rounded-2xl bg-gradient-to-br from-[#0b4e9d] to-[#083d7a] text-white shadow-lg overflow-hidden relative">
+                <div className="relative z-10">
+                  {!myParticipant?.feedback ? (
+                    <>
+                      <div className="flex items-center gap-2 mb-3">
+                        <Trophy className="w-5 h-5 text-yellow-300" />
+                        <h4 className="font-bold text-sm uppercase tracking-tight">Was it a success?</h4>
+                      </div>
+                      <p className="text-[11px] text-blue-100 mb-4 leading-relaxed">
+                        The time for your trip to <b>{trip.selectedCafeName || 'the cafe'}</b> has passed! Did you make it?
+                      </p>
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => handleFeedback('success')}
+                          disabled={loading.startsWith('feedback')}
+                          className="flex-1 bg-white text-[#0b4e9d] py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-wider hover:bg-blue-50 transition-colors flex items-center justify-center gap-1.5"
+                        >
+                          <Star className="w-3.5 h-3.5 fill-current" /> Success!
+                        </button>
+                        <button 
+                          onClick={() => handleFeedback('next_time')}
+                          disabled={loading.startsWith('feedback')}
+                          className="flex-1 bg-white/10 text-white border border-white/20 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-wider hover:bg-white/20 transition-colors flex items-center justify-center gap-1.5"
+                        >
+                          <Frown className="w-3.5 h-3.5" /> Next Time
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex items-center gap-4 py-2">
+                      <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                        {myParticipant.feedback === 'success' ? (
+                          <Trophy className="w-6 h-6 text-yellow-300" />
+                        ) : (
+                          <Frown className="w-6 h-6 text-white/70" />
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-sm">
+                          {myParticipant.feedback === 'success' ? 'Memory Logged!' : 'Always Next Time'}
+                        </h4>
+                        <p className="text-[11px] text-blue-100">
+                          {myParticipant.feedback === 'success' 
+                            ? 'This cafe has been added to your visited list. ✨' 
+                            : 'No worries, keep exploring! ☕'}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {/* Decorative circles */}
+                <div className="absolute -top-4 -right-4 w-16 h-16 bg-white/5 rounded-full blur-xl" />
+                <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-blue-400/10 rounded-full blur-2xl" />
+              </div>
+            )}
+
             {isEditing ? (
               <div className="mb-4">
                 <textarea value={editDescription} onChange={e => setEditDescription(e.target.value)}
