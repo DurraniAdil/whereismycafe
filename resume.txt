@@ -1,8 +1,63 @@
-Where Is My Cafe? (Startup & Discovery Platform)
-Live Project | Tech Lead / Sole Developer
+DURRANI ADIL KHAN
+Portfolio
+Maharashtra, Aurangabad ◇ 7028512087 ◇ durraniadil13@gmail.com ◇ LinkedIn ◇ GitHub 
 
-• Startup-Level Project: Designed and engineered a hyper-local cafe discovery and curation platform built to bridge the gap between consumers and cafes in Aurangabad. Successfully pitched the MVP conceptualization to local cafe owners, securing the initial onboarding of real-world partner cafes onto the platform.
-• Tech Stack & Architecture: Developed using React 19, TypeScript, and Vite, forming a blazing-fast, static SPA. Styled with modern Tailwind CSS v4 and utilized Framer Motion to power premium, interactive micro-animations and smooth drawer transitions natively on both desktop and mobile web.
-• Advanced Mapping & Geolocation: Integrated Leaflet alongside CARTO's custom basemaps to construct an interactive, mobile-optimized map view. Implemented custom Haversine distance tracking and algorithmic marker clustering (react-leaflet-cluster) to cleanly represent 65+ custom active markers across 6 distinct city zones.
-• Cross-Platform Features & PWA Capabilities: Utilized the Web Share API with robust mobile fallbacks to allow seamless cross-app sharing of cafe cards. Engineered comprehensive UI responsiveness handling edge cases like safe-area-inset padding for iOS to mimic a native app experience.
-• Performance & Data Processing: Built python and Node.js geocoding pipelines utilizing OpenStreetMap (Nominatim) to dynamically translate string addresses into accurate latitude/longitude geometries for the internal NoSQL JSON database.
+PROFESSIONAL SUMMARY
+
+Aspiring Full Stack Developer with production experience in React.js, Next.js, TypeScript, Node.js, Express.js, MongoDB, and cloud deployment. Built and shipped live full stack applications independently — including a MERN-stack SPA, an AI-powered LLM tool using GenAI, and a client e-commerce platform. Strong foundation in REST APIs, database architecture, CI/CD, and modern frontend engineering.
+
+TECHNICAL SKILLS
+
+Frontend: React.js · Next.js · TypeScript · JavaScript (ES6+) · Tailwind CSS (v3/v4) · Framer Motion · React Router DOM · Redux Toolkit · Context API · HTML5 · CSS3 · Sass · Bootstrap · PWA Design
+
+Backend: Node.js · Express.js · REST API Design · Mongoose · MongoDB Atlas · Firebase (Auth, FCM, Firestore) · Cloudinary · JWT Auth
+
+AI & Integrations: Google Gemini API · Structured JSON Schema Output · Prompt Engineering · GitHub REST API · Leaflet.js + OpenStreetMap (Nominatim) · Web Share API · Blob/URL API
+
+DevOps & Tools: Vercel · Render · Git · GitHub · Vite · Postman · Figma · Expo · React Native
+
+PROFESSIONAL EXPERIENCE
+
+Lead Frontend Developer & Project Manager - BeEndless, Aurangabad	    Nov 2025 - Present
+
+Sole engineer and client-facing lead on endless3dprinting.com — a full-scale production e-commerce platform for a premium 3D printing studio, delivered end-to-end from architecture to deployment
+Built complete e-commerce flows: product catalog with filter/sort, dual-image sliders, cart, checkout, wishlist, and user dashboard with order history
+Engineered a 3D model customization system allowing clients to upload .stl/.obj files, submit design requests, and modify catalog items with real-time validation and confirmation modals
+
+PROJECTS
+
+Where Is My Café? — Hyper-Local Cafe Discovery Platform
+Tech Lead & Sole Developer · Live Startup Project
+
+• Full Stack Architecture: Built a startup-level SPA for Aurangabad using React 19, TypeScript, and Vite. Engineered a Node.js + Express backend with MongoDB Atlas, deployed via Vercel and Render.
+• Advanced Mapping & Geolocation: Integrated Leaflet with CARTO custom basemaps and Haversine distance tracking. Implemented algorithmic marker clustering to cleanly represent 65+ custom venues across 6 distinct city zones.
+• Social & Discovery Features: Shipped a "Trip Planner" for social cafe visits with RSVP logic and "Memories" branding. Built a robust reviews system, admin dashboard, and Cloudinary-powered image uploads.
+• Technical Innovations: Developed a custom "Boneyard" skeleton loading system for pixel-perfect UX. Built Python + Node.js geocoding pipelines using OSM Nominatim to translate string addresses into precise geometries.
+• Real-World Impact: Successfully pitched the MVP conceptualization to local cafe owners, securing the initial onboarding of real-world partner cafes onto the platform.
+
+
+Authapp — Firebase Authentication System
+
+Built full authentication system with Google Sign-In, protected routing, and FCM push notifications across web (Next.js) and mobile (React Native + Expo) sharing a single Firebase backend
+Implemented session persistence and secure auth state management across both platforms
+
+dekonstrt — AI-Powered Code Analysis Tool
+
+Built a production SPA using Google Gemini that deconstructs complex source code into beginner-level explanations with enforced structured JSON schema output for consistent, parseable AI responses
+Engineered GitHub REST API integration: users can browse remote repos, navigate file trees, and pull source code directly into the analyzer
+Implemented client-side folder analysis using the Browser Directory Upload API — zero backend dependency, full privacy
+Built synchronized auto-scrolling system mapping AI-generated explanations to specific code line ranges on click
+Added Markdown export engine for downloadable, offline AI-driven code documentation
+
+EDUCATION
+
+Bachelor of Technology in Computer Science 						      		   August 25’
+Dr. BATU, Lonere, Maharashtra							    	 Grade: CGPA: 8.34
+
+Higher Secondary Certificate 								      		    March 21'
+Sir Sayyed College, Aurangabad 					      		   Grade: Percentage: 92.6%
+
+ADDITIONAL INFORMATION
+
+• 15+ repositories on GitHub showcasing diverse frontend and full-stack projects
+• Strong problem-solving skills with focus on clean code architecture
