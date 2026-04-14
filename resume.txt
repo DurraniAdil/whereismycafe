@@ -61,3 +61,802 @@ ADDITIONAL INFORMATION
 
 • 15+ repositories on GitHub showcasing diverse frontend and full-stack projects
 • Strong problem-solving skills with focus on clean code architecture
+
+
+
+================================================================================
+ MERN STACK INTERVIEW PREP — FULL GUIDE
+ Based on the resume above & the WIMC production codebase
+================================================================================
+
+
+────────────────────────────────────────────────────────────────────────────────
+ SECTION 1: RESUME WALKTHROUGH — HOW TO PRESENT YOURSELF
+────────────────────────────────────────────────────────────────────────────────
+
+■ "TELL ME ABOUT YOURSELF" (30-45 seconds)
+
+"I'm a full stack developer who's built and shipped real production apps 
+independently. My strongest project is Where Is My Café — a hyper-local cafe 
+discovery platform I built as a solo engineer for my city, Aurangabad. It's a 
+full MERN stack app: React 19 frontend on Vercel, Node.js + Express backend 
+on Render, MongoDB Atlas for the database. I've also built a client-facing 
+e-commerce platform for a 3D printing studio, and an AI-powered code analysis 
+tool using Google's Gemini API. I'm comfortable owning the entire stack 
+end-to-end."
+
+
+■ "WALK ME THROUGH YOUR BEST PROJECT" (structure it in layers)
+
+Layer 1 — What it does:
+  "A cafe discovery platform for Aurangabad — users can search, filter, and 
+  discover 65+ cafes on an interactive map, leave reviews, plan group trips, 
+  and save favorites."
+
+Layer 2 — Architecture:
+  "React 19 SPA built with Vite → talks to a REST API built with Express → 
+  MongoDB Atlas. Frontend deployed on Vercel, API deployed on Render. 
+  Completely decoupled — frontend talks to backend via fetch calls to /api/* 
+  endpoints."
+
+Layer 3 — Key challenges:
+  "Geolocation with Haversine distance, real-time rating aggregation, JWT 
+  auth with password reset via email, social trip planning with polls and 
+  RSVP, Cloudinary image uploads, and a cafe owner finance portal with 
+  MongoDB aggregation pipelines."
+
+
+■ "WHY DID YOU CHOOSE THIS TECH STACK?"
+
+  React: "Component-based, huge ecosystem, I can iterate fast."
+  TypeScript: "Catches bugs at compile time, self-documenting code."
+  Express: "Minimal and unopinionated — I control the architecture."
+  MongoDB: "Document model fits my data. Cafes have varying fields — some have 
+  Instagram, some don't. Flexible schemas let me model this without NULLable 
+  columns everywhere."
+  Mongoose: "Gives me schema validation, middleware hooks, and instance methods 
+  on top of MongoDB."
+
+
+────────────────────────────────────────────────────────────────────────────────
+ SECTION 2: BACKEND ARCHITECTURE — THE FULL PICTURE
+────────────────────────────────────────────────────────────────────────────────
+
+■ HIGH-LEVEL FLOW
+
+  Frontend (React 19 + Vite)        Backend (Node.js + Express)       Database
+  ┌───────────────────┐             ┌─────────────────────┐          ┌──────────────┐
+  │  Vercel            │  fetch()   │  Render              │          │ MongoDB Atlas│
+  │  whereismycafe.    │ ────────→  │  wimc-api.onrender.  │ ──────→ │              │
+  │  vercel.app        │  ← JSON   │  com                 │ ←────── │ 6 Collections│
+  └───────────────────┘             └─────────────────────┘          └──────────────┘
+
+
+■ FILE STRUCTURE (know this cold)
+
+  wimc-api/src/
+  ├── server.ts              ← Entry point: Express app, CORS, route mounting
+  ├── db.ts                  ← MongoDB connection via Mongoose
+  ├── seed.ts                ← One-time script to seed cafe data from JSON
+  ├── lib/
+  │   └── cloudinary.ts      ← Cloudinary SDK configuration
+  ├── middleware/
+  │   ├── auth.ts            ← Admin JWT middleware (role-based)
+  │   ├── userAuth.ts        ← User JWT middleware (+ optional auth variant)
+  │   ├── cafeOwnerAuth.ts   ← Cafe owner JWT middleware (context-scoped)
+  │   └── upload.ts          ← Multer config for image uploads (memory storage)
+  ├── models/
+  │   ├── User.ts            ← User schema + bcrypt hooks + collections
+  │   ├── Cafe.ts            ← Cafe schema (30+ fields)
+  │   ├── Review.ts          ← Review schema (linked to User + Cafe)
+  │   ├── Trip.ts            ← Trip schema (participants, polls, RSVP)
+  │   ├── CafeOwner.ts       ← Cafe owner schema (separate auth domain)
+  │   └── Transaction.ts     ← Financial transaction schema
+  ├── routes/
+  │   ├── auth.ts            ← Register, Login, Forgot/Reset/Change Password
+  │   ├── cafes.ts           ← CRUD + search + filters + nearby + random
+  │   ├── reviews.ts         ← User reviews + admin moderation + aggregation
+  │   ├── trips.ts           ← Trip CRUD + RSVP + poll voting + feedback
+  │   ├── collections.ts     ← Hearted/Visited lists + sync
+  │   ├── finance.ts         ← Owner portal: transactions, summary, insights
+  │   ├── upload.ts          ← Cloudinary image upload
+  │   ├── admin.ts           ← Admin login (role-based JWT)
+  │   └── user.ts            ← Get current user profile
+  └── utils/
+      └── sendEmail.ts       ← Nodemailer: welcome + password reset emails
+
+
+■ HOW THE SERVER BOOTS (server.ts)
+
+  Step 1: dotenv.config() — load env vars FIRST
+  Step 2: connectDB() — connect to MongoDB Atlas via Mongoose  
+  Step 3: Create the Express app
+  Step 4: app.use(cors(...)) — whitelist localhost:3000 + whereismycafe.vercel.app
+  Step 5: app.use(express.json()) — parse JSON request bodies
+  Step 6: Mount all route modules:
+          /api/cafes → cafeRouter
+          /api/admin → adminRouter
+          /api/auth → authRouter
+          /api/user → userRouter
+          /api/collections → collectionsRouter
+          /api/finance → financeRouter
+          /api/trips → tripsRouter
+          /api/upload → uploadRouter
+          /api → reviewsRouter (mounted at root because it defines /cafes/:id/reviews)
+  Step 7: Health check at /api/health
+  Step 8: app.listen(PORT)
+
+  TALKING POINT: "I use a modular route architecture — each feature domain 
+  lives in its own router file with its own middleware chain. This makes it 
+  easy to navigate, test, and extend independently."
+
+
+■ DATABASE CONNECTION (db.ts)
+
+  - Uses Mongoose as the ODM (Object Document Mapper)
+  - Connection string from MONGODB_URI env var → MongoDB Atlas (cloud)
+  - Called once at startup — Mongoose handles connection pooling internally
+  - Error handling: logs the error and calls process.exit(1)
+
+
+────────────────────────────────────────────────────────────────────────────────
+ SECTION 3: DATABASE DESIGN — THE 6 COLLECTIONS
+────────────────────────────────────────────────────────────────────────────────
+
+■ SCHEMA 1: USER (User.ts)
+
+  Fields:
+    name          String, required, trimmed
+    email         String, required, unique, lowercase
+    password      String, minlength 6 (hashed via bcrypt)
+    picture       String (profile photo URL)
+    joinedAt      Date (auto-set)
+    reviewCount   Number (incremented when user writes a review)
+    collections   {
+                    hearted: String[]         ← array of cafe IDs
+                    visited: [{ id, date }]   ← array of objects
+                  }
+    resetPasswordToken   String (select: false — hidden from normal queries)
+    resetPasswordExpiry  Date (select: false)
+
+  Key Features:
+    • pre('save') hook:  Hashes password with bcrypt (12 salt rounds)
+      - Only runs when password is modified (isModified check)
+    • comparePassword():  Instance method using bcrypt.compare()
+    • toJSON transform:  Strips password + __v from API responses
+    • select: false:  Reset token fields excluded from default queries
+
+  TALKING POINT: "I embedded 'hearted' and 'visited' arrays directly in the 
+  User document instead of a separate Collection model. Since these are simple 
+  arrays of cafe IDs always read alongside the user, embedding avoids extra 
+  queries. In MongoDB: if data is read together, store it together."
+
+
+■ SCHEMA 2: CAFE (Cafe.ts) — 30+ fields
+
+  Key Fields:
+    id            String, unique (custom business ID like 'cafe-001')
+    name, area, address
+    latitude, longitude   ← Numbers used for Haversine distance
+    googleMapsUrl, phone, instagram, website
+    openingHours, closedOn, priceForTwo
+    cheapestItem, popularItem
+    vibes         String[]   ← ['Study', 'Date Night', 'Chill']
+    noiseLevel, lighting, music
+    amenities     { wifi, ac, outdoorSeating, powerOutlets, boardGames, parking }
+    photos        String[]   ← Cloudinary URLs
+    isNewCafe, isTrending, verified
+    googleRating, googleReviewCount
+    userRatingTotal, userReviewCount
+    displayRating, displayReviewCount   ← PRE-COMPUTED aggregates
+    zone          String
+
+  TALKING POINT: "I maintain a displayRating field that's a weighted average 
+  of Google reviews and our platform's reviews. It's recalculated every time 
+  a review is added or removed. The alternative would be computing it on every 
+  GET request with an aggregation pipeline — but reads vastly outnumber writes 
+  in a discovery app, so pre-computing on write is the better trade-off."
+
+
+■ SCHEMA 3: REVIEW (Review.ts)
+
+  Fields:
+    cafeId       String (FK → Cafe.id), indexed
+    userId       ObjectId (FK → User._id), indexed
+    anonymousId  String (user's display name at time of review)
+    rating       Number, 1-5
+    comment      String, max 500 chars
+    isVisible    Boolean, default true   ← SOFT DELETE for admin moderation
+
+  Uses { timestamps: true } → auto createdAt + updatedAt
+
+  TALKING POINT: "I use soft deletes via the isVisible flag instead of hard 
+  deletes. When an admin hides a review, the data is preserved. All queries 
+  filter by isVisible: true."
+
+
+■ SCHEMA 4: TRIP (Trip.ts) — Most complex schema
+
+  Participant Sub-Document (embedded, _id: false):
+    userId       ObjectId
+    name         String (denormalized)
+    rsvpStatus   'pending' | 'going' | 'maybe' | 'declined'
+    feedback     'success' | 'next_time' | null
+
+  Poll Sub-Document (embedded, _id: false):
+    options      [{ cafeId, cafeName, votes: [ObjectId] }]
+    resolved     Boolean
+
+  Trip Fields:
+    creatorId       ObjectId (ref User)
+    title           String
+    description     String
+    eventDate       Date
+    selectedCafeId  String | null
+    selectedCafeName String | null
+    status          'planning' | 'confirmed' | 'completed' | 'cancelled'
+    shareableCode   String (auto: crypto.randomBytes(4).toString('hex'))
+    participants    [ParticipantSchema]
+    poll            PollSchema
+
+  Key Design Decisions:
+    • { _id: false } on sub-schemas — participants don't need their own ObjectIds
+    • Shareable code auto-generated: 8 hex chars = ~4 billion possible codes
+    • Poll auto-resolution: when all 'going' participants vote, winner is picked
+    • Denormalized 'name' in participants to avoid $lookup on every read
+
+  TALKING POINT: "The Trip schema demonstrates when embedding makes sense in 
+  MongoDB. Participants and poll data are tightly coupled to a trip — never 
+  queried independently. Embedding eliminates JOIN-like operations at read 
+  time. The trade-off is that if a user changes their name, past trips won't 
+  update — but for our use case, that's acceptable."
+
+
+■ SCHEMA 5: CAFEOWNER (CafeOwner.ts) — Separate auth domain
+
+  Fields: name, email, password, cafeId, cafeName, role ('owner'|'viewer')
+  Same bcrypt pattern as User (pre-save hook + comparePassword)
+
+  TALKING POINT: "I separated CafeOwner from User intentionally. They have 
+  different auth flows, different JWT payloads, and different permissions. The 
+  cafe owner's token includes a context: 'cafe-owner' claim — so even if 
+  someone gets a regular user token, they can't access the finance portal."
+
+
+■ SCHEMA 6: TRANSACTION (Transaction.ts)
+
+  Fields: cafeId, ownerId, type ('income'|'expense'), category, amount, date
+  Categories: Sales, Beverages, Food, Supplies, Rent, Utilities, Staff, etc.
+
+  Compound Indexes:
+    { cafeId: 1, date: -1 }     ← Recent transactions per cafe
+    { cafeId: 1, type: 1 }      ← Filter by income/expense
+    { cafeId: 1, category: 1 }  ← Filter by category
+
+  TALKING POINT: "I created compound indexes because the finance dashboard 
+  always queries by cafeId first, then by date, type, or category. Without 
+  these indexes, MongoDB would do a full collection scan. The compound index 
+  { cafeId: 1, date: -1 } supports both find({ cafeId }) and 
+  find({ cafeId }).sort({ date: -1 }) efficiently."
+
+
+────────────────────────────────────────────────────────────────────────────────
+ SECTION 4: AUTHENTICATION — THREE LAYERS
+────────────────────────────────────────────────────────────────────────────────
+
+■ LAYER 1: USER AUTH (JWT + bcrypt)
+
+  Registration Flow:
+    POST /api/auth/register { name, email, password }
+      → Check if email exists (User.findOne)
+      → Create new User (password auto-hashed by pre('save') hook)
+      → Send welcome email (non-blocking — .catch() so it won't block response)
+      → Sign JWT: jwt.sign({ id: user._id }, secret, { expiresIn: '7d' })
+      → Return { token, user }
+
+  Login Flow:
+    POST /api/auth/login { email, password }
+      → Find user by email
+      → user.comparePassword(password) — bcrypt.compare under the hood
+      → Sign JWT
+      → Return { token, user }
+
+  Password Reset Flow:
+    POST /forgot-password { email }
+      → Generate crypto.randomBytes(32) → SHA-256 hash it
+      → Store hashed token + 15-min expiry on user doc
+      → Send email with PLAIN token in the reset URL
+      → ALWAYS return success message (prevents email enumeration attacks)
+    
+    POST /reset-password { token, newPassword }
+      → SHA-256 hash the received token
+      → Find user matching hash + non-expired expiry
+      → Set new password (pre('save') hashes it automatically)
+      → Clear reset fields → return new JWT
+
+  Change Password Flow:
+    PATCH /change-password { currentPassword, newPassword }
+      → Extract JWT from Authorization header
+      → Find user by decoded ID, select('+password') to include password
+      → Verify currentPassword with comparePassword()
+      → Set new password → save (auto-hashes)
+
+
+■ LAYER 2: ADMIN AUTH (middleware/auth.ts)
+
+  POST /api/admin/login { username, password }
+    → Compare against ADMIN_USERNAME + ADMIN_PASSWORD env vars
+    → Sign JWT with { role: 'admin' }
+  
+  requireAdmin Middleware:
+    → Extract Bearer token → jwt.verify()
+    → Check decoded.role === 'admin'
+    → Call next() or return 403
+
+
+■ LAYER 3: CAFE OWNER AUTH (middleware/cafeOwnerAuth.ts)
+
+  POST /api/finance/login { email, password }
+    → Find CafeOwner by email → comparePassword()
+    → Sign JWT with { id, role, cafeId, context: 'cafe-owner' }
+  
+  requireCafeOwner Middleware:
+    → Extract + verify JWT
+    → Check decoded.context === 'cafe-owner' (prevents token cross-use!)
+    → Fetch CafeOwner doc → attach to req.owner
+  
+  requireOwnerRole Middleware (stacked after requireCafeOwner):
+    → Check req.owner.role === 'owner' (vs 'viewer')
+    → Used on write operations (add/edit/delete transactions)
+
+
+■ THE optionalUser MIDDLEWARE
+
+  Doesn't block unauthenticated requests — attaches user if token present.
+  Used on the trip invite endpoint: both logged-in and anonymous users can 
+  view trip details, but the response includes isAuthenticated flag.
+
+  TALKING POINT: "All three auth middleware follow the same pattern:
+  1. Extract token from Authorization: Bearer <token>
+  2. jwt.verify() to decode and validate
+  3. Fetch entity from DB
+  4. Attach to req (as req.user or req.owner)
+  5. Call next()
+  The optionalUser variant is a nice addition — it doesn't block, just 
+  enriches the request with user data if available."
+
+
+────────────────────────────────────────────────────────────────────────────────
+ SECTION 5: KEY API ROUTES — KNOW THE ENDPOINTS
+────────────────────────────────────────────────────────────────────────────────
+
+■ CAFE ROUTES (/api/cafes)
+
+  GET  /                     Public    List all with filters (?search, ?vibe, 
+                                       ?area, ?maxPrice, ?trending, ?page, ?limit)
+  GET  /trending             Public    Trending cafes sorted by rating
+  GET  /new                  Public    New cafes sorted by addedOn
+  GET  /random               Public    Single random cafe ($sample aggregation)
+  GET  /nearby?lat=&lng=     Public    Within radius, sorted by Haversine distance
+  GET  /:id                  Public    Single cafe by custom ID
+  POST /                     Admin     Create cafe
+  PATCH /:id                 Admin     Update cafe
+  DELETE /:id                Admin     Delete cafe
+
+  How search works:
+    - Uses MongoDB $regex with case-insensitive flag ($options: 'i')
+    - Searches across name, area, and description fields using $or
+
+  How nearby works (Haversine Formula):
+    1. Fetch ALL cafes that have lat/lng
+    2. Compute Haversine distance from user's position to each cafe
+    3. Filter by radius (default 3km)
+    4. Sort by distance ascending
+    
+    Formula: Uses Earth's radius (6371km), converts deg→rad, computes great 
+    circle distance. O(n) where n = total cafes.
+
+  POTENTIAL FOLLOW-UP: "Why not use MongoDB's $geoNear or 2dsphere index?"
+  ANSWER: "For 65 documents, in-memory Haversine is fast enough and gives me 
+  more control. If we scale to thousands, I'd switch to MongoDB's native 
+  geospatial queries with a 2dsphere index on a GeoJSON location field."
+
+  How pagination works:
+    - Skip/Limit pattern: .skip((page-1) * limit).limit(limit)
+    - Returns: { data, pagination: { total, page, limit, totalPages } }
+    - Backward compatible: if no page/limit params, returns plain array
+
+
+■ REVIEW ROUTES (/api/cafes/:id/reviews + /api/admin/reviews)
+
+  POST /api/cafes/:id/reviews     User     Add review (validates 1-5, max 500 chars)
+  GET  /api/cafes/:id/reviews     Public   Get reviews for a cafe (isVisible only)
+  GET  /api/user/reviews          User     Get MY reviews (uses $lookup aggregation)
+  GET  /api/admin/reviews         Admin    All reviews ($lookup for cafe names)
+  DELETE /api/admin/reviews/:id   Admin    Soft-delete (sets isVisible: false)
+
+  When a review is ADDED:
+    → Save the review doc
+    → Increment User.reviewCount
+    → Find the Cafe doc
+    → Add rating to userRatingTotal, increment userReviewCount
+    → Recalculate displayRating = weighted avg of Google + user ratings
+    → Save the Cafe
+
+  When a review is DELETED (soft):
+    → Set isVisible: false
+    → Subtract rating from Cafe's userRatingTotal
+    → Decrement userReviewCount
+    → Recalculate displayRating
+    → Save the Cafe
+
+  MongoDB Aggregation Pipeline (get user's reviews with cafe names):
+    Stage 1: $match { userId, isVisible: true }         ← Filter
+    Stage 2: $lookup from 'cafes' on cafeId → id        ← JOIN
+    Stage 3: $unwind '$cafeData'                         ← Flatten array
+    Stage 4: $project { rating, comment, cafeName }      ← Shape output
+    Stage 5: $sort { createdAt: -1 }                     ← Newest first
+
+
+■ TRIP ROUTES (/api/trips)
+
+  POST /                      User       Create trip (single cafe OR poll)
+  GET  /                      User       My trips (split: upcoming + past)
+  GET  /invite/:code          Optional   View by shareable code
+  GET  /:tripId               User       Get single trip
+  POST /:tripId/rsvp          User       RSVP (going/maybe/declined)
+  POST /:tripId/vote          User       Vote on poll option
+  PATCH /:tripId              Creator    Update trip
+  DELETE /:tripId             Creator    Delete trip
+  POST /:tripId/feedback      User       Post-trip feedback
+
+  Trip Creation Logic:
+    If pollCafeOptions provided (2+ cafes) → status = 'planning', create poll
+    If single cafeId provided → status = 'confirmed'
+    Creator auto-added as participant with rsvpStatus: 'going'
+
+  Poll Auto-Resolution Logic:
+    After every vote:
+      1. Count 'going' participants
+      2. Count total votes across all options
+      3. If totalVotes >= goingParticipants.length (and > 1 person):
+         → Pick option with most votes
+         → Set trip.selectedCafeId = winner
+         → Set trip.status = 'confirmed'
+         → Set trip.poll.resolved = true
+
+  Feedback → Visited Collection Flow:
+    User submits 'success' feedback on a past trip
+      → Find participant in trip.participants
+      → Set participant.feedback = 'success'
+      → Find User doc
+      → Check if cafe already in visited array (dedup)
+      → unshift({ id: selectedCafeId, date: eventDate }) into visited
+      → Save both trip and user
+
+
+■ COLLECTIONS ROUTES (/api/collections)
+
+  GET  /                User    Get hearted + visited lists
+  POST /toggle          User    Toggle heart on/off for a cafe
+  POST /sync            User    Merge local data with server (Set union for hearts)
+  POST /visited/remove  User    Remove cafe from visited list
+
+
+■ FINANCE ROUTES (/api/finance) — Most complex aggregation
+
+  POST /login                   Public   CafeOwner login
+  POST /register                Public   CafeOwner register (requires passcode)
+  GET  /me                      Owner    Owner profile
+  GET  /summary                 Owner    Dashboard: totals + monthly trend + categories
+  GET  /transactions            Owner    Paginated list with filters
+  POST /transactions            Owner    Add transaction
+  PATCH /transactions/:id       Owner    Edit transaction
+  DELETE /transactions/:id      Owner    Delete transaction
+  GET  /insights                Owner    Advanced analytics
+  GET  /export                  Owner    CSV or JSON export
+
+  Summary Endpoint Aggregation:
+    Pipeline 1 — Totals:
+      $match { cafeId }
+      $group { totalIncome: $sum (conditional), totalExpenses: $sum, count }
+    
+    Pipeline 2 — Monthly Trend (last 6 months):
+      $match { cafeId, date >= 6 months ago }
+      $group by { $year: '$date', $month: '$date' } → income + expenses
+      $sort by year, month
+    
+    Pipeline 3 — Category Breakdown:
+      $match { cafeId, type: 'expense' }
+      $group by $category → total
+      $sort by total descending
+    
+    Pipeline 4 — Recent Transactions:
+      find({ cafeId }).sort({ date: -1 }).limit(5)
+
+
+■ UPLOAD ROUTE (/api/upload)
+
+  POST /   Admin only
+  Flow:
+    1. requireAdmin middleware → validates JWT
+    2. Multer middleware (memory storage, 5MB limit, JPEG/PNG/WEBP only)
+    3. Buffer piped to cloudinary.uploader.upload_stream({ folder: 'wimc-cafes' })
+    4. Returns { url: result.secure_url, public_id }
+
+  TALKING POINT: "I use Multer with memory storage instead of disk storage 
+  because the file never touches the filesystem — it goes straight from the 
+  request buffer into Cloudinary's upload stream. More efficient and avoids 
+  temp file cleanup."
+
+
+■ EMAIL UTILITY (sendEmail.ts)
+
+  Uses Nodemailer with Gmail SMTP (App Password, not regular password)
+  Two functions: sendWelcomeEmail() + sendPasswordResetEmail()
+  checkEmailConfig() → returns boolean for health check endpoint
+
+
+────────────────────────────────────────────────────────────────────────────────
+ SECTION 6: FRONTEND → BACKEND CONNECTION
+────────────────────────────────────────────────────────────────────────────────
+
+■ HOW THE FRONTEND CALLS THE API (src/lib/api.ts)
+
+  const getBaseUrl = () => {
+    let url = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+    // Trims, removes trailing slashes, ensures /api suffix
+    return url;
+  };
+
+  export const API_URL = getBaseUrl();
+  export const getEndpoint = (path) => `${API_URL}/${path}`;
+
+  - Uses Vite's import.meta.env (NOT process.env — that's Node-only)
+  - VITE_API_URL set in Vercel dashboard → https://wimc-api.onrender.com
+  - All authenticated requests include: Authorization: Bearer <token>
+  - CORS on backend whitelists both localhost:3000 and the Vercel domain
+
+
+────────────────────────────────────────────────────────────────────────────────
+ SECTION 7: DEPLOYMENT ARCHITECTURE
+────────────────────────────────────────────────────────────────────────────────
+
+  Vercel (Frontend)       Render (Backend)        MongoDB Atlas (Database)
+  • React 19 + Vite       • Express.js            • 6 Collections
+  • Static build          • npm run build (tsc)    • Cloud hosted
+  • CDN distributed       • npm start (node)       • Auto-scaled
+  • VITE_API_URL env      • Free tier              • Free tier (M0)
+                          • Auto-deploys on push
+                                   │
+                                   ├──→ Cloudinary (Image CDN)
+                                   └──→ Gmail SMTP (Transactional emails)
+
+  WHY SEPARATE SERVICES?
+  "Frontend is a static SPA — Vercel's CDN is perfect for that. Backend needs 
+  a persistent Node.js process — Render provides that. MongoDB Atlas is fully 
+  managed. This is separation of concerns applied to deployment."
+
+  BUILD + DEPLOY FLOW:
+  Frontend: git push → Vercel auto-builds (vite build) → serves from CDN
+  Backend: git push → Render auto-builds (npm install + tsc) → runs node dist/server.js
+  Note: TypeScript + @types/* are in regular dependencies (not devDependencies) 
+  because Render sets NODE_ENV=production and skips devDependencies.
+
+
+────────────────────────────────────────────────────────────────────────────────
+ SECTION 8: INTERVIEW QUESTIONS & ANSWERS
+────────────────────────────────────────────────────────────────────────────────
+
+■ GENERAL MERN
+
+Q: What is the difference between SQL and NoSQL?
+A: "SQL uses structured tables with fixed schemas — great for relational data. 
+  MongoDB is document-based — each document can have a flexible schema. In 
+  WIMC, I use MongoDB because cafes have different optional fields (some have 
+  Instagram, some don't), and I embed related data like the user's 'hearted' 
+  list directly in their document instead of creating a join table."
+
+Q: What is Mongoose and why use it over native MongoDB driver?
+A: "Mongoose is an ODM that gives me schema validation, type safety with 
+  TypeScript interfaces, middleware hooks like pre('save') for password 
+  hashing, and instance methods like comparePassword(). Without it, I'd 
+  be writing raw MongoDB queries and manually validating every field."
+
+Q: Explain REST API design principles.
+A: "In WIMC, I follow RESTful conventions: nouns for resources (/api/cafes, 
+  /api/trips), HTTP verbs for actions (GET to read, POST to create, PATCH 
+  to update, DELETE to remove), and proper status codes (201 for created, 
+  404 for not found, 401/403 for auth). Each endpoint returns JSON."
+
+Q: What is CORS and how did you handle it?
+A: "CORS is Cross-Origin Resource Sharing — browsers block requests from one 
+  domain to another by default. My frontend is on vercel.app but my API is on 
+  onrender.com — different origins. I whitelist both my dev origin and 
+  production URL in the Express cors() middleware configuration."
+
+
+■ AUTHENTICATION
+
+Q: How does JWT auth work in your project?
+A: "On login, the server signs a JWT containing the user's ID with a secret key 
+  and a 7-day expiry. The client stores this token and sends it as a Bearer 
+  token in the Authorization header. My middleware extracts the token, verifies 
+  it with jwt.verify(), fetches the user from the DB, and attaches it to 
+  req.user. I have three separate middleware functions for three auth domains: 
+  regular users, admins, and cafe owners."
+
+Q: How do you handle password security?
+A: "I never store plaintext passwords. I use bcrypt with 12 salt rounds in a 
+  Mongoose pre('save') hook — so every time a password is set or changed, 
+  it's automatically hashed before hitting the database. I strip the password 
+  field from all JSON responses using a toJSON transform. For password resets, 
+  I generate a random token, SHA-256 hash it before storing, and give it a 
+  15-minute expiry."
+
+Q: What's the difference between authentication and authorization?
+A: "Authentication = WHO are you (login/JWT). Authorization = WHAT can you do 
+  (role checks). In WIMC, my userAuth middleware handles authentication — it 
+  verifies the JWT. My requireAdmin and requireOwnerRole middleware handle 
+  authorization — they check roles. A regular user can't access admin routes 
+  even with a valid token because their JWT doesn't have role: 'admin'."
+
+Q: Why use separate auth for CafeOwner vs User?
+A: "Different permissions, different JWT payloads, different middleware. I add 
+  a context: 'cafe-owner' claim to the café owner's JWT. The middleware checks 
+  this context — so even if someone crafts a request with a regular user token, 
+  they can't hit the finance endpoints because the context won't match."
+
+
+■ MONGODB SPECIFIC
+
+Q: When would you embed vs reference in MongoDB?
+A: "I use both in WIMC. I EMBED the participants array inside Trip because 
+  participants are always read with the trip and never queried independently. 
+  I REFERENCE for Reviews — they link to Users and Cafes via IDs because 
+  reviews are queried independently (all reviews for a cafe, or all reviews 
+  by a user). Rule: embed for one-to-few read-together data, reference for 
+  one-to-many or independently queried data."
+
+Q: What are indexes and why are they important?
+A: "Indexes create a sorted data structure that MongoDB can binary-search 
+  instead of scanning every document. In my Transaction collection, I have 
+  compound indexes like { cafeId: 1, date: -1 } because the finance 
+  dashboard always queries by cafe and sorts by date. Without this, every 
+  dashboard load would trigger a full collection scan."
+
+Q: Explain a MongoDB aggregation pipeline you've used.
+A: "In the finance module, the /summary endpoint uses $group to compute total 
+  income and expenses by conditionally summing amounts based on type. The 
+  monthly trend uses $year and $month operators to extract date parts and 
+  group by them. The reviews module uses $lookup (equivalent to SQL's LEFT 
+  JOIN) to join reviews with cafes to get café names alongside each review."
+
+Q: What is $lookup and when do you use it?
+A: "It's MongoDB's JOIN operation. In my reviews admin endpoint, I use $lookup 
+  to join the 'reviews' collection with the 'cafes' collection on the cafeId 
+  field. I combine it with $unwind to flatten the result, $project to shape 
+  the output, and preserveNullAndEmptyArrays for edge cases where a café 
+  might have been deleted."
+
+
+■ NODE.JS / EXPRESS
+
+Q: What is middleware in Express?
+A: "Functions that sit between request and response. In WIMC, I use middleware 
+  for CORS, JSON body parsing, JWT authentication, file uploads with Multer, 
+  and role-based access control. Each calls next() to pass to the next 
+  function. For example, requireCafeOwner verifies JWT, checks context, 
+  fetches the owner from DB, attaches to req.owner — all before the route 
+  handler runs."
+
+Q: How do you handle errors in your API?
+A: "Every route handler is wrapped in try/catch. Expected errors (bad input, 
+  not found, unauthorized) get proper HTTP status codes. Unexpected errors 
+  are logged and return 500. Mongoose validation (required, min, max, enum) 
+  catches bad data at the schema level before my route logic even runs."
+
+Q: What is the difference between app.use() and app.get()?
+A: "app.use() applies middleware to ALL HTTP methods for a path — I use it to 
+  mount routers (app.use('/api/cafes', cafeRouter)). app.get() only handles 
+  GET requests to a specific path. Similarly, I define app.post(), .patch(), 
+  .delete() for other HTTP methods inside my routers."
+
+Q: How does file upload work in your project?
+A: "Three-stage pipeline: (1) requireAdmin checks JWT, (2) Multer with memory 
+  storage accepts the file (5MB limit, images only), (3) the buffer is piped 
+  to Cloudinary's upload stream — file never touches disk. Returns the CDN 
+  URL and public ID. I chose memory storage over disk because it's more 
+  efficient for a cloud-upload-only flow."
+
+
+■ REACT / FRONTEND
+
+Q: How does your frontend communicate with the backend?
+A: "Native fetch API to the Express backend. Base URL injected via Vite's 
+  VITE_API_URL env var — points to Render in production, localhost in dev. 
+  Authenticated requests include JWT as Authorization: Bearer <token>. 
+  CORS middleware on backend whitelists both environments."
+
+Q: How do you manage state in your React app?
+A: "Context API for global state (auth, user data). Local component state 
+  with useState for UI concerns. I chose Context over Redux because my state 
+  needs aren't complex enough to justify Redux's boilerplate — but I mention 
+  Redux Toolkit on my resume because I've used it in other projects."
+
+Q: What is the difference between useEffect and useMemo?
+A: "useEffect runs side effects AFTER render — I use it for API calls, 
+  subscriptions, and DOM mutations. useMemo memoizes a computed value to 
+  avoid recalculating on every render — I'd use it for expensive 
+  computations like filtering/sorting a large list of cafes."
+
+
+■ DEVOPS / DEPLOYMENT
+
+Q: How do you deploy your application?
+A: "Frontend is a static Vite build deployed on Vercel — it auto-deploys on 
+  git push. Backend is a Node.js service on Render — also auto-deploys on 
+  push. I learned an important lesson: Render sets NODE_ENV=production, which 
+  skips devDependencies. I had to move TypeScript and @types/* packages to 
+  regular dependencies so the tsc build command works during deployment."
+
+Q: How do you manage environment variables?
+A: "Locally: .env file loaded by dotenv. Backend on Render: env vars set in 
+  the Render dashboard. Frontend on Vercel: VITE_ prefixed vars set in 
+  Vercel's dashboard — Vite only exposes vars with the VITE_ prefix to the 
+  client bundle for security. Sensitive keys (JWT secret, DB URI, Cloudinary 
+  keys) are NEVER committed to git."
+
+
+────────────────────────────────────────────────────────────────────────────────
+ SECTION 9: QUICK REFERENCE TABLE
+────────────────────────────────────────────────────────────────────────────────
+
+  Concept               Your Implementation
+  ──────────────────     ─────────────────────────────────────────────
+  ORM/ODM                Mongoose
+  Auth strategy          JWT (Bearer tokens), bcrypt for passwords
+  File uploads           Multer (memory) → Cloudinary stream
+  Email service          Nodemailer with Gmail SMTP (App Password)
+  Geospatial             Haversine formula (in-app), OSM Nominatim
+  Deployment             Vercel (frontend) + Render (API) + Atlas (DB)
+  Env management         dotenv, VITE_ prefix for frontend vars
+  Data seeding           Script reads JSON → Cafe.insertMany()
+  Soft deletes           isVisible: false on reviews
+  Rating computation     Pre-computed displayRating, updated on write
+  Invite system          crypto.randomBytes(4).toString('hex')
+  Role-based access      JWT claims: role, context — checked in middleware
+  Pagination             Skip/Limit: .skip((page-1)*limit).limit(limit)
+  Search                 MongoDB $regex with $options: 'i'
+  Aggregation            $lookup, $group, $unwind, $project, $sort, $match
+  Compound Indexes       { cafeId: 1, date: -1 } on Transactions
+  Image validation       Multer fileFilter: JPEG, PNG, WEBP only, 5MB max
+  Welcome emails         Non-blocking: .catch() to not block registration
+  Anti-enumeration       Forgot-password always returns success
+  Token expiry           JWT: 7 days, Reset token: 15 minutes
+
+
+────────────────────────────────────────────────────────────────────────────────
+ SECTION 10: FINAL TIPS
+────────────────────────────────────────────────────────────────────────────────
+
+  1. SHOW THE LIVE APP: Open whereismycafe.vercel.app and be ready to 
+     screen-share. Click around — show the map, write a review, demonstrate 
+     the trip planner. Nothing beats a working production app.
+
+  2. TALK IN LAYERS: Start with what the user sees, then go to architecture, 
+     then go to specific code decisions. This shows you think top-down.
+
+  3. USE TRADE-OFFS: Every design decision has a trade-off. Say "I chose X 
+     because of Y, but the trade-off is Z." This shows maturity.
+
+  4. OWN YOUR CODE: You built this solo. Don't hedge — be confident. You know 
+     every line of this codebase.
+
+  5. PREPARE FOR "WHAT WOULD YOU DO DIFFERENTLY": 
+     - "I'd add rate limiting to the auth endpoints"
+     - "I'd use MongoDB's 2dsphere index instead of in-memory Haversine"
+     - "I'd add input sanitization middleware to prevent NoSQL injection"
+     - "I'd implement refresh tokens instead of single long-lived JWTs"
+
+  Good luck. You built this whole thing from scratch — you got this. 💪

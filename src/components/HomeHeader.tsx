@@ -250,6 +250,7 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({ onVibeSelect }) => {
                                                 >
                                                     <Link
                                                         to={item.href}
+                                                        onClick={(e) => handleProtectedLink(e, item.href)}
                                                         className={`flex items-center gap-2 px-4 py-2.5 rounded-full border transition-all duration-200 whitespace-nowrap focus:outline-none ${isActive
                                                             ? 'bg-[#0b4e9d] border-[#0b4e9d] text-white shadow-[0_4px_16px_rgba(11,78,157,0.35)]'
                                                             : 'bg-white border-[#D8DDD0] text-[#1E2020] hover:bg-[#EBF1FB] hover:border-[#0b4e9d]/25'

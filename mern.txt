@@ -1,0 +1,1518 @@
+================================================================================
+  THE MERN STACK — COMPLETE WALKTHROUGH
+  Every concept explained with real code from the WIMC codebase
+================================================================================
+
+MERN stands for MongoDB, Express, React, Node.js — four technologies that 
+together form a full stack for building web applications. Here's how they 
+connect at the highest level:
+
+  USER'S BROWSER                     YOUR SERVER                    YOUR DATABASE
+  ┌──────────────┐     HTTP          ┌──────────────┐     Mongoose  ┌──────────┐
+  │              │  ──────────────→  │              │  ──────────→  │          │
+  │  REACT       │  fetch('/api/..') │  NODE.JS     │  queries     │  MONGODB │
+  │  (Frontend)  │  ←──────────────  │  + EXPRESS   │  ←──────────  │  (Atlas) │
+  │              │     JSON          │  (Backend)   │  documents   │          │
+  └──────────────┘                   └──────────────┘              └──────────┘
+
+  React handles what the user SEES and DOES.
+  Node.js is the RUNTIME that runs JavaScript on a server.
+  Express is the FRAMEWORK on top of Node that handles HTTP requests.
+  MongoDB is the DATABASE that stores all your data.
+
+Let's go through each one in full detail.
+
+
+
+================================================================================
+  PART 1: NODE.JS — THE RUNTIME
+  "The engine that lets JavaScript run outside the browser"
+================================================================================
+
+
+■ WHAT IS NODE.JS?
+
+  JavaScript was originally built to run ONLY in web browsers. Node.js is a 
+  runtime environment that lets you run JavaScript on a server (or your 
+  computer) — outside the browser.
+
+  Without Node.js → JavaScript can only run inside Chrome, Firefox, etc.
+  With Node.js    → JavaScript can run on a server, read files, connect to 
+                    databases, handle network requests — basically anything.
+
+  Node.js is built on Chrome's V8 JavaScript engine — the same engine that 
+  makes JavaScript fast in Chrome. It takes that engine and adds server-side 
+  capabilities like file system access, networking, and process management.
+
+
+■ WHY IS NODE.JS IMPORTANT IN MERN?
+
+  It's the foundation. Express runs on Node. Your API runs on Node. Your 
+  database connection runs on Node. When you run "npm start" in the backend, 
+  you're starting a Node.js process.
+
+
+■ HOW NODE.JS WORKS IN YOUR PROJECT
+
+  Your backend entry point is: wimc-api/src/server.ts
+
+  When Render deploys your app, it runs these commands:
+    npm install      ← Node's package manager installs dependencies
+    npm run build    ← Runs "tsc" (TypeScript compiler) to produce JavaScript
+    npm start        ← Runs "node dist/server.js" — THIS is where Node starts
+
+  That last command tells Node.js: "Run this JavaScript file as a server."
+  Node keeps running, listening for incoming HTTP requests on a port.
+
+
+■ KEY NODE.JS CONCEPTS USED IN WIMC
+
+  1. process.env — Accessing environment variables
+     Your code uses process.env.PORT, process.env.MONGODB_URI, etc.
+     These are values set OUTSIDE your code (in Render's dashboard) that 
+     Node.js makes available through the global 'process' object.
+
+     REAL CODE (server.ts):
+       const PORT = process.env.PORT || 4000;
+     
+     This says: "Use whatever port Render gives us, or default to 4000 
+     for local development."
+
+  2. npm / package.json — Dependency management
+     Node uses npm (Node Package Manager) to install libraries. Your 
+     package.json lists every dependency:
+
+     REAL CODE (wimc-api/package.json):
+       "dependencies": {
+         "express": "^4.21.2",     ← Web framework
+         "mongoose": "^9.2.4",     ← MongoDB ODM
+         "jsonwebtoken": "^9.0.3", ← JWT auth
+         "bcryptjs": "^3.0.3",     ← Password hashing
+         "cloudinary": "^2.9.0",   ← Image CDN
+         "multer": "^2.1.1",       ← File upload handling
+         "nodemailer": "^8.0.2",   ← Email sending
+         "dotenv": "^17.3.1"       ← Environment variables
+       }
+
+     When you run "npm install", Node reads this file and downloads all 
+     these packages into the node_modules/ folder.
+
+  3. ES Modules (import/export)
+     Your project uses modern ES module syntax:
+
+     REAL CODE:
+       import express from 'express';        ← importing a package
+       import { User } from './models/User.js';  ← importing your own file
+       export const authRouter = express.Router(); ← exporting for other files
+
+     The "type": "module" in package.json enables this (without it, Node 
+     uses the older require() syntax).
+
+  4. crypto — Built-in Node module
+     Node comes with built-in modules you don't need to install.
+
+     REAL CODE (auth.ts — password reset):
+       import crypto from 'crypto';
+       const resetToken = crypto.randomBytes(32).toString('hex');
+       const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+     
+     This generates a secure random token and hashes it with SHA-256 — 
+     no external package needed because 'crypto' is built into Node.
+
+  5. fs + path — File system access
+     Another built-in module. Used in the seeding script:
+
+     REAL CODE (seed.ts):
+       import { readFileSync } from 'fs';
+       import { join } from 'path';
+       const dataPath = join(process.cwd(), 'data', 'cafes.json');
+       const cafes = JSON.parse(readFileSync(dataPath, 'utf-8'));
+
+     This reads a JSON file from disk — something you CANNOT do in the 
+     browser. Only Node.js has file system access.
+
+
+■ NODE.JS vs BROWSER JAVASCRIPT — KEY DIFFERENCES
+
+  Feature              Browser JS                  Node.js
+  ─────────────────    ──────────────────────      ──────────────────────
+  DOM access           ✅ document, window         ❌ No DOM
+  File system          ❌ Can't read/write files   ✅ fs module
+  Network server       ❌ Can't listen on ports    ✅ http/express
+  Environment vars     ❌ No process.env           ✅ process.env
+  Modules              import (browser ESM)        import (Node ESM)
+  Package manager      ❌ None                     ✅ npm
+  Runs where           User's browser              Your server
+
+
+
+================================================================================
+  PART 2: EXPRESS.JS — THE WEB FRAMEWORK
+  "The tool that turns Node.js into an API server"
+================================================================================
+
+
+■ WHAT IS EXPRESS?
+
+  Node.js alone CAN handle HTTP requests, but the built-in http module is 
+  low-level and verbose. Express is a framework that sits on top of Node and 
+  makes it easy to:
+
+    • Define routes (URLs) and what they do
+    • Apply middleware (functions that run before/after route handlers)
+    • Parse request bodies (JSON, form data)
+    • Send responses (JSON, files, status codes)
+
+  Think of it like this:
+    Node.js = The car engine
+    Express = The steering wheel, pedals, and dashboard
+
+
+■ HOW EXPRESS WORKS — THE REQUEST LIFECYCLE
+
+  When a user clicks "Heart" on a cafe, here's what happens:
+
+  1. Browser sends: POST https://wimc-api.onrender.com/api/collections/toggle
+     with headers: { Authorization: "Bearer <token>", Content-Type: "application/json" }
+     with body: { cafeId: "cafe-042" }
+
+  2. Express receives the request and runs it through middleware IN ORDER:
+     → cors() checks if the origin is whitelisted
+     → express.json() parses the body into req.body
+     → Route matching: /api/collections matches collectionsRouter
+     → /toggle matches the POST handler
+     → requireAuth middleware verifies JWT and attaches req.user
+     → The actual route handler function runs
+     → Response sent back as JSON
+
+  3. Browser receives: { hearted: ["cafe-042", ...], visited: [...] }
+
+
+■ CREATING AN EXPRESS APP
+
+  REAL CODE (server.ts):
+
+    import express from 'express';
+    import cors from 'cors';
+
+    const app = express();
+
+    // MIDDLEWARE — runs on EVERY request, in order
+    app.use(cors({ 
+      origin: ['http://localhost:3000', 'https://whereismycafe.vercel.app'] 
+    }));
+    app.use(express.json());  // Parse JSON request bodies
+
+    // ROUTES — specific URL handlers
+    app.use('/api/cafes', cafeRouter);       // All /api/cafes/* go here
+    app.use('/api/auth', authRouter);        // All /api/auth/* go here
+    app.use('/api/trips', tripsRouter);      // All /api/trips/* go here
+
+    // START LISTENING
+    app.listen(4000, () => {
+      console.log('Server running on port 4000');
+    });
+
+  Breaking this down:
+    express()           → Creates an Express application
+    app.use()           → Register middleware or mount a router
+    app.listen(port)    → Start accepting HTTP connections on that port
+
+
+■ WHAT IS MIDDLEWARE?
+
+  Middleware is a function that runs BETWEEN receiving a request and sending 
+  a response. It has access to req (request), res (response), and next 
+  (a function to pass control to the next middleware).
+
+  Format: (req, res, next) => { /* do something */ next(); }
+
+  Your project uses middleware for 5 purposes:
+
+  1. CORS — Controls which domains can call your API
+     app.use(cors({ origin: [...] }));
+
+  2. Body Parsing — Converts raw request body into JavaScript objects
+     app.use(express.json());
+     After this runs, req.body contains the parsed JSON.
+
+  3. Authentication — Verifies JWT tokens
+     REAL CODE (middleware/userAuth.ts):
+
+       export const userAuth = async (req, res, next) => {
+         // 1. Get the token from the Authorization header
+         const authHeader = req.headers.authorization;
+         if (!authHeader || !authHeader.startsWith('Bearer ')) {
+           return res.status(401).json({ message: 'Authentication required' });
+         }
+
+         // 2. Extract the token string
+         const token = authHeader.split(' ')[1];
+
+         try {
+           // 3. Verify and decode the JWT
+           const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
+
+           // 4. Find the user in the database
+           const user = await User.findById(decoded.id);
+           if (!user) {
+             return res.status(401).json({ message: 'User no longer exists' });
+           }
+
+           // 5. Attach user to the request object
+           req.user = user;
+
+           // 6. Pass control to the next function
+           next();
+         } catch (err) {
+           return res.status(401).json({ message: 'Invalid or expired token' });
+         }
+       };
+
+     After this middleware runs, any route handler can access req.user to 
+     know WHO is making the request.
+
+  4. Role-Based Access Control — Advanced middleware
+     REAL CODE (middleware/cafeOwnerAuth.ts):
+
+       export const requireCafeOwner = async (req, res, next) => {
+         // ... extract and verify JWT ...
+         const decoded = jwt.verify(token, JWT_SECRET);
+
+         // Check the token was issued for cafe-owner context
+         if (decoded.context !== 'cafe-owner') {
+           return res.status(403).json({ message: 'Invalid token context' });
+         }
+
+         const owner = await CafeOwner.findById(decoded.id);
+         req.owner = owner;
+         next();
+       };
+
+       // SECOND middleware that stacks AFTER the first:
+       export const requireOwnerRole = (req, res, next) => {
+         if (!req.owner || req.owner.role !== 'owner') {
+           return res.status(403).json({ message: 'Owner role required' });
+         }
+         next();
+       };
+
+     These get CHAINED together on routes:
+       router.post('/transactions', requireCafeOwner, requireOwnerRole, handler);
+     
+     First checks auth, THEN checks role. If either fails, the chain stops 
+     and an error response is sent.
+
+  5. File Upload — Multer middleware
+     REAL CODE (middleware/upload.ts):
+
+       import multer from 'multer';
+
+       const storage = multer.memoryStorage();  // Store file in RAM, not disk
+
+       const fileFilter = (req, file, cb) => {
+         const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+         if (allowed.includes(file.mimetype)) {
+           cb(null, true);     // Accept
+         } else {
+           cb(new Error('Invalid file type'));  // Reject
+         }
+       };
+
+       export const upload = multer({
+         storage,
+         fileFilter,
+         limits: { fileSize: 5 * 1024 * 1024 }   // 5MB max
+       });
+
+     Used on routes as: upload.single('photo') — accepts one file from the 
+     'photo' field in the multipart form data.
+
+
+■ ROUTING — HOW URLS BECOME ACTIONS
+
+  Express Router lets you group related routes into separate files.
+
+  REAL CODE — How the cafe router works (routes/cafes.ts):
+
+    import { Router } from 'express';
+    export const cafeRouter = Router();
+
+    // GET /api/cafes → List all cafes (public)
+    cafeRouter.get('/', async (req, res) => {
+      const cafes = await Cafe.find({});
+      res.json(cafes);
+    });
+
+    // GET /api/cafes/nearby?lat=19.87&lng=75.34 → Nearby cafes (public)
+    cafeRouter.get('/nearby', async (req, res) => {
+      const { lat, lng, radius } = req.query;
+      // ... haversine logic ...
+      res.json(nearbyCafes);
+    });
+
+    // GET /api/cafes/:id → Single cafe (public)
+    cafeRouter.get('/:id', async (req, res) => {
+      const cafe = await Cafe.findOne({ id: req.params.id });
+      res.json(cafe);
+    });
+
+    // POST /api/cafes → Create cafe (admin only)
+    cafeRouter.post('/', requireAdmin, async (req, res) => {
+      const cafe = new Cafe(req.body);
+      await cafe.save();
+      res.status(201).json(cafe);
+    });
+
+  In server.ts, this router is MOUNTED at /api/cafes:
+    app.use('/api/cafes', cafeRouter);
+
+  So cafeRouter.get('/') actually handles GET /api/cafes/
+  And cafeRouter.get('/:id') handles GET /api/cafes/cafe-042
+
+
+■ REQUEST & RESPONSE OBJECTS
+
+  req (Request) — Contains everything about the incoming request:
+    req.body       → Parsed JSON body (from express.json() middleware)
+    req.params     → URL parameters (e.g., /:id → req.params.id)
+    req.query      → Query string (e.g., ?search=mocha → req.query.search)
+    req.headers    → HTTP headers (e.g., req.headers.authorization)
+    req.user       → Attached by auth middleware (custom property)
+
+  res (Response) — Methods to send data back:
+    res.json({})         → Send JSON response
+    res.status(201)      → Set HTTP status code
+    res.status(404).json({ error: 'Not found' })  → Chain status + response
+
+  REAL CODE (routes/auth.ts — Registration):
+
+    authRouter.post('/register', async (req, res) => {
+      const { name, email, password } = req.body;   // ← from request body
+
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({ message: 'User already exists' });
+        //        ↑ 400 status     ↑ JSON response
+      }
+
+      const newUser = new User({ name, email, password });
+      await newUser.save();
+
+      const token = jwt.sign({ id: newUser._id }, JWT_SECRET, { expiresIn: '7d' });
+
+      res.status(201).json({ token, user: newUser });
+      //   ↑ 201 Created        ↑ Send back the JWT + user data
+    });
+
+
+■ HTTP METHODS — WHAT THEY MEAN
+
+  GET     → Read data      (fetch cafes, get user profile)
+  POST    → Create data    (register user, add review, create trip)
+  PATCH   → Update data    (edit trip, change password)
+  DELETE  → Remove data    (delete review, delete trip)
+  PUT     → Replace data   (not used in WIMC — PATCH is preferred)
+
+  REAL EXAMPLES from your codebase:
+    GET    /api/cafes              → getAllCafes
+    POST   /api/auth/register     → createUser
+    POST   /api/cafes/:id/reviews → addReview
+    PATCH  /api/trips/:id         → updateTrip
+    DELETE /api/trips/:id         → deleteTrip
+    PATCH  /api/auth/change-password → changePassword
+
+
+■ STATUS CODES — WHAT THEY MEAN
+
+  200  OK                  → Request succeeded (default for res.json())
+  201  Created             → New resource created (used after POST /register)
+  400  Bad Request         → Client sent invalid data
+  401  Unauthorized        → No token or invalid token
+  403  Forbidden           → Valid token but wrong role/permissions
+  404  Not Found           → Resource doesn't exist
+  500  Internal Server Error → Something crashed on the server
+
+
+
+================================================================================
+  PART 3: MONGODB — THE DATABASE
+  "Where all your data lives"
+================================================================================
+
+
+■ WHAT IS MONGODB?
+
+  MongoDB is a NoSQL database. Instead of tables with rows and columns (SQL), 
+  it stores data as "documents" — which look exactly like JSON objects.
+
+  SQL Database (like MySQL):
+    ┌────────────────────────────────────────────────┐
+    │ users TABLE                                    │
+    ├──────┬─────────┬────────────────┬──────────────┤
+    │ id   │ name    │ email          │ password     │
+    ├──────┼─────────┼────────────────┼──────────────┤
+    │ 1    │ Adil    │ adil@gmail.com │ $2b$12...    │
+    │ 2    │ Zoya    │ zoya@gmail.com │ $2b$12...    │
+    └──────┴─────────┴────────────────┴──────────────┘
+
+  MongoDB (NoSQL):
+    {
+      "_id": "ObjectId('abc123...')",
+      "name": "Adil",
+      "email": "adil@gmail.com",
+      "password": "$2b$12...",
+      "collections": {
+        "hearted": ["cafe-001", "cafe-042"],     ← nested arrays!
+        "visited": [{ "id": "cafe-003", "date": "2026-03-15" }]
+      }
+    }
+
+  The KEY difference: MongoDB lets you nest objects and arrays inside a 
+  document. In SQL, you'd need separate tables + JOIN queries for this.
+
+
+■ MONGODB ATLAS — THE CLOUD DATABASE
+
+  You don't run MongoDB on your own computer. You use MongoDB Atlas — 
+  a cloud service that hosts your database on their servers.
+
+  Your connection string lives in the MONGODB_URI environment variable:
+    mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/wimc
+
+  This connects to a CLUSTER (a set of servers) on Atlas, and uses the 
+  database named "wimc".
+
+
+■ MONGOOSE — THE ODM (Object Document Mapper)
+
+  Mongoose sits between your Express code and MongoDB. It gives you:
+    1. Schema definitions — Define the shape of your documents
+    2. Validation — Required fields, min/max values, enums
+    3. Middleware (hooks) — Run code before/after save, delete, etc.
+    4. Instance methods — Custom functions on each document
+    5. Type safety — TypeScript interfaces that match your schemas
+
+  Without Mongoose, you'd write raw MongoDB queries:
+    db.collection('users').insertOne({ name: 'Adil', ... })
+
+  With Mongoose:
+    const user = new User({ name: 'Adil', ... });
+    await user.save();  // Validates, runs hooks, then inserts
+
+
+■ CONNECTING TO MONGODB
+
+  REAL CODE (db.ts):
+
+    import mongoose from 'mongoose';
+
+    export const connectDB = async () => {
+      try {
+        const conn = await mongoose.connect(process.env.MONGODB_URI as string);
+        console.log(`MongoDB Connected: ${conn.connection.host}`);
+      } catch (error) {
+        console.error('Error connecting to MongoDB:', error);
+        process.exit(1);
+      }
+    };
+
+  Called ONCE in server.ts at startup:
+    connectDB();
+
+  Mongoose maintains a connection pool internally — all subsequent queries 
+  reuse this connection. You don't need to connect again for each request.
+
+
+■ DEFINING A SCHEMA — HOW COLLECTIONS ARE STRUCTURED
+
+  A Schema defines what fields a document can have and their rules.
+
+  REAL CODE (models/User.ts — simplified):
+
+    import mongoose, { Schema, Document } from 'mongoose';
+    import bcrypt from 'bcryptjs';
+
+    // TypeScript interface — what a User document looks like in code
+    export interface IUser extends Document {
+      name: string;
+      email: string;
+      password: string;
+      collections: {
+        hearted: string[];
+        visited: { id: string; date: Date }[];
+      };
+      comparePassword(candidatePassword: string): Promise<boolean>;
+    }
+
+    // Mongoose schema — what a User document looks like in the database
+    const userSchema = new Schema<IUser>({
+      name: { 
+        type: String, 
+        required: true,    // Must have a name
+        trim: true         // Remove leading/trailing whitespace
+      },
+      email: { 
+        type: String, 
+        required: true, 
+        unique: true,      // No two users can have the same email
+        lowercase: true    // Store emails in lowercase
+      },
+      password: { 
+        type: String, 
+        required: true, 
+        minlength: 6       // At least 6 characters
+      },
+      picture: String,     // Optional — no 'required'
+      joinedAt: { 
+        type: Date, 
+        default: Date.now  // Auto-set when document is created
+      },
+      reviewCount: { 
+        type: Number, 
+        default: 0         // Starts at 0
+      },
+      collections: {
+        hearted: [String],           // Array of strings (cafe IDs)
+        visited: [{                  // Array of objects
+          id: String,
+          date: Date
+        }]
+      },
+      resetPasswordToken: { 
+        type: String, 
+        select: false      // HIDDEN from queries by default
+      },
+      resetPasswordExpiry: { 
+        type: Date, 
+        select: false 
+      }
+    });
+
+  After defining the schema, you create a Model:
+    export const User = mongoose.model<IUser>('User', userSchema);
+
+  'User' (the string) becomes the MongoDB collection name 'users' 
+  (Mongoose auto-lowercases and pluralizes it).
+
+
+■ SCHEMA HOOKS (MIDDLEWARE) — CODE THAT RUNS AUTOMATICALLY
+
+  REAL CODE — Password hashing hook:
+
+    userSchema.pre('save', async function (next) {
+      // Only hash the password if it's been modified
+      if (!this.isModified('password')) return next();
+      
+      // Hash with 12 salt rounds
+      const salt = await bcrypt.genSalt(12);
+      this.password = await bcrypt.hash(this.password, salt);
+      next();
+    });
+
+  This runs BEFORE every .save() call. So when you write:
+    const user = new User({ name: 'Adil', password: 'mypassword123' });
+    await user.save();
+
+  The password is AUTOMATICALLY hashed before it reaches the database.
+  You never manually hash passwords in your route handlers.
+
+
+■ INSTANCE METHODS — CUSTOM FUNCTIONS ON DOCUMENTS
+
+  REAL CODE — Password comparison:
+
+    userSchema.methods.comparePassword = async function(candidatePassword: string) {
+      return bcrypt.compare(candidatePassword, this.password);
+    };
+
+  Used in the login route:
+    const user = await User.findOne({ email });
+    const isMatch = await user.comparePassword('mypassword123');
+    // isMatch will be true or false
+
+
+■ toJSON TRANSFORM — CONTROLLING WHAT THE API RETURNS
+
+  REAL CODE:
+
+    userSchema.set('toJSON', {
+      transform: (doc, ret) => {
+        delete ret.password;  // NEVER send password to frontend
+        delete ret.__v;       // Remove Mongoose version key
+        return ret;
+      }
+    });
+
+  This runs automatically whenever you do res.json(user) — the password 
+  field is stripped before the JSON leaves the server.
+
+
+■ MONGOOSE QUERIES — HOW YOU READ AND WRITE DATA
+
+  CREATE (insert a new document):
+    const user = new User({ name, email, password });
+    await user.save();
+    // or
+    const user = await User.create({ name, email, password });
+
+  READ (find documents):
+    await User.find({})                      // All users
+    await User.findOne({ email })            // First match
+    await User.findById('507f1f77bcf86cd7') // By MongoDB ObjectId
+    await Cafe.find({ area: 'Cidco' })       // Filter by field
+    await Cafe.find({ isTrending: true })    // Filter by boolean
+
+  UPDATE (modify existing documents):
+    user.name = 'New Name';
+    await user.save();                       // Instance method
+    // or
+    await User.findByIdAndUpdate(id, { name: 'New Name' });
+
+  DELETE:
+    await Cafe.deleteMany({});               // Delete all (used in seed)
+    await Trip.findByIdAndDelete(tripId);     // Delete by ID
+
+  REAL CODE (routes/collections.ts — Toggle heart):
+
+    collectionsRouter.post('/toggle', requireAuth, async (req, res) => {
+      const { cafeId } = req.body;
+      const user = await User.findById(req.user?.id);
+
+      const index = user.collections.hearted.indexOf(cafeId);
+      if (index > -1) {
+        user.collections.hearted.splice(index, 1);   // Remove
+      } else {
+        user.collections.hearted.push(cafeId);        // Add
+      }
+
+      await user.save();
+      res.json(user.collections);
+    });
+
+  This finds the user, checks if the cafe is already hearted, toggles it, 
+  saves back to MongoDB, and returns the updated collections.
+
+
+■ AGGREGATION PIPELINES — ADVANCED QUERIES
+
+  Aggregation pipelines are MongoDB's way of doing complex data processing.
+  They're like Unix pipes — data goes through a series of stages:
+
+  Stage        What it does                    SQL equivalent
+  ─────────    ──────────────────────────      ──────────────────
+  $match       Filter documents                WHERE
+  $group       Group and aggregate             GROUP BY + SUM/COUNT
+  $sort        Order results                   ORDER BY
+  $project     Reshape output (pick fields)    SELECT
+  $lookup      Join with another collection    LEFT JOIN
+  $unwind      Flatten arrays                  (no equivalent)
+  $limit       Limit results                   LIMIT
+
+  REAL CODE (finance.ts — Dashboard summary):
+
+    // Pipeline 1: Calculate total income and expenses
+    const totals = await Transaction.aggregate([
+      { $match: { cafeId: owner.cafeId } },          // Only this cafe's data
+      {
+        $group: {
+          _id: null,                                  // Group ALL into one
+          totalIncome: {
+            $sum: {
+              $cond: [                                // Conditional sum
+                { $eq: ['$type', 'income'] },         // If type = 'income'
+                '$amount',                            // Add the amount
+                0                                     // Otherwise add 0
+              ]
+            }
+          },
+          totalExpenses: {
+            $sum: {
+              $cond: [
+                { $eq: ['$type', 'expense'] },
+                '$amount',
+                0
+              ]
+            }
+          },
+          count: { $sum: 1 }                          // Count documents
+        }
+      }
+    ]);
+
+    // Pipeline 2: Monthly trend for the last 6 months
+    const monthlyTrend = await Transaction.aggregate([
+      { $match: { cafeId: owner.cafeId, date: { $gte: sixMonthsAgo } } },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$date' },      // Extract year from date
+            month: { $month: '$date' }      // Extract month from date
+          },
+          income: {
+            $sum: { $cond: [{ $eq: ['$type', 'income'] }, '$amount', 0] }
+          },
+          expenses: {
+            $sum: { $cond: [{ $eq: ['$type', 'expense'] }, '$amount', 0] }
+          }
+        }
+      },
+      { $sort: { '_id.year': 1, '_id.month': 1 } }
+    ]);
+
+  REAL CODE (reviews.ts — Join reviews with cafe names using $lookup):
+
+    const reviews = await Review.aggregate([
+      { $match: { userId: new ObjectId(userId), isVisible: true } },
+      {
+        $lookup: {                           // "JOIN" with cafes collection
+          from: 'cafes',                     // The other collection
+          localField: 'cafeId',              // Field in reviews
+          foreignField: 'id',               // Field in cafes
+          as: 'cafeData'                     // Output array name
+        }
+      },
+      { $unwind: '$cafeData' },              // Flatten cafeData from array to object
+      {
+        $project: {                          // Pick only the fields we want
+          rating: 1,
+          comment: 1,
+          createdAt: 1,
+          cafeName: '$cafeData.name',         // Rename nested field
+          cafeId: '$cafeData.id'
+        }
+      },
+      { $sort: { createdAt: -1 } }           // Newest first
+    ]);
+
+
+■ INDEXES — MAKING QUERIES FAST
+
+  Without an index, MongoDB checks EVERY document to find matches (called a 
+  "collection scan"). An index creates a sorted data structure for fast 
+  lookups — like the index at the back of a textbook.
+
+  REAL CODE (Transaction.ts):
+
+    TransactionSchema.index({ cafeId: 1, date: -1 });
+    //                       ↑ ascending  ↑ descending (newest first)
+
+  This is a COMPOUND INDEX — it covers queries that:
+    • Filter by cafeId
+    • Filter by cafeId AND sort by date
+    • Filter by cafeId AND filter by date range
+
+  Without this index: Every dashboard load scans ALL transactions.
+  With this index: MongoDB jumps straight to the right cafe's transactions.
+
+  More indexes in your project:
+    TransactionSchema.index({ cafeId: 1, type: 1 });      // Filter income/expense
+    TransactionSchema.index({ cafeId: 1, category: 1 });   // Filter by category
+    Review schema: cafeId field has { index: true }         // Fast review lookups
+
+
+■ SEEDING THE DATABASE
+
+  REAL CODE (seed.ts):
+
+    const seedDB = async () => {
+      await mongoose.connect(process.env.MONGODB_URI);
+
+      // Read cafe data from a JSON file
+      const dataPath = join(process.cwd(), 'data', 'cafes.json');
+      const cafes = JSON.parse(readFileSync(dataPath, 'utf-8'));
+
+      // Clear existing data
+      await Cafe.deleteMany({});
+
+      // Insert all 65+ cafes at once
+      await Cafe.insertMany(cafes);
+      // insertMany is faster than inserting one by one because it sends 
+      // a single batch request to MongoDB instead of 65 separate requests
+
+      await mongoose.disconnect();
+    };
+
+  Run with: npx tsx src/seed.ts
+  This is a one-time script — it wipes the Cafe collection and inserts 
+  fresh data from the JSON file.
+
+
+■ EMBED vs REFERENCE — THE BIG MONGODB DESIGN DECISION
+
+  EMBEDDED (data lives INSIDE the parent document):
+    User → collections.hearted: ["cafe-001", "cafe-042"]
+    Trip → participants: [{ userId, name, rsvpStatus }]
+    Trip → poll: { options: [...], resolved: false }
+
+    PRO: One query gets everything. No JOINs needed.
+    CON: If data grows large (thousands of items), the document gets bloated.
+    USE WHEN: Data is read together and the array won't grow unbounded.
+
+  REFERENCED (data lives in a SEPARATE collection, linked by ID):
+    Review → cafeId: "cafe-042" (links to Cafe.id)
+    Review → userId: ObjectId("...") (links to User._id)
+    Trip → creatorId: ObjectId("...") (links to User._id)
+
+    PRO: Collections stay small. Data can be queried independently.
+    CON: Need $lookup (JOIN) to combine data from multiple collections.
+    USE WHEN: Data is queried independently or can grow unbounded.
+
+  YOUR CODEBASE EXAMPLES:
+    EMBEDDED: User's hearted/visited arrays → always read with the user
+    EMBEDDED: Trip's participants array → always read with the trip
+    REFERENCED: Reviews → queried both "by cafe" and "by user" independently
+    REFERENCED: Transactions → queried with filters and aggregations
+
+
+
+================================================================================
+  PART 4: REACT — THE FRONTEND
+  "What the user sees and interacts with"
+================================================================================
+
+
+■ WHAT IS REACT?
+
+  React is a JavaScript library for building user interfaces. Instead of 
+  writing HTML pages and manipulating them with vanilla JavaScript, React 
+  lets you build reusable COMPONENTS that manage their own state and 
+  automatically re-render when data changes.
+
+  Traditional approach:
+    document.getElementById('count').innerHTML = count + 1;
+
+  React approach:
+    const [count, setCount] = useState(0);
+    return <p>{count}</p>;  // Automatically updates when setCount is called
+
+
+■ HOW REACT WORKS IN YOUR PROJECT
+
+  Your frontend is a SINGLE PAGE APPLICATION (SPA):
+    - ONE HTML file (index.html) loads
+    - React takes over and renders different "pages" by swapping components
+    - The URL changes (via React Router) but the page never fully reloads
+    - API calls are made with fetch() to get/send data to the backend
+
+  Entry Point: src/main.tsx
+
+    import { createRoot } from 'react-dom/client';
+    import App from './App.tsx';
+
+    createRoot(document.getElementById('root')!).render(
+      <StrictMode>
+        <App />
+      </StrictMode>
+    );
+
+  This mounts the React app into the <div id="root"> element in index.html.
+  From here, <App /> renders everything.
+
+
+■ COMPONENTS — THE BUILDING BLOCKS
+
+  Everything in React is a component. Your project has:
+
+  PAGES (full-page components):
+    Home.tsx, CafeDetail.tsx, Search.tsx, Profile.tsx, MapView.tsx, 
+    Auth.tsx, TripPlanner.tsx, InvitePage.tsx, FinanceDashboard.tsx, etc.
+
+  COMPONENTS (reusable pieces):
+    Navbar.tsx, Footer.tsx, CafeCard.tsx, ReviewSection.tsx, 
+    FilterBar.tsx, SplashScreen.tsx, LoginModal.tsx, etc.
+
+  A component is just a function that returns JSX (HTML-like syntax):
+
+    export function CafeCard({ cafe }) {
+      return (
+        <div className="cafe-card">
+          <img src={cafe.photos[0]} alt={cafe.name} />
+          <h3>{cafe.name}</h3>
+          <p>{cafe.area}</p>
+          <span>₹{cafe.priceForTwo} for two</span>
+        </div>
+      );
+    }
+
+
+■ JSX — HTML INSIDE JAVASCRIPT
+
+  JSX lets you write HTML-like syntax directly in JavaScript:
+
+    return (
+      <div className="cafe-card">        {/* className, not class */}
+        <h3>{cafe.name}</h3>             {/* {} for JavaScript expressions */}
+        {cafe.isTrending && <span>🔥</span>}   {/* conditional rendering */}
+        <button onClick={() => handleClick()}>  {/* event handler */}
+          Visit
+        </button>
+      </div>
+    );
+
+  Key differences from HTML:
+    class → className
+    onclick → onClick (camelCase)
+    style="color:red" → style={{ color: 'red' }} (object syntax)
+    {expression} → Insert any JavaScript expression
+
+
+■ HOOKS — REACT'S CORE API
+
+  Hooks are functions that give components superpowers. Your project uses:
+
+  1. useState — Store and update data that triggers re-renders
+
+    const [cafes, setCafes] = useState<Cafe[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    // When you call setCafes(newData), the component re-renders with new data
+
+  2. useEffect — Run code AFTER the component renders (side effects)
+
+    useEffect(() => {
+      // This runs ONCE when the component mounts (empty dependency array)
+      const loadCafes = async () => {
+        setLoading(true);
+        const data = await getAllCafes();   // fetch from API
+        setCafes(data);
+        setLoading(false);
+      };
+      loadCafes();
+    }, []);  // ← empty array = run only once
+
+    useEffect(() => {
+      // This runs every time 'searchQuery' changes
+      const filtered = allCafes.filter(c => 
+        c.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredCafes(filtered);
+    }, [searchQuery]);  // ← runs when searchQuery changes
+
+  3. useContext — Access global state without passing props through every level
+
+    More on this in the Context API section below.
+
+  4. useCallback — Memoize a function so it doesn't get recreated every render
+
+    const toggleHeart = useCallback(async (id: string) => {
+      // ... toggle logic ...
+    }, [state, user]);
+
+    Used in useCollections hook to prevent unnecessary re-renders of child 
+    components that receive this function as a prop.
+
+
+■ CONTEXT API — GLOBAL STATE MANAGEMENT
+
+  Problem: The logged-in user's data needs to be accessible from MANY 
+  components (Navbar, Profile, CafeDetail, TripPlanner...). Without Context, 
+  you'd pass 'user' as a prop through every parent component.
+
+  Solution: Create a Context that wraps the entire app.
+
+  REAL CODE (context/AuthContext.tsx):
+
+    // 1. Create the context with a defined shape
+    interface AuthContextType {
+      user: User | null;
+      loading: boolean;
+      login: (userData: User, token: string) => void;
+      logout: () => void;
+      isAuthenticated: boolean;
+    }
+
+    const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+    // 2. Create a Provider component that wraps the app
+    export const AuthProvider = ({ children }) => {
+      const [user, setUser] = useState<User | null>(null);
+      const [loading, setLoading] = useState(true);
+
+      // On app load, check if there's a saved token
+      const checkAuth = async () => {
+        const token = localStorage.getItem('wimc_token');
+        if (!token) { setLoading(false); return; }
+
+        const response = await fetch(`${API_URL}/user/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData);
+        } else {
+          localStorage.removeItem('wimc_token');
+        }
+        setLoading(false);
+      };
+
+      useEffect(() => { checkAuth(); }, []);
+
+      const login = (userData, token) => {
+        setUser(userData);
+        localStorage.setItem('wimc_token', token);
+      };
+
+      const logout = () => {
+        setUser(null);
+        localStorage.removeItem('wimc_token');
+      };
+
+      return (
+        <AuthContext.Provider value={{ user, loading, login, logout, isAuthenticated: !!user }}>
+          {children}
+        </AuthContext.Provider>
+      );
+    };
+
+    // 3. Custom hook for easy access
+    export const useAuth = () => {
+      const context = useContext(AuthContext);
+      if (!context) throw new Error('useAuth must be used within AuthProvider');
+      return context;
+    };
+
+  Now ANY component can do:
+    const { user, login, logout, isAuthenticated } = useAuth();
+
+
+■ ROUTING — REACT ROUTER DOM
+
+  React Router gives your SPA multiple "pages" without full page reloads.
+
+  REAL CODE (App.tsx):
+
+    import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+    export default function App() {
+      return (
+        <AuthProvider>          {/* Context wraps everything */}
+          <Router>              {/* Router wraps all routes */}
+            <Routes>
+              <Route path="/"          element={<Home />} />
+              <Route path="/cafes/:id" element={<CafeDetail />} />
+              <Route path="/search"    element={<Search />} />
+              <Route path="/map"       element={<MapView />} />
+              <Route path="/auth"      element={<Auth />} />
+              <Route path="/profile"   element={
+                <ProtectedRoute>         {/* Auth guard */}
+                  <Profile />
+                </ProtectedRoute>
+              } />
+              <Route path="/trip"      element={
+                <ProtectedRoute>
+                  <TripPlanner />
+                </ProtectedRoute>
+              } />
+              <Route path="/trip/invite/:code" element={<InvitePage />} />
+              <Route path="*"          element={<Home />} />  {/* Fallback */}
+            </Routes>
+            <Navbar />
+          </Router>
+        </AuthProvider>
+      );
+    }
+
+  Key concepts:
+    path="/cafes/:id"  → Dynamic route. :id becomes a variable.
+                         /cafes/cafe-042 → useParams() returns { id: "cafe-042" }
+    <ProtectedRoute>   → Wrapper that redirects to /auth if not logged in
+    path="*"           → Catch-all for any unmatched URL
+
+
+■ PROTECTED ROUTES — AUTH GUARDS
+
+  Some pages (Profile, TripPlanner) require login. ProtectedRoute checks:
+
+    function ProtectedRoute({ children }) {
+      const { isAuthenticated, loading } = useAuth();
+      
+      if (loading) return <LoadingSpinner />;
+      if (!isAuthenticated) return <Navigate to="/auth" />;
+      
+      return children;
+    }
+
+
+■ CUSTOM HOOKS — REUSABLE LOGIC
+
+  Hooks let you extract complex stateful logic into reusable functions.
+
+  REAL CODE (hooks/useCollections.ts — simplified):
+
+    export const useCollections = () => {
+      const { user } = useAuth();
+      const [state, setState] = useState({ hearted: [], visited: [] });
+
+      // Sync with backend when user logs in
+      useEffect(() => {
+        if (user) {
+          // Fetch collections from API
+          fetch(`${API_URL}/collections`, { 
+            headers: { Authorization: `Bearer ${token}` } 
+          })
+          .then(res => res.json())
+          .then(data => setState(data));
+        }
+      }, [user]);
+
+      const toggleHeart = async (id) => {
+        // OPTIMISTIC UPDATE: Update UI immediately
+        setState(prev => ({
+          ...prev,
+          hearted: prev.hearted.includes(id) 
+            ? prev.hearted.filter(h => h !== id)  // Remove
+            : [...prev.hearted, id]                // Add
+        }));
+
+        // Then sync with backend
+        const response = await fetch(`${API_URL}/collections/toggle`, {
+          method: 'POST',
+          headers: { ...authHeaders },
+          body: JSON.stringify({ cafeId: id })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setState(data);  // Sync with server's truth
+        } else {
+          // ROLLBACK if the API call failed
+          setState(prev => ({ /* reverse the optimistic update */ }));
+        }
+      };
+
+      return { heartedIds, toggleHeart, isHearted, ... };
+    };
+
+  KEY PATTERN: Optimistic Updates
+    1. Update the UI IMMEDIATELY (user sees instant feedback)
+    2. Send the API request in the background
+    3. If the API fails, ROLLBACK the UI change
+
+  This is used in toggleHeart and removeVisited — it makes the app feel 
+  fast even when the API is slow.
+
+
+■ FETCHING DATA FROM THE API — THE API LAYER
+
+  Your frontend has a clean API layer in src/lib/:
+
+  REAL CODE (lib/api.ts — Base URL configuration):
+
+    const getBaseUrl = () => {
+      let url = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+      // Trim, ensure /api suffix
+      return url;
+    };
+
+    export const API_URL = getBaseUrl();
+
+  import.meta.env.VITE_API_URL — This is Vite's way of accessing env vars. 
+  Only vars prefixed with VITE_ are exposed to the browser bundle (security).
+
+  REAL CODE (lib/getCafes.ts — API functions with caching):
+
+    let cafesCache: Cafe[] | null = null;  // In-memory cache
+
+    export async function getAllCafes(): Promise<Cafe[]> {
+      if (cafesCache) return cafesCache;   // Return cache if available
+
+      const res = await fetch(`${API_URL}/cafes`);
+      if (!res.ok) throw new Error('Failed to fetch cafes');
+      
+      const data = await res.json();
+      cafesCache = data;                   // Store in cache
+      return data;
+    }
+
+    export async function getCafeById(id: string): Promise<Cafe | null> {
+      const res = await fetch(`${API_URL}/cafes/${id}`);
+      if (!res.ok) return null;
+      return res.json();
+    }
+
+  Client-side caching: The first call to getAllCafes() fetches from the API. 
+  Every subsequent call returns the cached data instantly. This avoids 
+  redundant network requests as users navigate between pages.
+
+  REAL CODE (lib/tripApi.ts — Authenticated API calls):
+
+    const getToken = () => localStorage.getItem('wimc_token');
+
+    const authHeaders = () => ({
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${getToken()}`
+    });
+
+    export async function createTrip(data) {
+      const res = await fetch(`${API_URL}/trips`, {
+        method: 'POST',
+        headers: authHeaders(),        // Include JWT token
+        body: JSON.stringify(data)     // Convert JS object to JSON string
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message);
+      }
+      return res.json();
+    }
+
+  Pattern: Every authenticated API call includes the JWT token from 
+  localStorage in the Authorization header. The backend middleware reads 
+  this header to identify the user.
+
+
+■ TYPESCRIPT — TYPE SAFETY
+
+  Your project uses TypeScript for both frontend and backend. Types ensure 
+  you don't accidentally use wrong data shapes.
+
+  REAL CODE (types/cafe.ts):
+
+    export interface Cafe {
+      id: string;
+      name: string;
+      area: string;
+      latitude?: number;       // Optional (? means may be undefined)
+      longitude?: number;
+      priceForTwo: number;
+      vibes: Vibe[];           // Array of specific string types
+      amenities: Amenities;    // Nested object type
+      displayRating: number;
+      photos: string[];
+      // ... 20+ more fields
+    }
+
+    export type Vibe = 'Study' | 'Chill' | 'Date' | 'Party' | 'Work' | 'Me Time';
+    //                  ↑ Union type — can ONLY be one of these values
+
+  These types are shared across the frontend — when you write a component:
+    function CafeCard({ cafe }: { cafe: Cafe }) {
+      // TypeScript KNOWS cafe.name is a string
+      // TypeScript will ERROR if you try cafe.nonExistentField
+    }
+
+
+■ VITE — THE BUILD TOOL
+
+  Vite is the tool that:
+    1. Runs your dev server with hot module replacement (instant updates)
+    2. Bundles your app for production (tree-shaking, minification, etc.)
+    3. Handles TypeScript compilation
+    4. Manages environment variables (VITE_ prefix)
+
+  Commands:
+    npm run dev    → Starts Vite dev server on localhost:3000
+    npm run build  → Produces optimized static files in dist/ folder
+
+  In production (Vercel), Vite builds your entire React app into:
+    dist/
+      index.html      ← Single HTML file
+      assets/
+        main-abc123.js    ← All your JavaScript bundled + minified
+        main-def456.css   ← All your CSS bundled + minified
+
+  Vercel serves these static files from their CDN.
+
+
+
+================================================================================
+  PART 5: HOW THEY ALL CONNECT — THE FULL PICTURE
+  "Following a request from click to database and back"
+================================================================================
+
+
+■ EXAMPLE: USER CLICKS "HEART" ON A CAFE
+
+  Let's trace a single user action through the ENTIRE stack:
+
+  STEP 1 — REACT (Frontend)
+    User clicks the heart icon on cafe-042.
+    The onClick handler calls toggleHeart('cafe-042').
+
+    // useCollections.ts
+    const toggleHeart = async (id: string) => {
+      // Optimistic update — UI changes immediately
+      setState(prev => ({
+        ...prev,
+        hearted: [...prev.hearted, id]
+      }));
+
+      // Send API request
+      const response = await fetch(`${API_URL}/collections/toggle`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`   // JWT from localStorage
+        },
+        body: JSON.stringify({ cafeId: 'cafe-042' })
+      });
+    };
+
+  STEP 2 — NODE.JS + EXPRESS (Backend receives the request)
+    The request hits: POST https://wimc-api.onrender.com/api/collections/toggle
+
+    Express processes it through the middleware chain:
+      1. cors()          → ✅ Origin is whereismycafe.vercel.app
+      2. express.json()  → Parses body into { cafeId: 'cafe-042' }
+      3. Route matching   → /api/collections matches collectionsRouter
+      4. /toggle matches  → POST handler found
+      5. requireAuth     → Extracts JWT, verifies, finds user, attaches to req.user
+
+  STEP 3 — MONGOOSE + MONGODB (Database operations)
+    The route handler runs:
+
+    // collections.ts
+    collectionsRouter.post('/toggle', requireAuth, async (req, res) => {
+      const { cafeId } = req.body;             // 'cafe-042'
+      const user = await User.findById(req.user?.id);   // MongoDB query
+
+      // Mongoose translates this to: 
+      // db.users.findOne({ _id: ObjectId("...") })
+
+      const index = user.collections.hearted.indexOf(cafeId);
+      if (index > -1) {
+        user.collections.hearted.splice(index, 1);  // Remove
+      } else {
+        user.collections.hearted.push(cafeId);       // Add
+      }
+
+      await user.save();   // MongoDB update
+      // Mongoose translates this to:
+      // db.users.updateOne({ _id: ... }, { $set: { collections: {...} } })
+
+      res.json(user.collections);  // Send response
+    });
+
+  STEP 4 — BACK TO REACT (Frontend receives response)
+    The fetch() promise resolves with the updated collections.
+    setState(data) triggers a re-render.
+    The heart icon is now filled/unfilled.
+    Total time: ~200-500ms (including network + DB round trip)
+
+
+■ EXAMPLE: LOADING THE SEARCH PAGE
+
+  1. User navigates to /search
+  2. React Router matches the route and renders <Search />
+  3. Search component's useEffect fires getAllCafes()
+  4. getAllCafes() calls fetch(`${API_URL}/cafes`)
+  5. Express receives GET /api/cafes
+  6. Route handler calls Cafe.find({}) — Mongoose queries MongoDB
+  7. MongoDB returns 65+ cafe documents
+  8. Express sends them as JSON response
+  9. React receives the array, calls setCafes(data)
+  10. Component re-renders with the cafe list
+  11. User sees the search page with all cafes loaded
+
+
+■ EXAMPLE: CREATING A TRIP WITH A POLL
+
+  1. User fills out trip form with 3 cafe options
+  2. React calls createTrip({ title, eventDate, pollCafeOptions: [...] })
+  3. Frontend sends POST /api/trips with auth headers
+  4. Express → requireAuth middleware → route handler
+  5. Handler creates new Trip document with embedded poll + participants
+  6. Mongoose validates all fields against the Trip schema
+  7. crypto.randomBytes(4) generates a shareable code (e.g., "a1b2c3d4")
+  8. Trip.save() → MongoDB inserts the document
+  9. Express responds with the created trip
+  10. React receives it, navigates to the trip detail page
+  11. User can share the invite code with friends
+
+
+
+================================================================================
+  PART 6: THE COMPLETE DATA FLOW MAP
+================================================================================
+
+  FRONTEND (React 19 + Vite + TypeScript)
+  ├── src/main.tsx                  ← Mounts React into the DOM
+  ├── src/App.tsx                   ← Routes: which URL shows which page
+  ├── src/context/AuthContext.tsx   ← Global user state (login/logout)
+  ├── src/hooks/useCollections.ts   ← Heart/visited logic with optimistic updates
+  ├── src/lib/api.ts                ← Base URL + endpoint builder
+  ├── src/lib/getCafes.ts           ← Cafe fetch functions + client-side cache
+  ├── src/lib/tripApi.ts            ← Trip CRUD functions with auth headers
+  ├── src/lib/financeApi.ts         ← Finance portal API client
+  ├── src/types/cafe.ts             ← TypeScript interfaces for Cafe, Review
+  ├── src/types/trip.ts             ← TypeScript interfaces for Trip, Poll
+  ├── src/pages/*                   ← Full-page components (15 pages)
+  └── src/components/*              ← Reusable UI components (19 components)
+           │
+           │  fetch() + JSON + JWT Bearer token
+           ▼
+  BACKEND (Node.js + Express + TypeScript)
+  ├── src/server.ts                 ← Express app setup, CORS, route mounting
+  ├── src/db.ts                     ← mongoose.connect() to MongoDB Atlas
+  ├── src/middleware/userAuth.ts     ← JWT verification → req.user
+  ├── src/middleware/cafeOwnerAuth.ts← JWT + context check → req.owner
+  ├── src/middleware/auth.ts         ← Admin role check
+  ├── src/middleware/upload.ts       ← Multer file handling
+  ├── src/routes/auth.ts             ← Register, Login, Forgot/Reset password
+  ├── src/routes/cafes.ts            ← Cafe CRUD + nearby + search + filters
+  ├── src/routes/reviews.ts          ← Review CRUD + aggregation
+  ├── src/routes/trips.ts            ← Trip CRUD + RSVP + poll + feedback
+  ├── src/routes/collections.ts      ← Heart toggle + sync
+  ├── src/routes/finance.ts          ← Transactions + aggregation dashboard
+  ├── src/routes/upload.ts           ← Multer → Cloudinary
+  ├── src/models/User.ts             ← User schema + bcrypt + toJSON
+  ├── src/models/Cafe.ts             ← Cafe schema (30+ fields)
+  ├── src/models/Review.ts           ← Review schema + soft delete
+  ├── src/models/Trip.ts             ← Trip schema + embedded participants/poll
+  ├── src/models/CafeOwner.ts        ← Separate auth domain
+  ├── src/models/Transaction.ts      ← Financial data + compound indexes
+  └── src/utils/sendEmail.ts         ← Nodemailer Gmail SMTP
+           │
+           │  Mongoose ODM queries
+           ▼
+  DATABASE (MongoDB Atlas)
+  ├── users collection               ← User accounts + embedded collections
+  ├── cafes collection                ← 65+ cafe documents with full metadata
+  ├── reviews collection              ← User reviews (referenced by cafeId + userId)
+  ├── trips collection                ← Trip plans with embedded participants/polls
+  ├── cafeowners collection           ← Cafe owner accounts (separate from users)
+  └── transactions collection         ← Financial records with compound indexes
+           │
+           │  External Services
+           ├──→ Cloudinary (Image CDN — stores cafe photos)
+           ├──→ Gmail SMTP (Welcome emails + password reset emails)
+           └──→ MongoDB Atlas (Cloud-hosted database)
+
+
+================================================================================
+  SUMMARY — What Each Letter Does
+================================================================================
+
+  M — MONGODB
+      Stores your data as JSON-like documents in collections.
+      Managed through Mongoose which adds schemas, validation, and hooks.
+      Hosted on MongoDB Atlas (cloud). Connected via mongoose.connect().
+      Advanced queries use aggregation pipelines ($group, $lookup, $match).
+
+  E — EXPRESS
+      Web framework on top of Node.js. Handles HTTP requests via routes.
+      Middleware chain processes every request (CORS, auth, body parsing).
+      Routes are modular — each feature in its own file (cafes, auth, trips).
+      Responds with JSON and proper HTTP status codes.
+
+  R — REACT
+      Frontend library that builds the UI using components and hooks.
+      SPA with React Router for client-side navigation.
+      Context API for global state (auth). Custom hooks for reusable logic.
+      Fetches data from Express API using fetch() with JWT auth.
+      TypeScript ensures type safety across the entire frontend.
+
+  N — NODE.JS
+      JavaScript runtime that makes the whole backend possible.
+      Runs Express, connects to MongoDB, handles file I/O, crypto, etc.
+      npm manages all dependencies (express, mongoose, bcrypt, etc.).
+      Deployed on Render — runs as a persistent process on port 443.
+
+  Together they form a FULL STACK where:
+    JavaScript is the ONLY language you need.
+    JSON is the ONLY data format between all layers.
+    TypeScript adds type safety to both frontend and backend.
+    Everything is modular, testable, and independently deployable. 💪
